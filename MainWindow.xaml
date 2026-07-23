@@ -353,31 +353,40 @@
                                        Foreground="{DynamicResource AppMutedTextBrush}" FontSize="11" Margin="0,2,0,11"/>
 
                             <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="46"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="160"/>
                                     <ColumnDefinition Width="22"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <StackPanel Grid.Column="0">
-                                    <TextBlock Text="When I type" Foreground="{DynamicResource AppMutedTextBrush}" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                                    <TextBox x:Name="AddRepShortcutTxt" Height="34" ToolTip="Example: mail"/>
-                                </StackPanel>
-                                <TextBlock Grid.Column="1" Text="→" Foreground="{DynamicResource AppAccentBrush}" FontSize="17"
-                                           HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,17,0,0"/>
-                                <StackPanel Grid.Column="2">
-                                    <TextBlock Text="Replace it with" Foreground="{DynamicResource AppMutedTextBrush}" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                                    <TextBox x:Name="AddRepTargetTxt" Height="46" AcceptsReturn="True"
-                                             VerticalScrollBarVisibility="Auto" TextWrapping="Wrap" AcceptsTab="True"
-                                             ToolTip="Example: mymail@mail.ir"/>
-                                    <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                                        <TextBlock Text="Add dynamic value:" Foreground="{DynamicResource AppMutedTextBrush}" FontSize="10"
-                                                   VerticalAlignment="Center" Margin="0,0,7,0"/>
-                                        <Button Content="{}{date}" Style="{StaticResource MiniChip}" Click="InsertRepMacro_Click" Tag="{}{date}"/>
-                                        <Button Content="{}{time}" Style="{StaticResource MiniChip}" Click="InsertRepMacro_Click" Tag="{}{time}"/>
-                                        <Button Content="{}{clip}" Style="{StaticResource MiniChip}" Click="InsertRepMacro_Click" Tag="{}{clip}"/>
-                                        <Button Content="{}{sel}" Style="{StaticResource MiniChip}" Click="InsertRepMacro_Click" Tag="{}{sel}"/>
-                                        <Button Content="{}{cursor}" Style="{StaticResource MiniChip}" Click="InsertRepMacro_Click" Tag="{}{cursor}"/>
-                                    </StackPanel>
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="When I type"
+                                           Foreground="{DynamicResource AppMutedTextBrush}" FontSize="11"
+                                           FontWeight="SemiBold" Margin="0,0,0,5"/>
+                                <TextBlock Grid.Row="0" Grid.Column="2" Text="Replace it with"
+                                           Foreground="{DynamicResource AppMutedTextBrush}" FontSize="11"
+                                           FontWeight="SemiBold" Margin="0,0,0,5"/>
+
+                                <TextBox Grid.Row="1" Grid.Column="0" x:Name="AddRepShortcutTxt"
+                                         Height="34" VerticalAlignment="Center" ToolTip="Example: mail"/>
+                                <TextBlock Grid.Row="1" Grid.Column="1" Text="→"
+                                           Foreground="{DynamicResource AppAccentBrush}" FontSize="17"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <TextBox Grid.Row="1" Grid.Column="2" x:Name="AddRepTargetTxt"
+                                         Height="46" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"
+                                         TextWrapping="Wrap" AcceptsTab="True" ToolTip="Example: mymail@mail.ir"/>
+
+                                <StackPanel Grid.Row="2" Grid.Column="2" Orientation="Horizontal" Margin="0,5,0,0">
+                                    <TextBlock Text="Add dynamic value:" Foreground="{DynamicResource AppMutedTextBrush}" FontSize="10"
+                                               VerticalAlignment="Center" Margin="0,0,7,0"/>
+                                    <Button Content="{}{date}" Style="{StaticResource MiniChip}" Click="InsertRepMacro_Click" Tag="{}{date}"/>
+                                    <Button Content="{}{time}" Style="{StaticResource MiniChip}" Click="InsertRepMacro_Click" Tag="{}{time}"/>
+                                    <Button Content="{}{clip}" Style="{StaticResource MiniChip}" Click="InsertRepMacro_Click" Tag="{}{clip}"/>
+                                    <Button Content="{}{sel}" Style="{StaticResource MiniChip}" Click="InsertRepMacro_Click" Tag="{}{sel}"/>
+                                    <Button Content="{}{cursor}" Style="{StaticResource MiniChip}" Click="InsertRepMacro_Click" Tag="{}{cursor}"/>
                                 </StackPanel>
                             </Grid>
 
