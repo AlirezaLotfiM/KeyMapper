@@ -10,26 +10,27 @@
         Topmost="True" 
         ShowInTaskbar="False"
         WindowStartupLocation="CenterOwner"
+        FontFamily="Segoe UI"
         MouseLeftButtonDown="Window_MouseLeftButtonDown">
 
     <Window.Resources>
         <!-- Custom Styles -->
         <Style TargetType="TextBox">
-            <Setter Property="Background" Value="#1C1C1E"/>
-            <Setter Property="Foreground" Value="#FFFFFF"/>
-            <Setter Property="BorderBrush" Value="#2C2C2E"/>
-            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="#FFFFFF"/>
+            <Setter Property="Foreground" Value="#26384F"/>
+            <Setter Property="BorderBrush" Value="#C8B991"/>
+            <Setter Property="BorderThickness" Value="2"/>
             <Setter Property="Padding" Value="10,6"/>
-            <Setter Property="CaretBrush" Value="#007AFF"/>
+            <Setter Property="CaretBrush" Value="#318D99"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TextBox">
-                        <Border x:Name="border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="6">
+                        <Border x:Name="border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}">
                             <ScrollViewer x:Name="PART_ContentHost" Focusable="false" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsKeyboardFocused" Value="true">
-                                <Setter TargetName="border" Property="BorderBrush" Value="#007AFF"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#318D99"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -38,23 +39,23 @@
         </Style>
 
         <Style x:Key="PrimaryButton" TargetType="Button">
-            <Setter Property="Background" Value="#007AFF"/>
-            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="Background" Value="#55CAD3"/>
+            <Setter Property="Foreground" Value="#174B52"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Padding" Value="16,8"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="#318D99" BorderThickness="2" Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#0066D6"/>
+                                <Setter TargetName="border" Property="Background" Value="#70D3DA"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#004C99"/>
+                                <Setter TargetName="border" Property="Background" Value="#3BB7C0"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -63,22 +64,23 @@
         </Style>
 
         <Style x:Key="SecondaryButton" TargetType="Button">
-            <Setter Property="Background" Value="#2C2C2E"/>
-            <Setter Property="Foreground" Value="#F2F2F7"/>
+            <Setter Property="Background" Value="#FFFDF7"/>
+            <Setter Property="Foreground" Value="#30445E"/>
             <Setter Property="Padding" Value="16,8"/>
-            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="BorderBrush" Value="#B8A77F"/>
+            <Setter Property="BorderThickness" Value="2"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#3A3A3C"/>
+                                <Setter TargetName="border" Property="Background" Value="#F8EBC8"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#48484A"/>
+                                <Setter TargetName="border" Property="Background" Value="#EEDBAA"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -98,9 +100,14 @@
                         <Setter Property="Template">
                             <Setter.Value>
                                 <ControlTemplate TargetType="ListBoxItem">
-                                    <Border Background="{TemplateBinding Background}" Padding="4">
+                                    <Border x:Name="ItemBorder" Background="{TemplateBinding Background}" BorderBrush="#E1D3AE" BorderThickness="0,0,0,1" Padding="6">
                                         <ContentPresenter/>
                                     </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="ItemBorder" Property="Background" Value="#FFF0C9"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
                                 </ControlTemplate>
                             </Setter.Value>
                         </Setter>
@@ -110,9 +117,9 @@
         </Style>
     </Window.Resources>
 
-    <Border Background="#F21E1E24" CornerRadius="12" BorderBrush="#33FFFFFF" BorderThickness="1.5">
+    <Border Background="#FFF8E7" BorderBrush="#40536C" BorderThickness="3">
         <Border.Effect>
-            <DropShadowEffect BlurRadius="25" ShadowDepth="0" Color="#000000" Opacity="0.6"/>
+            <DropShadowEffect BlurRadius="18" ShadowDepth="5" Color="#6B5A3A" Opacity="0.35"/>
         </Border.Effect>
         <Grid Margin="20">
             <Grid.RowDefinitions>
@@ -123,16 +130,16 @@
             </Grid.RowDefinitions>
 
             <!-- Header -->
-            <TextBlock Grid.Row="0" Text="Select Running Apps" Foreground="#F2F2F7" FontSize="18" FontWeight="Bold" Margin="0,0,0,10"/>
+            <TextBlock Grid.Row="0" Text="Select running apps" Foreground="#26384F" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,10"/>
 
             <!-- Search Bar -->
             <TextBox x:Name="SearchBox" Grid.Row="1" Height="30" Margin="0,0,0,10" TextChanged="SearchBox_TextChanged" Padding="10,4"/>
 
             <!-- Processes List -->
-            <ListBox x:Name="ProcessesList" Grid.Row="2" Background="#1C1C1E" BorderThickness="1" BorderBrush="#2C2C2E" Margin="0,0,0,15" Padding="5">
+            <ListBox x:Name="ProcessesList" Grid.Row="2" Background="#FFFDF7" BorderThickness="2" BorderBrush="#D6C59C" Margin="0,0,0,15" Padding="5">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <CheckBox Content="{Binding DisplayName}" IsChecked="{Binding IsChecked, Mode=TwoWay}" Foreground="#F2F2F7" FontSize="13" Margin="5,2" VerticalAlignment="Center"/>
+                        <CheckBox Content="{Binding DisplayName}" IsChecked="{Binding IsChecked, Mode=TwoWay}" Foreground="#26384F" FontSize="13" Margin="5,2" VerticalAlignment="Center"/>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>

@@ -27,6 +27,7 @@ namespace KeyMapper
         private readonly KeyboardHook _hook;
         private readonly MouseHook _mouseHook;
         private readonly OverlayWindow _overlayWindow;
+        private readonly PetOverlayWindow _petOverlayWindow;
         private readonly TrayIconManager _trayManager;
         private AppSettings _settings;
         private string _lastClipboardText = string.Empty;
@@ -61,6 +62,11 @@ namespace KeyMapper
             };
 
             _overlayWindow = new OverlayWindow();
+            _petOverlayWindow = new PetOverlayWindow();
+            if (_settings.ShowPetOverlay)
+            {
+                _petOverlayWindow.Show();
+            }
             _trayManager = new TrayIconManager(this, _hook);
 
             _mouseHook = new MouseHook();
@@ -71,6 +77,7 @@ namespace KeyMapper
             _hook.OnActionTriggered += Hook_OnActionTriggered;
             _hook.OnRecordingCancelled += Hook_OnRecordingCancelled;
             _hook.OnDoubleTapLCtrl += Hook_OnDoubleTapLCtrl;
+            _hook.OnDeGibberishRequested += Hook_OnDeGibberishRequested;
             _hook.OnAutoExpandTriggered += Hook_OnAutoExpandTriggered;
             _hook.IsShortcutAllowed = IsShortcutAllowedByActiveWindow;
             _hook.OnPauseToggled += Hook_OnPauseToggled;
@@ -89,6 +96,24 @@ namespace KeyMapper
             ShowOverlayChk.IsChecked = _settings.ShowOverlay;
             RunAtStartupChk.IsChecked = _settings.RunAtStartup;
             PlaySoundsChk.IsChecked = _settings.PlaySounds;
+            AiEndpointTxt.Text = _settings.AiApiEndpoint;
+            AiApiKeyTxt.Password = _settings.AiApiKey;
+            AiModelTxt.Text = _settings.AiModel;
+            LocalAiEnabledChk.IsChecked = _settings.LocalAiEnabled;
+            AiAmbientCommentsChk.IsChecked = _settings.AiAmbientCommentsEnabled;
+            ThemePicker.SelectedValue = ThemeManager.Normalize(_settings.ThemeName);
+
+            LocalAiModelOption recommended =
+                LocalAiService.Instance.GetRecommendedModel();
+            LocalAiRecommendationTxt.Text =
+                $"Recommended for this PC: {recommended.DisplayName}";
+            LocalAiHardwareTxt.Text =
+                LocalAiService.Instance.GetHardwareSummary() +
+                " · You can choose a smaller model at any time.";
+            LocalAiModelPicker.SelectedValue =
+                LocalAiService.Instance.FindModel(_settings.LocalAiModelId)?.Id ??
+                recommended.Id;
+            RefreshLocalAiModelUi();
             SoundManager.PlaySounds = _settings.PlaySounds;
 
             UpdateHookStatusUI();
@@ -162,6 +187,18 @@ namespace KeyMapper
             _settings.ShowOverlay = ShowOverlayChk.IsChecked ?? true;
             _settings.RunAtStartup = RunAtStartupChk.IsChecked ?? false;
             _settings.PlaySounds = PlaySoundsChk.IsChecked ?? true;
+            _settings.ThemeName =
+                ThemePicker.SelectedValue as string ?? "Warm Cream";
+            _settings.LocalAiEnabled = LocalAiEnabledChk.IsChecked ?? true;
+            _settings.AiAmbientCommentsEnabled =
+                AiAmbientCommentsChk.IsChecked ?? true;
+            _settings.LocalAiModelId =
+                LocalAiModelPicker.SelectedValue as string ?? string.Empty;
+            _settings.AiApiEndpoint = AiEndpointTxt.Text.Trim();
+            _settings.AiApiKey = AiApiKeyTxt.Password.Trim();
+            _settings.AiModel = string.IsNullOrWhiteSpace(AiModelTxt.Text)
+                ? "gpt-4o-mini"
+                : AiModelTxt.Text.Trim();
 
             ConfigManager.Save(_settings);
 
@@ -257,6 +294,22 @@ namespace KeyMapper
                 {
                     Debug.WriteLine($"Failed to open command palette: {ex.Message}");
                 }
+            }));
+        }
+
+        public void OpenCommandPalette()
+        {
+            Hook_OnDoubleTapLCtrl();
+        }
+
+        private void Hook_OnDeGibberishRequested(IntPtr targetWindow)
+        {
+            Dispatcher.BeginInvoke(new Action(async () =>
+            {
+                // Let the user release Ctrl+Alt before the converter sends Ctrl+C;
+                // otherwise Windows can interpret the copy as Ctrl+Alt+C.
+                await Task.Delay(220);
+                await _petOverlayWindow.DeGibberishSelectedTextAsync(targetWindow);
             }));
         }
 
@@ -1167,24 +1220,27 @@ namespace KeyMapper
         {
             if (!_hook.IsEnabled)
             {
-                StatusBadge.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(44, 44, 46));
-                StatusText.Text = "DISABLED";
-                StatusText.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(142, 142, 147));
-                ToggleHookBtn.Content = "Enable KeyMapper";
+                StatusBadge.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(243, 241, 234));
+                StatusBadge.BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(200, 185, 145));
+                StatusText.Text = "KeyMapper is off";
+                StatusText.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(107, 123, 143));
+                ToggleHookBtn.Content = "Turn on KeyMapper";
             }
             else if (_hook.IsPaused)
             {
-                StatusBadge.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(50, 38, 15));
-                StatusText.Text = "PAUSED";
-                StatusText.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 149, 0));
-                ToggleHookBtn.Content = "Disable KeyMapper";
+                StatusBadge.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 240, 201));
+                StatusBadge.BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(214, 169, 75));
+                StatusText.Text = "KeyMapper is paused";
+                StatusText.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(138, 100, 26));
+                ToggleHookBtn.Content = "Turn off KeyMapper";
             }
             else
             {
-                StatusBadge.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(28, 46, 36));
-                StatusText.Text = "ACTIVE";
-                StatusText.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(48, 209, 88));
-                ToggleHookBtn.Content = "Disable KeyMapper";
+                StatusBadge.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(225, 244, 234));
+                StatusBadge.BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(83, 167, 125));
+                StatusText.Text = "KeyMapper is on";
+                StatusText.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(36, 101, 72));
+                ToggleHookBtn.Content = "Turn off KeyMapper";
             }
         }
 
@@ -1421,6 +1477,136 @@ namespace KeyMapper
         private void SettingChanged(object sender, RoutedEventArgs e)
         {
             SaveSettings();
+        }
+
+        private void ThemePicker_SelectionChanged(
+            object sender,
+            SelectionChangedEventArgs e)
+        {
+            string themeName =
+                ThemePicker.SelectedValue as string ?? "Warm Cream";
+            ThemeManager.Apply(themeName);
+            SaveSettings();
+        }
+
+        private void LocalAiModelPicker_SelectionChanged(
+            object sender,
+            SelectionChangedEventArgs e)
+        {
+            RefreshLocalAiModelUi();
+            SaveSettings();
+        }
+
+        private void RefreshLocalAiModelUi(string? status = null)
+        {
+            if (LocalAiModelPicker.SelectedItem is not LocalAiModelOption model)
+            {
+                LocalAiDescriptionTxt.Text = string.Empty;
+                LocalAiStatusTxt.Text = "Choose a model to see its requirements.";
+                LocalAiDownloadBtn.IsEnabled = false;
+                LocalAiRemoveBtn.IsEnabled = false;
+                return;
+            }
+
+            bool installed = LocalAiService.Instance.IsInstalled(model.Id);
+            LocalAiDescriptionTxt.Text =
+                $"{model.Description} Download: {FormatBytes(model.DownloadBytes)} · " +
+                $"suggested memory: {model.SuggestedRamGb} GB or more.";
+            LocalAiDownloadBtn.IsEnabled = !installed;
+            LocalAiDownloadBtn.Content =
+                installed ? "Downloaded" : "Download model";
+            LocalAiRemoveBtn.IsEnabled = installed;
+            LocalAiStatusTxt.Text = status ??
+                (installed
+                    ? "Ready · conversations and optional ambient comments can run offline."
+                    : "Not downloaded · the pet continues using its built-in replies.");
+        }
+
+        private async void LocalAiDownload_Click(
+            object sender,
+            RoutedEventArgs e)
+        {
+            if (LocalAiModelPicker.SelectedItem is not LocalAiModelOption model)
+            {
+                return;
+            }
+
+            LocalAiDownloadBtn.IsEnabled = false;
+            LocalAiRemoveBtn.IsEnabled = false;
+            LocalAiModelPicker.IsEnabled = false;
+            LocalAiProgress.Value = 0;
+            LocalAiProgress.Visibility = Visibility.Visible;
+            LocalAiStatusTxt.Text =
+                $"Downloading {model.DisplayName}… You can continue using the app.";
+
+            var progress = new Progress<LocalAiDownloadProgress>(value =>
+            {
+                LocalAiProgress.Value = value.Percentage;
+                LocalAiStatusTxt.Text =
+                    $"Downloading {model.DisplayName} · {value.Percentage}% " +
+                    $"({FormatBytes(value.BytesReceived)} of {FormatBytes(value.TotalBytes)})";
+            });
+
+            try
+            {
+                await LocalAiService.Instance.DownloadModelAsync(model, progress);
+                _settings.LocalAiModelId = model.Id;
+                _settings.LocalAiEnabled = true;
+                LocalAiEnabledChk.IsChecked = true;
+                ConfigManager.Save(_settings);
+                RefreshLocalAiModelUi("Ready · model downloaded and enabled.");
+            }
+            catch (Exception ex)
+            {
+                RefreshLocalAiModelUi(
+                    $"Download paused safely: {ex.Message}. Press Download to resume.");
+            }
+            finally
+            {
+                LocalAiProgress.Visibility = Visibility.Collapsed;
+                LocalAiModelPicker.IsEnabled = true;
+                RefreshLocalAiModelUi(LocalAiStatusTxt.Text);
+            }
+        }
+
+        private async void LocalAiRemove_Click(
+            object sender,
+            RoutedEventArgs e)
+        {
+            if (LocalAiModelPicker.SelectedItem is not LocalAiModelOption model)
+            {
+                return;
+            }
+
+            MessageBoxResult choice = MessageBox.Show(
+                $"Remove {model.DisplayName} from this computer?\n\n" +
+                "The desktop pet will keep working with built-in replies.",
+                "Remove local AI model",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+            if (choice != MessageBoxResult.Yes) return;
+
+            LocalAiStatusTxt.Text = "Removing model…";
+            await LocalAiService.Instance.RemoveModelAsync(model.Id);
+            RefreshLocalAiModelUi("Removed · you can download it again later.");
+        }
+
+        private static string FormatBytes(long bytes)
+        {
+            if (bytes <= 0) return "unknown size";
+            double gib = bytes / 1024d / 1024d / 1024d;
+            return gib >= 1
+                ? $"{gib:0.##} GB"
+                : $"{bytes / 1024d / 1024d:0} MB";
+        }
+
+        private void OpenCloudAi_Click(object sender, RoutedEventArgs e)
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = "https://chat-agent.alirezalotfi.workers.dev/",
+                UseShellExecute = true
+            });
         }
 
         private void AddExclusion_Click(object sender, RoutedEventArgs e)
@@ -1743,6 +1929,7 @@ namespace KeyMapper
             _hook.Dispose();
             _mouseHook.Dispose();
             _overlayWindow.Close();
+            _petOverlayWindow?.Close();
             _trayManager.Dispose();
             this.Close();
         }
@@ -1750,6 +1937,22 @@ namespace KeyMapper
         public void ShowStartupNotification()
         {
             _trayManager.ShowNotification("KeyMapper Active", "KeyMapper is running in your system tray. Double-click the icon to open settings.");
+        }
+
+        public void ShowPetOverlayWindow()
+        {
+            if (_petOverlayWindow != null)
+            {
+                _petOverlayWindow.Show();
+                _petOverlayWindow.WindowState = WindowState.Normal;
+                _petOverlayWindow.Topmost = true;
+                _petOverlayWindow.Activate();
+            }
+        }
+
+        public void HidePetOverlayWindow()
+        {
+            _petOverlayWindow?.Hide();
         }
 
         public void DisableKeyboardHookTemporarily()

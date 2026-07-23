@@ -27,6 +27,24 @@ namespace KeyMapper
         public bool ShowOverlay { get; set; } = true;
         public bool RunAtStartup { get; set; } = false;
         public bool PlaySounds { get; set; } = true;
+        public bool ShowPetOverlay { get; set; } = true;
+        public string ThemeName { get; set; } = "Warm Cream";
+        public double PetWalkingSpeed { get; set; } = 92;
+        public int PetIdleAnimationIntervalMs { get; set; } = 430;
+        public bool PetCommentsEnabled { get; set; } = true;
+        public string PetCommentFrequency { get; set; } = "Normal";
+        public bool AiAmbientCommentsEnabled { get; set; } = true;
+        public bool LocalAiEnabled { get; set; } = true;
+        public string LocalAiModelId { get; set; } = string.Empty;
+        public string AiApiKey { get; set; } = string.Empty;
+        public string AiApiEndpoint { get; set; } = string.Empty;
+        public string AiModel { get; set; } = "gpt-4o-mini";
+        public string LibreTranslateEndpoint { get; set; } = "http://localhost:5000";
+        public string LibreTranslateApiKey { get; set; } = string.Empty;
+        public int LibreTranslateLiveDelayMs { get; set; } = 650;
+        public bool LibreTranslateAutoCopy { get; set; } = false;
+        public string LayoutFixHotkey { get; set; } = "Ctrl+Alt+K";
+        public string CurrentCharacter { get; set; } = "Pink Monster";
     }
 
     public class OldAppSettings

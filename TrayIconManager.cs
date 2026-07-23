@@ -25,8 +25,10 @@ namespace KeyMapper
 
             _notifyIcon = new NotifyIcon
             {
-                Text = "KeyMapper - Tap Left Ctrl to record",
-                Visible = true
+                Text = "Desktop Pet - starting…",
+                // An icon must be assigned before making NotifyIcon visible.  Creating
+                // it visible first can leave it missing from the Windows notification area.
+                Visible = false
             };
 
             // Set initial icon
@@ -38,6 +40,9 @@ namespace KeyMapper
             var settingsItem = new ToolStripMenuItem("Settings", null, (s, e) => ShowMainWindow());
             settingsItem.Font = new Font(settingsItem.Font, System.Drawing.FontStyle.Bold);
             contextMenu.Items.Add(settingsItem);
+
+            contextMenu.Items.Add(new ToolStripMenuItem("Show Desktop Pet", null, (s, e) => _mainWindow.ShowPetOverlayWindow()));
+            contextMenu.Items.Add(new ToolStripMenuItem("Hide Desktop Pet", null, (s, e) => _mainWindow.HidePetOverlayWindow()));
 
             var enableItem = new ToolStripMenuItem("Enabled", null, (s, e) =>
             {
@@ -89,6 +94,7 @@ namespace KeyMapper
             }));
 
             _notifyIcon.ContextMenuStrip = contextMenu;
+            _notifyIcon.Visible = true;
 
             // Double click opens settings
             _notifyIcon.DoubleClick += (s, e) => ShowMainWindow();
@@ -101,10 +107,8 @@ namespace KeyMapper
                 // Clean up previous icon to prevent GDI leak
                 if (_currentIcon != null)
                 {
-                    var handle = _currentIcon.Handle;
                     _notifyIcon.Icon = null;
                     _currentIcon.Dispose();
-                    DestroyIcon(handle);
                 }
 
                 _currentIcon = CreateDynamicIcon(isEnabled);
@@ -131,6 +135,16 @@ namespace KeyMapper
 
         private Icon CreateDynamicIcon(bool isEnabled)
         {
+            try
+            {
+                string iconPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "app_icon.ico");
+                if (System.IO.File.Exists(iconPath))
+                {
+                    return new Icon(iconPath);
+                }
+            }
+            catch { }
+
             using (Bitmap bmp = new Bitmap(16, 16))
             using (Graphics g = Graphics.FromImage(bmp))
             {
@@ -187,9 +201,7 @@ namespace KeyMapper
             
             if (_currentIcon != null)
             {
-                var handle = _currentIcon.Handle;
                 _currentIcon.Dispose();
-                DestroyIcon(handle);
             }
         }
     }

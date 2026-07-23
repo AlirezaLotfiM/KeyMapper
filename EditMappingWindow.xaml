@@ -15,22 +15,22 @@
     <Window.Resources>
         <!-- Reusable styles -->
         <Style TargetType="TextBox">
-            <Setter Property="Background" Value="#1C1C1E"/>
-            <Setter Property="Foreground" Value="#FFFFFF"/>
-            <Setter Property="BorderBrush" Value="#2C2C2E"/>
-            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="#FFFFFF"/>
+            <Setter Property="Foreground" Value="#26384F"/>
+            <Setter Property="BorderBrush" Value="#C8B991"/>
+            <Setter Property="BorderThickness" Value="2"/>
             <Setter Property="Padding" Value="10,6"/>
-            <Setter Property="CaretBrush" Value="#007AFF"/>
+            <Setter Property="CaretBrush" Value="#318D99"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TextBox">
-                        <Border x:Name="border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="6">
+                        <Border x:Name="border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}">
                             <ScrollViewer x:Name="PART_ContentHost" Focusable="false"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsKeyboardFocused" Value="true">
-                                <Setter TargetName="border" Property="BorderBrush" Value="#007AFF"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#318D99"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -39,8 +39,8 @@
         </Style>
 
         <Style x:Key="MiniChip" TargetType="Button">
-            <Setter Property="Background" Value="#2C2C2E"/>
-            <Setter Property="Foreground" Value="#007AFF"/>
+            <Setter Property="Background" Value="#FFF0C9"/>
+            <Setter Property="Foreground" Value="#217783"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="FontSize" Value="10"/>
             <Setter Property="Height" Value="18"/>
@@ -58,14 +58,14 @@
             </Setter>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#3A3A3C"/>
+                    <Setter Property="Background" Value="#F6E4B4"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
 
         <Style x:Key="PrimaryButton" TargetType="Button">
-            <Setter Property="Background" Value="#007AFF"/>
-            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="Background" Value="#55CAD3"/>
+            <Setter Property="Foreground" Value="#174B52"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Padding" Value="16,8"/>
             <Setter Property="BorderThickness" Value="0"/>
@@ -77,10 +77,10 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#0066D6"/>
+                                <Setter TargetName="border" Property="Background" Value="#BFE8E9"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#004C99"/>
+                                <Setter TargetName="border" Property="Background" Value="#9CD8DB"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -89,22 +89,24 @@
         </Style>
 
         <Style x:Key="SecondaryButton" TargetType="Button">
-            <Setter Property="Background" Value="#2C2C2E"/>
-            <Setter Property="Foreground" Value="#F2F2F7"/>
-            <Setter Property="Padding" Value="16,8"/>
-            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Background" Value="#FFFDF7"/>
+            <Setter Property="Foreground" Value="#30445E"/>
+            <Setter Property="Padding" Value="10,4"/>
+            <Setter Property="BorderBrush" Value="#B8A77F"/>
+            <Setter Property="BorderThickness" Value="2"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#3A3A3C"/>
+                                <Setter TargetName="border" Property="Background" Value="#F8EBC8"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#9F8958"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#48484A"/>
+                                <Setter TargetName="border" Property="Background" Value="#BFE8E9"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -113,9 +115,9 @@
         </Style>
     </Window.Resources>
 
-    <Border Background="#F21E1E24" CornerRadius="12" BorderBrush="#33FFFFFF" BorderThickness="1.5">
+    <Border Background="#FFF8E7" BorderBrush="#40536C" BorderThickness="3">
         <Border.Effect>
-            <DropShadowEffect BlurRadius="25" ShadowDepth="0" Color="#000000" Opacity="0.6"/>
+            <DropShadowEffect BlurRadius="18" ShadowDepth="5" Color="#6B5A3A" Opacity="0.35"/>
         </Border.Effect>
         <Grid Margin="20">
             <Grid.RowDefinitions>
@@ -125,7 +127,7 @@
             </Grid.RowDefinitions>
 
             <!-- Header -->
-            <TextBlock Grid.Row="0" Text="Edit Mapping" Foreground="#F2F2F7" FontSize="18" FontWeight="Bold" Margin="0,0,0,15"/>
+            <TextBlock Grid.Row="0" Text="Edit mapping" Foreground="#26384F" FontFamily="Segoe UI" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,15"/>
 
             <!-- Form Body -->
             <StackPanel Grid.Row="1" VerticalAlignment="Center">
@@ -182,7 +184,7 @@
                 </Grid>
 
                 <!-- Auto Expand -->
-                <CheckBox x:Name="AutoExpandChk" Content="Auto-Expand" Foreground="#F2F2F7" FontSize="12" Margin="0,2,0,0" VerticalAlignment="Center"/>
+                <CheckBox x:Name="AutoExpandChk" Content="Expand automatically while typing" Foreground="#26384F" FontSize="12" Margin="0,2,0,0" VerticalAlignment="Center"/>
             </StackPanel>
 
             <!-- Buttons -->

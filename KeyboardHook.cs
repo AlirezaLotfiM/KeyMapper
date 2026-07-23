@@ -31,6 +31,7 @@ namespace KeyMapper
         // Recording state
         private bool _lCtrlDown = false;
         private bool _lCtrlUsed = false;
+        private bool _deGibberishChordDown;
         private bool _isRecording = false;
         private StringBuilder _buffer = new StringBuilder();
         private DateTime _lastLCtrlReleaseTime = DateTime.MinValue;
@@ -51,6 +52,7 @@ namespace KeyMapper
         public event Action<string>? OnActionTriggered;      // Triggers on Right Shift
         public event Action? OnRecordingCancelled;
         public event Action? OnDoubleTapLCtrl;
+        public event Action<IntPtr>? OnDeGibberishRequested;
         public event Action<string, string>? OnAutoExpandTriggered;
 
         public KeyboardHook()
@@ -120,6 +122,25 @@ namespace KeyMapper
 
                 int vkCode = Marshal.ReadInt32(lParam);
                 int message = wParam.ToInt32();
+
+                // Ctrl+Alt+K: reverse text typed under the wrong physical keyboard
+                // layout. The foreground handle is captured before our UI appears.
+                bool isDeGibberishChord = vkCode == 0x4B && IsControlPressed() && IsAltPressed();
+                if (isDeGibberishChord && (message == WM_KEYDOWN || message == WM_SYSKEYDOWN))
+                {
+                    if (!_deGibberishChordDown)
+                    {
+                        _deGibberishChordDown = true;
+                        CancelRecording();
+                        _rollingBuffer.Clear();
+                        OnDeGibberishRequested?.Invoke(activeHwnd);
+                    }
+                    return (IntPtr)1;
+                }
+                if (vkCode == 0x4B && (message == WM_KEYUP || message == WM_SYSKEYUP))
+                {
+                    _deGibberishChordDown = false;
+                }
 
                 // Intercept Scroll Lock key (0x91) OR Ctrl+Alt+P (0x50) to toggle pause state
                 bool isCtrlAltP = vkCode == 0x50 && IsControlPressed() && IsAltPressed();

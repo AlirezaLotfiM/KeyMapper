@@ -1,12 +1,14 @@
 <Window x:Class="KeyMapper.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="KeyMapper Control Center" 
+        xmlns:local="clr-namespace:KeyMapper"
+        Title="Desktop Pet Control Center"
+        Icon="Resources/app_icon.ico"
         Height="680" 
         Width="920"
         WindowStartupLocation="CenterScreen"
-        Background="#121214"
-        Foreground="#F2F2F7"
+        Background="{DynamicResource AppBackgroundBrush}"
+        Foreground="{DynamicResource AppTextBrush}"
         FontFamily="Segoe UI"
         BorderThickness="0">
     
@@ -27,7 +29,7 @@
                                             <Thumb>
                                                 <Thumb.Template>
                                                     <ControlTemplate TargetType="Thumb">
-                                                        <Border Background="#3A3A3C" CornerRadius="4"/>
+                                                        <Border Background="#B8A77F" CornerRadius="0"/>
                                                     </ControlTemplate>
                                                 </Thumb.Template>
                                             </Thumb>
@@ -49,7 +51,7 @@
                                             <Thumb>
                                                 <Thumb.Template>
                                                     <ControlTemplate TargetType="Thumb">
-                                                        <Border Background="#3A3A3C" CornerRadius="4"/>
+                                                        <Border Background="#B8A77F" CornerRadius="0"/>
                                                     </ControlTemplate>
                                                 </Thumb.Template>
                                             </Thumb>
@@ -72,7 +74,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ListViewItem">
-                        <Border Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                        <Border Background="{TemplateBinding Background}" BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="0,0,0,1" Padding="{TemplateBinding Padding}">
                             <ContentPresenter/>
                         </Border>
                     </ControlTemplate>
@@ -80,7 +82,7 @@
             </Setter>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#2C2C2E"/>
+                    <Setter Property="Background" Value="{DynamicResource AppSurfaceAltBrush}"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -95,14 +97,14 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="Border" Property="BorderBrush" Value="#007AFF"/>
-                                <Setter Property="Foreground" Value="#007AFF"/>
+                                <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource AppAccentBrush}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}"/>
                             </Trigger>
                             <Trigger Property="IsSelected" Value="False">
-                                <Setter Property="Foreground" Value="#8E8E93"/>
+                                <Setter Property="Foreground" Value="{DynamicResource AppMutedTextBrush}"/>
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                                <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -112,21 +114,21 @@
 
         <!-- TextBox style -->
         <Style TargetType="TextBox">
-            <Setter Property="Background" Value="#1C1C1E"/>
-            <Setter Property="Foreground" Value="#FFFFFF"/>
-            <Setter Property="BorderBrush" Value="#2C2C2E"/>
-            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="#FFFFFF"/>
+            <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="2"/>
             <Setter Property="Padding" Value="10,6"/>
-            <Setter Property="CaretBrush" Value="#007AFF"/>
+            <Setter Property="CaretBrush" Value="{DynamicResource AppAccentBrush}"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TextBox">
-                        <Border x:Name="border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="6">
+                        <Border x:Name="border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}">
                             <ScrollViewer x:Name="PART_ContentHost" Focusable="false"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsKeyboardFocused" Value="true">
-                                <Setter TargetName="border" Property="BorderBrush" Value="#007AFF"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource AppAccentBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -135,8 +137,8 @@
         </Style>
 
         <Style x:Key="MiniChip" TargetType="Button">
-            <Setter Property="Background" Value="#2C2C2E"/>
-            <Setter Property="Foreground" Value="#007AFF"/>
+            <Setter Property="Background" Value="{DynamicResource AppSurfaceAltBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource AppAccentBrush}"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="FontSize" Value="10"/>
             <Setter Property="Height" Value="18"/>
@@ -146,7 +148,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" CornerRadius="4" Padding="{TemplateBinding Padding}">
+                        <Border Background="{TemplateBinding Background}" BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="1" Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                     </ControlTemplate>
@@ -154,30 +156,30 @@
             </Setter>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#3A3A3C"/>
+                    <Setter Property="Background" Value="#F6E4B4"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
 
         <!-- Modern button style -->
         <Style x:Key="PrimaryButton" TargetType="Button">
-            <Setter Property="Background" Value="#007AFF"/>
-            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="Background" Value="{DynamicResource AppAccentFillBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="Padding" Value="10,4"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{DynamicResource AppAccentBrush}" BorderThickness="2" Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#0066D6"/>
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource AppAccentSoftBrush}"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#004C99"/>
+                                <Setter TargetName="border" Property="Background" Value="#9CD8DB"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -187,22 +189,60 @@
 
         <!-- Secondary button style -->
         <Style x:Key="SecondaryButton" TargetType="Button">
-            <Setter Property="Background" Value="#2C2C2E"/>
-            <Setter Property="Foreground" Value="#F2F2F7"/>
-            <Setter Property="Padding" Value="16,8"/>
-            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}"/>
+            <Setter Property="Padding" Value="10,4"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="2"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#3A3A3C"/>
+                                <Setter TargetName="border" Property="Background" Value="#F8EBC8"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#9F8958"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#1C1C1E"/>
+                                <Setter TargetName="border" Property="Background" Value="#EEDBAA"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ChoiceCardItem" TargetType="ListBoxItem">
+            <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="Padding" Value="14,11"/>
+            <Setter Property="Margin" Value="0,0,10,0"/>
+            <Setter Property="MinWidth" Value="190"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="Card"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Card" Property="Background" Value="{DynamicResource AppAccentSoftBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Card" Property="Background" Value="{DynamicResource AppAccentSoftBrush}"/>
+                                <Setter TargetName="Card" Property="BorderBrush" Value="{DynamicResource AppAccentBrush}"/>
+                                <Setter TargetName="Card" Property="BorderThickness" Value="3"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -225,10 +265,10 @@
             </Grid.ColumnDefinitions>
             
             <StackPanel Grid.Column="0" Orientation="Horizontal">
-                <TextBlock Text="KeyMapper v1.1.0" FontSize="24" FontWeight="Bold" Foreground="#FFFFFF" VerticalAlignment="Center"/>
+                <TextBlock Text="Desktop Pet Control Center" FontFamily="Segoe UI" FontSize="22" FontWeight="SemiBold" Foreground="#26384F" VerticalAlignment="Center"/>
                 <!-- Status Badge -->
-                <Border x:Name="StatusBadge" Margin="15,0,0,0" Padding="8,4" CornerRadius="12" Background="#1C2E24" VerticalAlignment="Center">
-                    <TextBlock x:Name="StatusText" Text="ACTIVE" Foreground="#30D158" FontSize="11" FontWeight="Bold"/>
+                <Border x:Name="StatusBadge" Margin="14,0,0,0" Padding="10,5" BorderBrush="#53A77D" BorderThickness="1" Background="#E1F4EA" VerticalAlignment="Center">
+                    <TextBlock x:Name="StatusText" Text="KeyMapper is on" Foreground="#246548" FontFamily="Segoe UI" FontSize="11" FontWeight="SemiBold"/>
                 </Border>
             </StackPanel>
 
@@ -250,7 +290,7 @@
                     </Grid.RowDefinitions>
                     
                     <!-- Replacements List -->
-                    <ListView x:Name="ReplacementsList" Grid.Row="0" Background="#1C1C1E" BorderThickness="0" Margin="0,0,0,15" Padding="5" MouseDoubleClick="ReplacementsList_MouseDoubleClick" ItemContainerStyle="{StaticResource ModernListViewItem}">
+                    <ListView x:Name="ReplacementsList" Grid.Row="0" Background="#FFFDF7" BorderBrush="#D6C59C" BorderThickness="2" Margin="0,0,0,15" Padding="5" MouseDoubleClick="ReplacementsList_MouseDoubleClick" ItemContainerStyle="{StaticResource ModernListViewItem}">
                         <ListView.ItemTemplate>
                             <DataTemplate>
                                 <Grid>
@@ -262,8 +302,8 @@
                                         <ColumnDefinition Width="100"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="{Binding Shortcut}" Foreground="#007AFF" FontWeight="Bold" FontSize="14" VerticalAlignment="Center"/>
-                                    <TextBlock Grid.Column="1" Text="{Binding Target}" Foreground="#E5E5EA" FontSize="14" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Grid.Column="0" Text="{Binding Shortcut}" Foreground="#217783" FontWeight="Bold" FontSize="14" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding Target}" Foreground="#26384F" FontSize="14" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
                                     <TextBlock Grid.Column="2" Text="{Binding AllowedProcessDisplay}" Foreground="#8E8E93" FontSize="13" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
                                     <TextBlock Grid.Column="3" Text="{Binding ExcludedProcessDisplay}" Foreground="#8E8E93" FontSize="13" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
                                     <CheckBox Grid.Column="4" Content="Auto-Expand" IsChecked="{Binding IsAutoExpand, Mode=TwoWay}" Foreground="#8E8E93" VerticalAlignment="Center" FontSize="12" Click="SettingChanged"/>
@@ -276,29 +316,32 @@
                     </ListView>
 
                     <!-- Add Form -->
-                    <Border Grid.Row="1" Background="#1C1C1E" CornerRadius="8" Padding="15">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="15"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-                            
-                            <!-- Row 0: Abbr & Target -->
-                            <Grid Grid.Row="0">
+                    <Border Grid.Row="1" Background="#FFFDF7" BorderBrush="#D6C59C" BorderThickness="2" Padding="16,13">
+                        <StackPanel>
+                            <TextBlock Text="Create a text expansion" Foreground="#26384F" FontSize="15" FontWeight="SemiBold"/>
+                            <TextBlock Text="Choose a short trigger and the text that should replace it."
+                                       Foreground="#6B7B8F" FontSize="11" Margin="0,2,0,11"/>
+
+                            <Grid>
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="150"/>
+                                    <ColumnDefinition Width="160"/>
+                                    <ColumnDefinition Width="22"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <StackPanel Grid.Column="0" Margin="0,0,15,0">
-                                    <TextBlock Text="Abbreviation (e.g. mail)" Foreground="#8E8E93" FontSize="11" Margin="0,0,0,5"/>
-                                    <TextBox x:Name="AddRepShortcutTxt" Height="32"/>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="When I type" Foreground="#52657B" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                                    <TextBox x:Name="AddRepShortcutTxt" Height="34" ToolTip="Example: mail"/>
                                 </StackPanel>
-                                <StackPanel Grid.Column="1">
-                                    <TextBlock Text="Expanded Text (e.g. mymail@mail.ir)" Foreground="#8E8E93" FontSize="11" Margin="0,0,0,5"/>
-                                    <TextBox x:Name="AddRepTargetTxt" Height="50" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" TextWrapping="Wrap" AcceptsTab="True"/>
-                                    <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                                        <TextBlock Text="Insert: " Foreground="#8E8E93" FontSize="10" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                <TextBlock Grid.Column="1" Text="→" Foreground="#318D99" FontSize="17"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,17,0,0"/>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="Replace it with" Foreground="#52657B" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                                    <TextBox x:Name="AddRepTargetTxt" Height="46" AcceptsReturn="True"
+                                             VerticalScrollBarVisibility="Auto" TextWrapping="Wrap" AcceptsTab="True"
+                                             ToolTip="Example: mymail@mail.ir"/>
+                                    <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                                        <TextBlock Text="Add dynamic value:" Foreground="#6B7B8F" FontSize="10"
+                                                   VerticalAlignment="Center" Margin="0,0,7,0"/>
                                         <Button Content="{}{date}" Style="{StaticResource MiniChip}" Click="InsertRepMacro_Click" Tag="{}{date}"/>
                                         <Button Content="{}{time}" Style="{StaticResource MiniChip}" Click="InsertRepMacro_Click" Tag="{}{time}"/>
                                         <Button Content="{}{clip}" Style="{StaticResource MiniChip}" Click="InsertRepMacro_Click" Tag="{}{clip}"/>
@@ -308,39 +351,61 @@
                                 </StackPanel>
                             </Grid>
 
-                            <!-- Row 2: Allowed App & Excluded App -->
-                            <Grid Grid.Row="2">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="20"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="20"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
+                            <Expander Margin="0,10,0,0" Foreground="#30445E">
+                                <Expander.Header>
+                                    <TextBlock Text="Limit this expansion to specific apps (optional)"
+                                               FontWeight="SemiBold" FontSize="11"/>
+                                </Expander.Header>
+                                <Border Background="#FFF8E7" BorderBrush="#E1D3AE" BorderThickness="1"
+                                        Padding="12,10" Margin="0,7,0,0">
+                                    <StackPanel>
+                                        <TextBlock Text="Leave both fields blank to use the expansion everywhere."
+                                                   Foreground="#6B7B8F" FontSize="10" Margin="0,0,0,9"/>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="18"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0">
+                                                <TextBlock Text="Only use in this app" Foreground="#52657B" FontSize="11" Margin="0,0,0,5"/>
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBox x:Name="AddRepAllowedProcessTxt" Height="32"/>
+                                                    <Button Grid.Column="1" Content="Running app" Style="{StaticResource SecondaryButton}"
+                                                            Click="PickAllowedRepApp_Click" Height="32" Margin="8,0,0,0"/>
+                                                    <Button Grid.Column="2" Content="Choose file" Style="{StaticResource SecondaryButton}"
+                                                            Click="BrowseAllowedRepApp_Click" Height="32" Margin="8,0,0,0"/>
+                                                </Grid>
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="2">
+                                                <TextBlock Text="Never use in this app" Foreground="#52657B" FontSize="11" Margin="0,0,0,5"/>
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBox x:Name="AddRepExcludedProcessTxt" Height="32"/>
+                                                    <Button Grid.Column="1" Content="Running app" Style="{StaticResource SecondaryButton}"
+                                                            Click="PickExcludedRepApp_Click" Height="32" Margin="8,0,0,0"/>
+                                                    <Button Grid.Column="2" Content="Choose file" Style="{StaticResource SecondaryButton}"
+                                                            Click="BrowseExcludedRepApp_Click" Height="32" Margin="8,0,0,0"/>
+                                                </Grid>
+                                            </StackPanel>
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+                            </Expander>
 
-                                <!-- Allowed App -->
-                                <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                                    <TextBlock Text="Allowed App (optional)" Foreground="#8E8E93" FontSize="11" Margin="0,0,0,5"/>
-                                    <TextBox x:Name="AddRepAllowedProcessTxt" Height="32"/>
-                                </StackPanel>
-                                <Button Grid.Column="1" Content="Pick..." Style="{StaticResource SecondaryButton}" Click="PickAllowedRepApp_Click" VerticalAlignment="Bottom" Height="32" Margin="0,0,10,0"/>
-                                <Button Grid.Column="2" Content="Browse..." Style="{StaticResource SecondaryButton}" Click="BrowseAllowedRepApp_Click" VerticalAlignment="Bottom" Height="32"/>
-
-                                <!-- Excluded App -->
-                                <StackPanel Grid.Column="4" Margin="0,0,10,0">
-                                    <TextBlock Text="Excluded App (optional)" Foreground="#8E8E93" FontSize="11" Margin="0,0,0,5"/>
-                                    <TextBox x:Name="AddRepExcludedProcessTxt" Height="32"/>
-                                </StackPanel>
-                                <Button Grid.Column="5" Content="Pick..." Style="{StaticResource SecondaryButton}" Click="PickExcludedRepApp_Click" VerticalAlignment="Bottom" Height="32" Margin="0,0,10,0"/>
-                                <Button Grid.Column="6" Content="Browse..." Style="{StaticResource SecondaryButton}" Click="BrowseExcludedRepApp_Click" VerticalAlignment="Bottom" Height="32"/>
-
-                                <Button Grid.Column="8" Content="Add Expansion" Style="{StaticResource PrimaryButton}" Click="AddReplacement_Click" VerticalAlignment="Bottom" Height="32" Padding="20,0"/>
-                            </Grid>
-                        </Grid>
+                            <Button Content="Save expansion" Style="{StaticResource PrimaryButton}"
+                                    Click="AddReplacement_Click" HorizontalAlignment="Right"
+                                    Height="34" Padding="20,0" Margin="0,11,0,0"/>
+                        </StackPanel>
                     </Border>
                 </Grid>
             </TabItem>
@@ -354,7 +419,7 @@
                     </Grid.RowDefinitions>
 
                     <!-- Actions List -->
-                    <ListView x:Name="ActionsList" Grid.Row="0" Background="#1C1C1E" BorderThickness="0" Margin="0,0,0,15" Padding="5" MouseDoubleClick="ActionsList_MouseDoubleClick" ItemContainerStyle="{StaticResource ModernListViewItem}">
+                    <ListView x:Name="ActionsList" Grid.Row="0" Background="#FFFDF7" BorderBrush="#D6C59C" BorderThickness="2" Margin="0,0,0,15" Padding="5" MouseDoubleClick="ActionsList_MouseDoubleClick" ItemContainerStyle="{StaticResource ModernListViewItem}">
                         <ListView.ItemTemplate>
                             <DataTemplate>
                                 <Grid>
@@ -365,8 +430,8 @@
                                         <ColumnDefinition Width="90"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="{Binding Shortcut}" Foreground="#30D158" FontWeight="Bold" FontSize="14" VerticalAlignment="Center"/>
-                                    <TextBlock Grid.Column="1" Text="{Binding Target}" Foreground="#E5E5EA" FontSize="14" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Grid.Column="0" Text="{Binding Shortcut}" Foreground="#2F8A63" FontWeight="Bold" FontSize="14" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding Target}" Foreground="#26384F" FontSize="14" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
                                     <TextBlock Grid.Column="2" Text="{Binding AllowedProcessDisplay}" Foreground="#8E8E93" FontSize="13" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
                                     <TextBlock Grid.Column="3" Text="{Binding ExcludedProcessDisplay}" Foreground="#8E8E93" FontSize="13" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
                                     <Button Grid.Column="4" Click="DeleteAction_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="5">
@@ -378,7 +443,7 @@
                     </ListView>
 
                     <!-- Add Form -->
-                    <Border Grid.Row="1" Background="#1C1C1E" CornerRadius="8" Padding="15">
+                    <Border Grid.Row="1" Background="#FFF0C9" BorderBrush="#D6C59C" BorderThickness="2" Padding="15">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
@@ -463,28 +528,286 @@
                     <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
                         <StackPanel Margin="0,0,0,20">
                             <!-- Toggle Options -->
-                            <Border Background="#1C1C1E" CornerRadius="8" Padding="15" Margin="0,0,0,15">
+                            <Border Background="{DynamicResource AppSurfaceBrush}" BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="2" Padding="15" Margin="0,0,0,15">
                                 <StackPanel>
-                                    <TextBlock Text="Behavior Settings" FontSize="16" FontWeight="Bold" Margin="0,0,0,15"/>
+                                    <TextBlock Text="Everyday Settings" FontFamily="Segoe UI" Foreground="{DynamicResource AppTextBrush}" FontSize="16" FontWeight="Bold" Margin="0,0,0,15"/>
                                     
-                                    <CheckBox x:Name="SuppressKeysChk" Content="Suppress keyboard input while recording" Foreground="#F2F2F7" Margin="0,0,0,12" Checked="SettingChanged" Unchecked="SettingChanged"/>
+                                    <CheckBox x:Name="SuppressKeysChk" Content="Keep shortcut keystrokes out of the active app" Foreground="#26384F" Margin="0,0,0,12" Checked="SettingChanged" Unchecked="SettingChanged"/>
                                     <TextBlock Text="If checked, the keys you type after Left Ctrl will not be sent to the active application until you cancel or submit." Foreground="#8E8E93" FontSize="11" Margin="20,0,0,15"/>
 
-                                    <CheckBox x:Name="ShowOverlayChk" Content="Show screen overlay HUD while recording" Foreground="#F2F2F7" Margin="0,0,0,12" Checked="SettingChanged" Unchecked="SettingChanged"/>
+                                    <CheckBox x:Name="ShowOverlayChk" Content="Show what I am typing for a shortcut" Foreground="#26384F" Margin="0,0,0,12" Checked="SettingChanged" Unchecked="SettingChanged"/>
                                     <TextBlock Text="Displays a small overlay at the bottom right showing current typed trigger." Foreground="#8E8E93" FontSize="11" Margin="20,0,0,15"/>
 
-                                    <CheckBox x:Name="RunAtStartupChk" Content="Start KeyMapper automatically with Windows" Foreground="#F2F2F7" Checked="SettingChanged" Unchecked="SettingChanged" Margin="0,0,0,12"/>
-                                    <TextBlock Text="Adds application shortcut to the current user's registry run path." Foreground="#8E8E93" FontSize="11" Margin="20,0,0,15"/>
+                                    <CheckBox x:Name="RunAtStartupChk" Content="Launch the desktop pet when I sign in to Windows" Foreground="#26384F" Checked="SettingChanged" Unchecked="SettingChanged" Margin="0,0,0,12"/>
+                                    <TextBlock Text="Off by default. Uncheck this at any time to opt out; it affects only your Windows account." Foreground="#8E8E93" FontSize="11" Margin="20,0,0,15"/>
 
-                                    <CheckBox x:Name="PlaySoundsChk" Content="Enable audio feedback (ticks and chimes)" Foreground="#F2F2F7" Checked="SettingChanged" Unchecked="SettingChanged"/>
+                                    <CheckBox x:Name="PlaySoundsChk" Content="Play sounds when an action succeeds" Foreground="#26384F" Checked="SettingChanged" Unchecked="SettingChanged"/>
                                     <TextBlock Text="Plays mechanical click sounds when recording, and a chime when a shortcut triggers." Foreground="#8E8E93" FontSize="11" Margin="20,0,0,5"/>
                                 </StackPanel>
                             </Border>
 
-                            <!-- Backup & Restore -->
-                            <Border Background="#1C1C1E" CornerRadius="8" Padding="15" Margin="0,0,0,15">
+                            <Border Background="{DynamicResource AppSurfaceBrush}" BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="2" Padding="18" Margin="0,0,0,15">
                                 <StackPanel>
-                                    <TextBlock Text="Backup &amp; Restore Mappings" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+                                    <TextBlock Text="Appearance"
+                                               Foreground="{DynamicResource AppTextBrush}"
+                                               FontSize="16"
+                                               FontWeight="Bold"
+                                               Margin="0,0,0,5"/>
+                                    <TextBlock Text="Choose a light color theme. The app never forces a dark theme."
+                                               Foreground="{DynamicResource AppMutedTextBrush}"
+                                               FontSize="11"
+                                               Margin="0,0,0,13"/>
+                                    <ListBox x:Name="ThemePicker"
+                                             ItemsSource="{x:Static local:ThemeManager.Themes}"
+                                             SelectedValuePath="Id"
+                                             SelectionChanged="ThemePicker_SelectionChanged"
+                                             Background="Transparent"
+                                             BorderThickness="0"
+                                             ItemContainerStyle="{StaticResource ChoiceCardItem}"
+                                             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                        <ListBox.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel/>
+                                            </ItemsPanelTemplate>
+                                        </ListBox.ItemsPanel>
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding DisplayName}"
+                                                               FontWeight="SemiBold"
+                                                               FontSize="13"/>
+                                                    <TextBlock Text="{Binding Description}"
+                                                               Foreground="{DynamicResource AppMutedTextBrush}"
+                                                               FontSize="11"
+                                                               Margin="0,4,0,0"/>
+                                                    <TextBlock Text="{Binding PreviewColors}"
+                                                               Foreground="{DynamicResource AppAccentBrush}"
+                                                               FontSize="10"
+                                                               Margin="0,7,0,0"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Background="{DynamicResource AppSurfaceBrush}" BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="2" Padding="18" Margin="0,0,0,15">
+                                <StackPanel>
+                                    <TextBlock Text="Conversation AI · Optional"
+                                               FontFamily="Segoe UI"
+                                               Foreground="{DynamicResource AppTextBrush}"
+                                               FontSize="16"
+                                               FontWeight="Bold"
+                                               Margin="0,0,0,6"/>
+                                    <TextBlock Text="Choose a free model that runs privately on this computer. Nothing is downloaded until you press Download, and the pet still works without AI."
+                                               Foreground="{DynamicResource AppMutedTextBrush}"
+                                               FontSize="12"
+                                               TextWrapping="Wrap"
+                                               Margin="0,0,0,14"/>
+
+                                    <Border Background="{DynamicResource AppSurfaceAltBrush}" BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="1" Padding="12" Margin="0,0,0,14">
+                                        <StackPanel>
+                                            <TextBlock x:Name="LocalAiRecommendationTxt"
+                                                       Foreground="{DynamicResource AppTextBrush}"
+                                                       FontWeight="SemiBold"
+                                                       TextWrapping="Wrap"/>
+                                            <TextBlock x:Name="LocalAiHardwareTxt"
+                                                       Foreground="{DynamicResource AppMutedTextBrush}"
+                                                       FontSize="11"
+                                                       Margin="0,4,0,0"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <TextBlock Text="Choose a local model"
+                                               Foreground="{DynamicResource AppTextBrush}"
+                                               FontWeight="SemiBold"
+                                               Margin="0,0,0,8"/>
+                                    <ListBox x:Name="LocalAiModelPicker"
+                                             ItemsSource="{x:Static local:LocalAiService.Models}"
+                                             SelectedValuePath="Id"
+                                             SelectionChanged="LocalAiModelPicker_SelectionChanged"
+                                             Background="Transparent"
+                                             BorderThickness="0"
+                                             ItemContainerStyle="{StaticResource ChoiceCardItem}"
+                                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                             Margin="0,0,0,8">
+                                        <ListBox.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel/>
+                                            </ItemsPanelTemplate>
+                                        </ListBox.ItemsPanel>
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Width="205">
+                                                    <TextBlock Text="{Binding DisplayName}"
+                                                               FontWeight="SemiBold"
+                                                               FontSize="13"/>
+                                                    <TextBlock Text="{Binding DownloadSize}"
+                                                               Foreground="{DynamicResource AppAccentBrush}"
+                                                               FontSize="10"
+                                                               Margin="0,5,0,0"/>
+                                                    <TextBlock Text="{Binding Description}"
+                                                               Foreground="{DynamicResource AppMutedTextBrush}"
+                                                               FontSize="11"
+                                                               TextWrapping="Wrap"
+                                                               Margin="0,6,0,0"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                    <TextBlock x:Name="LocalAiDescriptionTxt"
+                                               Foreground="{DynamicResource AppMutedTextBrush}"
+                                               FontSize="11"
+                                               TextWrapping="Wrap"
+                                               Margin="0,0,0,12"/>
+
+                                    <Grid Margin="0,0,0,12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="12"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="18"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Button x:Name="LocalAiDownloadBtn"
+                                                Grid.Column="0"
+                                                Content="Download model"
+                                                Style="{StaticResource PrimaryButton}"
+                                                Click="LocalAiDownload_Click"
+                                                Height="34"
+                                                Padding="16,0"/>
+                                        <Button x:Name="LocalAiRemoveBtn"
+                                                Grid.Column="2"
+                                                Content="Remove"
+                                                Style="{StaticResource SecondaryButton}"
+                                                Click="LocalAiRemove_Click"
+                                                Height="34"
+                                                Padding="14,0"/>
+                                        <StackPanel Grid.Column="4" VerticalAlignment="Center">
+                                            <ProgressBar x:Name="LocalAiProgress"
+                                                         Height="8"
+                                                         Minimum="0"
+                                                         Maximum="100"
+                                                         Visibility="Collapsed"/>
+                                            <TextBlock x:Name="LocalAiStatusTxt"
+                                                       Foreground="#597089"
+                                                       FontSize="11"
+                                                       TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <CheckBox x:Name="LocalAiEnabledChk"
+                                              Content="Use the downloaded model for conversations"
+                                              Foreground="{DynamicResource AppTextBrush}"
+                                              Checked="SettingChanged"
+                                              Unchecked="SettingChanged"
+                                              Margin="0,0,0,10"/>
+                                    <CheckBox x:Name="AiAmbientCommentsChk"
+                                              Content="Let local AI add fresh comments about apps and music"
+                                              Foreground="{DynamicResource AppTextBrush}"
+                                              Checked="SettingChanged"
+                                              Unchecked="SettingChanged"
+                                              Margin="0,0,0,5"/>
+                                    <TextBlock Text="Ambient AI stays local: only the current window title or music title/artist is used. Hosted services are never called for background comments."
+                                               Foreground="#8E8E93"
+                                               FontSize="11"
+                                               TextWrapping="Wrap"
+                                               Margin="20,0,0,14"/>
+
+                                    <Border Background="{DynamicResource AppSurfaceAltBrush}"
+                                            BorderBrush="{DynamicResource AppBorderBrush}"
+                                            BorderThickness="2"
+                                            Padding="14"
+                                            Margin="0,0,0,14">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="PixelYar Cloud"
+                                                               Foreground="{DynamicResource AppTextBrush}"
+                                                               FontWeight="SemiBold"
+                                                               FontSize="13"/>
+                                                    <Border Background="{DynamicResource AppAccentSoftBrush}"
+                                                            BorderBrush="{DynamicResource AppAccentBrush}"
+                                                            BorderThickness="1"
+                                                            Padding="7,2"
+                                                            Margin="9,0,0,0">
+                                                        <TextBlock Text="PREVIEW"
+                                                                   Foreground="{DynamicResource AppAccentBrush}"
+                                                                   FontWeight="Bold"
+                                                                   FontSize="9"/>
+                                                    </Border>
+                                                </StackPanel>
+                                                <TextBlock Text="No model download. The hosted chat is usable in the browser while its in-app API connection is still being finished."
+                                                           Foreground="{DynamicResource AppMutedTextBrush}"
+                                                           FontSize="11"
+                                                           TextWrapping="Wrap"
+                                                           Margin="0,7,14,0"/>
+                                            </StackPanel>
+                                            <Button Grid.Column="1"
+                                                    Content="Open cloud chat"
+                                                    Style="{StaticResource SecondaryButton}"
+                                                    Click="OpenCloudAi_Click"
+                                                    Padding="14,0"
+                                                    Height="34"
+                                                    VerticalAlignment="Center"/>
+                                        </Grid>
+                                    </Border>
+
+                                    <Expander Header="Advanced · Use my own compatible AI service"
+                                              Foreground="{DynamicResource AppTextBrush}">
+                                        <StackPanel Margin="0,12,0,0">
+                                            <TextBlock Text="Computer actions still use the safe local command system. These fields only affect natural conversation."
+                                                       Foreground="#6B7B8F"
+                                                       FontSize="11"
+                                                       TextWrapping="Wrap"
+                                                       Margin="0,0,0,10"/>
+                                            <TextBlock Text="Chat-completions endpoint"
+                                                       Foreground="#26384F"
+                                                       FontWeight="SemiBold"
+                                                       Margin="0,0,0,5"/>
+                                            <TextBox x:Name="AiEndpointTxt"
+                                                     Height="32"
+                                                     TextChanged="SettingChanged"
+                                                     ToolTip="A hosted /v1/chat/completions URL or a compatible local server."
+                                                     Margin="0,0,0,10"/>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="16"/>
+                                                    <ColumnDefinition Width="220"/>
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel>
+                                                    <TextBlock Text="API key (optional for local servers)"
+                                                               Foreground="#26384F"
+                                                               FontWeight="SemiBold"
+                                                               Margin="0,0,0,5"/>
+                                                    <PasswordBox x:Name="AiApiKeyTxt"
+                                                                 Height="32"
+                                                                 PasswordChanged="SettingChanged"/>
+                                                </StackPanel>
+                                                <StackPanel Grid.Column="2">
+                                                    <TextBlock Text="Model name"
+                                                               Foreground="#26384F"
+                                                               FontWeight="SemiBold"
+                                                               Margin="0,0,0,5"/>
+                                                    <TextBox x:Name="AiModelTxt"
+                                                             Height="32"
+                                                             TextChanged="SettingChanged"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </StackPanel>
+                                    </Expander>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Backup & Restore -->
+                            <Border Background="#FFF0C9" BorderBrush="#D6C59C" BorderThickness="2" Padding="15" Margin="0,0,0,15">
+                                <StackPanel>
+                                    <TextBlock Text="Advanced: Backup and Restore" FontFamily="Segoe UI" Foreground="#26384F" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
                                     <TextBlock Text="Export your expansions and actions to a file, or import from an existing backup." Foreground="#8E8E93" FontSize="11" Margin="0,0,0,12"/>
                                     <StackPanel Orientation="Horizontal">
                                         <Button Content="Export Mappings..." Style="{StaticResource SecondaryButton}" Click="ExportMappings_Click" Margin="0,0,12,0" Padding="15,0" Height="32"/>
@@ -494,16 +817,16 @@
                             </Border>
 
                             <!-- Exclusions -->
-                            <Border Background="#1C1C1E" CornerRadius="8" Padding="15">
+                            <Border Background="#FFFDF7" BorderBrush="#D6C59C" BorderThickness="2" Padding="15">
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="*"/>
                                         <RowDefinition Height="Auto"/>
                                     </Grid.RowDefinitions>
-                                    <TextBlock Grid.Row="0" Text="Exclusions (Disable in these apps)" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+                                    <TextBlock Grid.Row="0" Text="Advanced: Apps Where Features Stay Off" FontFamily="Segoe UI" Foreground="#26384F" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
                                     
-                                    <ListView x:Name="ExclusionsList" Grid.Row="1" Height="120" Background="#2C2C2E" BorderThickness="0" Margin="0,0,0,10" Padding="5">
+                                    <ListView x:Name="ExclusionsList" Grid.Row="1" Height="120" Background="#FFFFFF" BorderBrush="#D6C59C" BorderThickness="2" Margin="0,0,0,10" Padding="5">
                                         <ListView.ItemTemplate>
                                             <DataTemplate>
                                                 <Grid>
@@ -511,7 +834,7 @@
                                                         <ColumnDefinition Width="*"/>
                                                         <ColumnDefinition Width="Auto"/>
                                                     </Grid.ColumnDefinitions>
-                                                    <TextBlock Grid.Column="0" Text="{Binding}" Foreground="#E5E5EA" FontSize="13" VerticalAlignment="Center"/>
+                                                    <TextBlock Grid.Column="0" Text="{Binding}" Foreground="#26384F" FontSize="13" VerticalAlignment="Center"/>
                                                     <Button Grid.Column="1" Click="DeleteExclusion_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="5">
                                                         <Path Data="M9,3V4H4V6H5V19A2,2 0 0,0 7,21H17A2,2 0 0,0 19,19V6H20V4H15V3H9M7,6H17V19H7V6M9,8V17H11V8H9M13,8V17H15V8H13Z" Fill="#FF453A" Width="12" Height="12" Stretch="Uniform"/>
                                                     </Button>
@@ -543,17 +866,17 @@
                     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,0,10,0">
                         <StackPanel Margin="0,0,0,20">
                             <!-- Welcome Header -->
-                            <Border Background="#1C1C1E" CornerRadius="8" Padding="20" Margin="0,0,0,15">
+                            <Border Background="#FFFDF7" BorderBrush="#D6C59C" BorderThickness="2" Padding="20" Margin="0,0,0,15">
                                 <StackPanel>
-                                    <TextBlock Text="Welcome to KeyMapper" FontSize="20" FontWeight="Bold" Foreground="#007AFF" Margin="0,0,0,8"/>
-                                    <TextBlock Text="KeyMapper is a lightweight, background-running productivity assistant that transforms short text abbreviations into long-form templates, runs application actions, and executes dynamic text functions on the fly." Foreground="#E5E5EA" FontSize="13" TextWrapping="Wrap" LineHeight="18"/>
+                                    <TextBlock Text="Welcome to Desktop Pet" FontFamily="Segoe UI" FontSize="20" FontWeight="Bold" Foreground="#217783" Margin="0,0,0,8"/>
+                                    <TextBlock Text="Your companion can expand text, run actions, de-gibberish text typed under the wrong keyboard layout, translate selected text, read the screen with OCR, and offer context-aware help." Foreground="#26384F" FontSize="13" TextWrapping="Wrap" LineHeight="18"/>
                                 </StackPanel>
                             </Border>
 
                             <!-- Modes of Operation -->
-                            <Border Background="#1C1C1E" CornerRadius="8" Padding="20" Margin="0,0,0,15">
+                            <Border Background="#FFF0C9" BorderBrush="#D6C59C" BorderThickness="2" Padding="20" Margin="0,0,0,15">
                                 <StackPanel>
-                                    <TextBlock Text="1. Modes of Operation" FontSize="16" FontWeight="Bold" Foreground="#FFFFFF" Margin="0,0,0,12"/>
+                                    <TextBlock Text="1. How Shortcuts Work" FontFamily="Segoe UI" FontSize="16" FontWeight="Bold" Foreground="#26384F" Margin="0,0,0,12"/>
                                     
                                     <TextBlock Text="• Auto-Expand Mode (Trigger Character)" FontWeight="SemiBold" Foreground="#30D158" FontSize="13" Margin="0,0,0,4"/>
                                     <TextBlock Text="Type your abbreviation followed by a semicolon (e.g. typing 'mail;' where 'mail' is mapped). The abbreviation is instantly erased and replaced by your expanded text. Perfect for fast, uninterrupted typing." Foreground="#8E8E93" FontSize="12" TextWrapping="Wrap" Margin="10,0,0,12" LineHeight="16"/>
@@ -564,10 +887,10 @@
                             </Border>
 
                             <!-- Text Expansions & Macros -->
-                            <Border Background="#1C1C1E" CornerRadius="8" Padding="20" Margin="0,0,0,15">
+                            <Border Background="#FFFDF7" BorderBrush="#D6C59C" BorderThickness="2" Padding="20" Margin="0,0,0,15">
                                 <StackPanel>
-                                    <TextBlock Text="2. Dynamic Macros (Placeholders)" FontSize="16" FontWeight="Bold" Foreground="#FFFFFF" Margin="0,0,0,12"/>
-                                    <TextBlock Text="You can insert dynamic placeholders into your expansions. Click the chips below the target input fields to insert:" Foreground="#E5E5EA" FontSize="13" TextWrapping="Wrap" Margin="0,0,0,10"/>
+                                    <TextBlock Text="2. Dynamic Text Pieces" FontFamily="Segoe UI" FontSize="16" FontWeight="Bold" Foreground="#26384F" Margin="0,0,0,12"/>
+                                    <TextBlock Text="These placeholders automatically insert useful information into an expansion:" Foreground="#26384F" FontSize="13" TextWrapping="Wrap" Margin="0,0,0,10"/>
                                     
                                     <TextBlock Text="• {date}: Inserts the current local date (e.g. 2026-07-20)." Foreground="#8E8E93" FontSize="12" Margin="10,0,0,4"/>
                                     <TextBlock Text="• {time}: Inserts the current local time (e.g. 23:51)." Foreground="#8E8E93" FontSize="12" Margin="10,0,0,4"/>
@@ -578,10 +901,10 @@
                             </Border>
 
                             <!-- Text Functions -->
-                            <Border Background="#1C1C1E" CornerRadius="8" Padding="20" Margin="0,0,0,15">
+                            <Border Background="#FFF0C9" BorderBrush="#D6C59C" BorderThickness="2" Padding="20" Margin="0,0,0,15">
                                 <StackPanel>
-                                    <TextBlock Text="3. Text Functions (fn:)" FontSize="16" FontWeight="Bold" Foreground="#FFFFFF" Margin="0,0,0,12"/>
-                                    <TextBlock Text="Prefix your expansion target with 'fn:' to turn it into a dynamic text function. You can run these on text selection or immediately in Auto-Expand mode (e.g. type '12*4fc;' where 'fc' maps to 'fn:calc'):" Foreground="#E5E5EA" FontSize="13" TextWrapping="Wrap" Margin="0,0,0,10" LineHeight="18"/>
+                                    <TextBlock Text="3. Advanced Text Functions" FontFamily="Segoe UI" FontSize="16" FontWeight="Bold" Foreground="#26384F" Margin="0,0,0,12"/>
+                                    <TextBlock Text="Advanced users can prefix a target with 'fn:' to transform selected or typed text:" Foreground="#26384F" FontSize="13" TextWrapping="Wrap" Margin="0,0,0,10" LineHeight="18"/>
                                     
                                     <Grid Margin="10,0,0,0">
                                         <Grid.ColumnDefinitions>
@@ -627,10 +950,10 @@
                             </Border>
 
                             <!-- Scope Control -->
-                            <Border Background="#1C1C1E" CornerRadius="8" Padding="20" Margin="0,0,0,15">
+                            <Border Background="#FFFDF7" BorderBrush="#D6C59C" BorderThickness="2" Padding="20" Margin="0,0,0,15">
                                 <StackPanel>
-                                    <TextBlock Text="4. Scope Control (Allowed / Excluded Apps)" FontSize="16" FontWeight="Bold" Foreground="#FFFFFF" Margin="0,0,0,12"/>
-                                    <TextBlock Text="You can define which programs are allowed or excluded for each specific shortcut, or exclude apps globally in the Settings tab." Foreground="#E5E5EA" FontSize="13" TextWrapping="Wrap" Margin="0,0,0,10" LineHeight="18"/>
+                                    <TextBlock Text="4. Choose Where Features Work" FontFamily="Segoe UI" FontSize="16" FontWeight="Bold" Foreground="#26384F" Margin="0,0,0,12"/>
+                                    <TextBlock Text="You can allow a shortcut only in one app, block it in one app, or disable all features in selected apps." Foreground="#26384F" FontSize="13" TextWrapping="Wrap" Margin="0,0,0,10" LineHeight="18"/>
                                     
                                     <TextBlock Text="• Allowed App: The shortcut will ONLY trigger when this program is active." Foreground="#8E8E93" FontSize="12" Margin="10,0,0,4"/>
                                     <TextBlock Text="• Excluded App: The shortcut will trigger everywhere EXCEPT in this program." Foreground="#8E8E93" FontSize="12" Margin="10,0,0,4"/>
@@ -640,11 +963,12 @@
                             </Border>
 
                             <!-- Shortcuts and Controls -->
-                            <Border Background="#1C1C1E" CornerRadius="8" Padding="20">
+                            <Border Background="#FFF0C9" BorderBrush="#D6C59C" BorderThickness="2" Padding="20">
                                 <StackPanel>
-                                    <TextBlock Text="5. Global Shortcuts &amp; Operations" FontSize="16" FontWeight="Bold" Foreground="#FFFFFF" Margin="0,0,0,12"/>
+                                    <TextBlock Text="5. Keyboard Controls" FontFamily="Segoe UI" FontSize="16" FontWeight="Bold" Foreground="#26384F" Margin="0,0,0,12"/>
                                     
                                     <TextBlock Text="• Ctrl + Alt + P: Global Pause/Resume shortcut. Swallows keys so it doesn't type." Foreground="#8E8E93" FontSize="12" Margin="10,0,0,4"/>
+                                    <TextBlock Text="• Ctrl + Alt + K: De-gibberish selected text. Example: Persian-layout اثممخ becomes hello." Foreground="#8E8E93" FontSize="12" Margin="10,0,0,4" TextWrapping="Wrap"/>
                                     <TextBlock Text="• Scroll Lock: Alternative Pause/Resume toggle key." Foreground="#8E8E93" FontSize="12" Margin="10,0,0,4"/>
                                     <TextBlock Text="• Minimize Window: Closing the main window automatically minimizes it to the system tray. Use the tray icon menu to open the dashboard or fully Exit." Foreground="#8E8E93" FontSize="12" Margin="10,0,0,0" TextWrapping="Wrap" LineHeight="16"/>
                                 </StackPanel>

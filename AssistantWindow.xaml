@@ -1,0 +1,203 @@
+<Window x:Class="KeyMapper.AssistantWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Talk to your desktop companion"
+        Width="640"
+        Height="570"
+        MinWidth="520"
+        MinHeight="460"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Topmost="True"
+        ShowInTaskbar="False"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True"
+        WindowStartupLocation="CenterOwner">
+    <Window.Resources>
+        <Style x:Key="AssistantButton" TargetType="Button">
+            <Setter Property="Background" Value="#FFFDF7"/>
+            <Setter Property="Foreground" Value="#30445E"/>
+            <Setter Property="BorderBrush" Value="#B8A77F"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="Padding" Value="14,9"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ButtonBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#F8EBC8"/>
+                                <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="#9F8958"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#EEDBAA"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.55"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Border Margin="16"
+            Background="#FFF8E7"
+            BorderBrush="#40536C"
+            BorderThickness="3">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="18" ShadowDepth="6" Color="#6B5A3A" Opacity="0.35"/>
+        </Border.Effect>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="7"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="3*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="2*"/>
+                </Grid.ColumnDefinitions>
+                <Border Background="#55CAD3"/>
+                <Border Grid.Column="1" Background="#F3BE55"/>
+                <Border Grid.Column="2" Background="#E985AE"/>
+            </Grid>
+
+            <Grid Grid.Row="1"
+                  Margin="24,20,20,18"
+                  Background="Transparent"
+                  MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel>
+                    <TextBlock x:Name="WindowTitleText"
+                               Text="Talk to your companion"
+                               Foreground="#26384F"
+                               FontFamily="Segoe UI"
+                               FontSize="20"
+                               FontWeight="SemiBold"/>
+                    <TextBlock Text="Persian or English · apps, websites, and Steam games"
+                               Foreground="#6B7B8F"
+                               FontFamily="Segoe UI"
+                               FontSize="11"
+                               Margin="0,4,0,0"/>
+                </StackPanel>
+                <Button Grid.Column="1"
+                        Width="44"
+                        Height="44"
+                        Padding="0"
+                        Style="{StaticResource AssistantButton}"
+                        BorderBrush="#D795AA"
+                        ToolTip="Close conversation"
+                        Click="CloseButton_Click">
+                    <Grid Width="24" Height="24">
+                        <Path Width="12" Height="12"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center"
+                              Stretch="Fill"
+                              Data="M18 18L12 12M12 12L6 6M12 12L18 6M12 12L6 18"
+                              Stroke="#B53D64"
+                              StrokeThickness="2.2"
+                              StrokeStartLineCap="Round"
+                              StrokeEndLineCap="Round"/>
+                    </Grid>
+                </Button>
+            </Grid>
+
+            <Border Grid.Row="2"
+                    Margin="24,0,24,0"
+                    Background="#FFFCF4"
+                    BorderBrush="#D8C9A2"
+                    BorderThickness="2">
+                <ScrollViewer x:Name="ConversationScrollViewer"
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled"
+                              Padding="16">
+                    <StackPanel x:Name="ConversationPanel"/>
+                </ScrollViewer>
+            </Border>
+
+            <Border Grid.Row="3"
+                    Margin="24,18,24,24"
+                    Background="#FFF0C9"
+                    BorderBrush="#D8C9A2"
+                    BorderThickness="2"
+                    Padding="14">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <WrapPanel x:Name="QuickPromptPanel" Margin="0,0,0,10">
+                        <Button Content="How are you?"
+                                Tag="How are you?"
+                                Margin="0,0,8,0"
+                                Padding="10,6"
+                                Style="{StaticResource AssistantButton}"
+                                Click="QuickPrompt_Click"/>
+                        <Button Content="حالت چطوره؟"
+                                Tag="حالت چطوره؟"
+                                Margin="0,0,8,0"
+                                Padding="10,6"
+                                Style="{StaticResource AssistantButton}"
+                                Click="QuickPrompt_Click"/>
+                        <Button Content="Open Steam"
+                                Tag="Open Steam"
+                                Padding="10,6"
+                                Style="{StaticResource AssistantButton}"
+                                Click="QuickPrompt_Click"/>
+                    </WrapPanel>
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="PromptTextBox"
+                                 MinHeight="48"
+                                 MaxHeight="100"
+                                 Background="#FFFFFF"
+                                 Foreground="#26384F"
+                                 CaretBrush="#318D99"
+                                 BorderBrush="#B8A77F"
+                                 BorderThickness="2"
+                                 Padding="12,10"
+                                 FontFamily="Segoe UI"
+                                 FontSize="13"
+                                 AcceptsReturn="True"
+                                 TextWrapping="Wrap"
+                                 VerticalScrollBarVisibility="Auto"
+                                 PreviewKeyDown="PromptTextBox_PreviewKeyDown"
+                                 TextChanged="PromptTextBox_TextChanged"/>
+                        <Button x:Name="SendButton"
+                                Grid.Column="1"
+                                Content="Send"
+                                MinWidth="78"
+                                Margin="10,0,0,0"
+                                Background="#CDEFF0"
+                                BorderBrush="#318D99"
+                                Style="{StaticResource AssistantButton}"
+                                Click="SendButton_Click"/>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

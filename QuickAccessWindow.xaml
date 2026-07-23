@@ -10,28 +10,29 @@
         Topmost="True" 
         ShowInTaskbar="False"
         WindowStartupLocation="Manual"
+        FontFamily="Segoe UI"
         Deactivated="Window_Deactivated"
         PreviewKeyDown="Window_PreviewKeyDown">
 
     <Window.Resources>
         <!-- Search TextBox style -->
         <Style x:Key="SearchTextBoxStyle" TargetType="TextBox">
-            <Setter Property="Background" Value="#FF1C1C1E"/>
-            <Setter Property="Foreground" Value="#FFFFFF"/>
-            <Setter Property="BorderBrush" Value="#FF48484A"/>
-            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="#FFFFFF"/>
+            <Setter Property="Foreground" Value="#26384F"/>
+            <Setter Property="BorderBrush" Value="#C8B991"/>
+            <Setter Property="BorderThickness" Value="2"/>
             <Setter Property="Padding" Value="10,6"/>
-            <Setter Property="CaretBrush" Value="#FF0A84FF"/>
+            <Setter Property="CaretBrush" Value="#318D99"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TextBox">
-                        <Border x:Name="border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="6">
+                        <Border x:Name="border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}">
                             <Grid>
                                 <ScrollViewer x:Name="PART_ContentHost" Focusable="false" VerticalAlignment="Center"/>
                                 <!-- Placeholder -->
-                                <TextBlock Text="Search expansions &amp; actions..." Foreground="#8E8E93" FontSize="13" IsHitTestVisible="False" Margin="10,0" VerticalAlignment="Center">
+                                <TextBlock Text="Search expansions &amp; actions..." Foreground="#6B7B8F" FontSize="13" IsHitTestVisible="False" Margin="10,0" VerticalAlignment="Center">
                                     <TextBlock.Style>
                                         <Style TargetType="TextBlock">
                                             <Setter Property="Visibility" Value="Collapsed"/>
@@ -47,7 +48,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsKeyboardFocused" Value="true">
-                                <Setter TargetName="border" Property="BorderBrush" Value="#FF0A84FF"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#318D99"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -71,15 +72,15 @@
                         <Setter Property="Template">
                             <Setter.Value>
                                 <ControlTemplate TargetType="ListBoxItem">
-                                    <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                    <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="#E1D3AE" BorderThickness="0,0,0,1" Padding="{TemplateBinding Padding}">
                                         <ContentPresenter/>
                                     </Border>
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsSelected" Value="True">
-                                            <Setter TargetName="border" Property="Background" Value="#FF0A84FF"/>
+                                            <Setter TargetName="border" Property="Background" Value="#CDEFF0"/>
                                         </Trigger>
                                         <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter TargetName="border" Property="Background" Value="#FF2C2C2E"/>
+                                            <Setter TargetName="border" Property="Background" Value="#FFF0C9"/>
                                         </Trigger>
                                     </ControlTemplate.Triggers>
                                 </ControlTemplate>
@@ -91,9 +92,9 @@
         </Style>
     </Window.Resources>
 
-    <Border Background="#E6121214" CornerRadius="12" BorderBrush="#FF0A84FF" BorderThickness="2">
+    <Border Background="#FFF8E7" BorderBrush="#40536C" BorderThickness="3">
         <Border.Effect>
-            <DropShadowEffect BlurRadius="25" ShadowDepth="0" Color="#000000" Opacity="0.6"/>
+            <DropShadowEffect BlurRadius="18" ShadowDepth="5" Color="#6B5A3A" Opacity="0.35"/>
         </Border.Effect>
         <Grid Margin="12">
             <Grid.RowDefinitions>
@@ -106,10 +107,10 @@
             <TextBox x:Name="SearchBox" Grid.Row="0" Style="{StaticResource SearchTextBoxStyle}" Height="30" Margin="0,0,0,10" TextChanged="SearchBox_TextChanged"/>
 
             <!-- Selection Preview Header -->
-            <Border x:Name="SelectionHeader" Grid.Row="1" Background="#FF1C1C1E" CornerRadius="6" Padding="8,6" Margin="0,0,0,10" Visibility="Collapsed">
+            <Border x:Name="SelectionHeader" Grid.Row="1" Background="#FFF0C9" BorderBrush="#D6C59C" BorderThickness="1" Padding="8,6" Margin="0,0,0,10" Visibility="Collapsed">
                 <StackPanel>
-                    <TextBlock Text="Selected Text Preview" Foreground="#FF8E8E93" FontSize="10" FontWeight="Bold"/>
-                    <TextBlock x:Name="SelectionTextPreview" Foreground="#FFFFFFFF" FontSize="11" TextTrimming="CharacterEllipsis" Margin="0,2,0,0"/>
+                    <TextBlock Text="Selected text preview" Foreground="#6B7B8F" FontSize="10" FontWeight="SemiBold"/>
+                    <TextBlock x:Name="SelectionTextPreview" Foreground="#26384F" FontSize="11" TextTrimming="CharacterEllipsis" Margin="0,2,0,0"/>
                 </StackPanel>
             </Border>
 
@@ -130,11 +131,11 @@
                             </Border>
                             
                             <StackPanel Grid.Column="1" Margin="6,0,0,0" VerticalAlignment="Center">
-                                <TextBlock Text="{Binding Title}" Foreground="#FFFFFF" FontSize="13" FontWeight="SemiBold"/>
-                                <TextBlock Text="{Binding SubTitle}" Foreground="#FFD1D1D6" FontSize="11" TextTrimming="CharacterEllipsis"/>
+                                <TextBlock Text="{Binding Title}" Foreground="#26384F" FontSize="13" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding SubTitle}" Foreground="#6B7B8F" FontSize="11" TextTrimming="CharacterEllipsis"/>
                             </StackPanel>
-                            <Border Grid.Column="2" Background="#FF1C1C1E" CornerRadius="4" Padding="4,2" VerticalAlignment="Center" Margin="5,0,0,0">
-                                <TextBlock Text="{Binding TypeDisplay}" Foreground="#FF0A84FF" FontSize="9" FontWeight="Bold"/>
+                            <Border Grid.Column="2" Background="#CDEFF0" BorderBrush="#8FC6CB" BorderThickness="1" Padding="4,2" VerticalAlignment="Center" Margin="5,0,0,0">
+                                <TextBlock Text="{Binding TypeDisplay}" Foreground="#217783" FontSize="9" FontWeight="SemiBold"/>
                             </Border>
                         </Grid>
                     </DataTemplate>
