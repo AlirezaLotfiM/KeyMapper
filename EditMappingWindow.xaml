@@ -1,0 +1,200 @@
+<Window x:Class="KeyMapper.EditMappingWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Edit Mapping" 
+        Height="480" 
+        Width="400"
+        WindowStyle="None" 
+        AllowsTransparency="True" 
+        Background="Transparent"
+        Topmost="True" 
+        ShowInTaskbar="False"
+        WindowStartupLocation="CenterOwner"
+        MouseLeftButtonDown="Window_MouseLeftButtonDown">
+
+    <Window.Resources>
+        <!-- Reusable styles -->
+        <Style TargetType="TextBox">
+            <Setter Property="Background" Value="#1C1C1E"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#2C2C2E"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="CaretBrush" Value="#007AFF"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="6">
+                            <ScrollViewer x:Name="PART_ContentHost" Focusable="false"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsKeyboardFocused" Value="true">
+                                <Setter TargetName="border" Property="BorderBrush" Value="#007AFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="MiniChip" TargetType="Button">
+            <Setter Property="Background" Value="#2C2C2E"/>
+            <Setter Property="Foreground" Value="#007AFF"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="Height" Value="18"/>
+            <Setter Property="Padding" Value="6,0"/>
+            <Setter Property="Margin" Value="0,0,6,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="4" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#3A3A3C"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="PrimaryButton" TargetType="Button">
+            <Setter Property="Background" Value="#007AFF"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#0066D6"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#004C99"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SecondaryButton" TargetType="Button">
+            <Setter Property="Background" Value="#2C2C2E"/>
+            <Setter Property="Foreground" Value="#F2F2F7"/>
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#3A3A3C"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#48484A"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Border Background="#F21E1E24" CornerRadius="12" BorderBrush="#33FFFFFF" BorderThickness="1.5">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="25" ShadowDepth="0" Color="#000000" Opacity="0.6"/>
+        </Border.Effect>
+        <Grid Margin="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <TextBlock Grid.Row="0" Text="Edit Mapping" Foreground="#F2F2F7" FontSize="18" FontWeight="Bold" Margin="0,0,0,15"/>
+
+            <!-- Form Body -->
+            <StackPanel Grid.Row="1" VerticalAlignment="Center">
+                <!-- Abbreviation -->
+                <TextBlock Text="Abbreviation" Foreground="#8E8E93" FontSize="11" Margin="0,0,0,5"/>
+                <TextBox x:Name="ShortcutTxt" Height="32" Margin="0,0,0,15"/>
+
+                <!-- Target -->
+                <TextBlock x:Name="TargetLabel" Text="Target" Foreground="#8E8E93" FontSize="11" Margin="0,0,0,5"/>
+                <Grid Margin="0,0,0,5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox x:Name="TargetTxt" Grid.Column="0" Height="50" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" TextWrapping="Wrap" AcceptsTab="True"/>
+                    <StackPanel x:Name="TargetActionButtons" Grid.Column="1" Orientation="Vertical" Margin="10,0,0,0" VerticalAlignment="Center">
+                        <Button Content="Pick..." Style="{StaticResource SecondaryButton}" Click="PickTargetApp_Click" Height="24" Width="70" Padding="0" Margin="0,0,0,6"/>
+                        <Button Content="Browse..." Style="{StaticResource SecondaryButton}" Click="BrowseTargetApp_Click" Height="24" Width="70" Padding="0"/>
+                    </StackPanel>
+                </Grid>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+                    <TextBlock Text="Insert: " Foreground="#8E8E93" FontSize="10" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                    <Button Content="{}{date}" Style="{StaticResource MiniChip}" Click="InsertEditMacro_Click" Tag="{}{date}"/>
+                    <Button Content="{}{time}" Style="{StaticResource MiniChip}" Click="InsertEditMacro_Click" Tag="{}{time}"/>
+                    <Button Content="{}{clip}" Style="{StaticResource MiniChip}" Click="InsertEditMacro_Click" Tag="{}{clip}"/>
+                    <Button Content="{}{sel}" Style="{StaticResource MiniChip}" Click="InsertEditMacro_Click" Tag="{}{sel}"/>
+                    <Button Content="{}{cursor}" Style="{StaticResource MiniChip}" Click="InsertEditMacro_Click" Tag="{}{cursor}"/>
+                </StackPanel>
+
+                <!-- Allowed Process -->
+                <TextBlock Text="Allowed App (optional)" Foreground="#8E8E93" FontSize="11" Margin="0,0,0,5"/>
+                <Grid Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox x:Name="AllowedProcessTxt" Height="32"/>
+                    <Button Grid.Column="1" Content="Pick..." Style="{StaticResource SecondaryButton}" Click="PickAllowedApp_Click" Height="32" Margin="10,0,0,0" Padding="12,0"/>
+                    <Button Grid.Column="2" Content="Browse..." Style="{StaticResource SecondaryButton}" Click="BrowseAllowedApp_Click" Height="32" Margin="10,0,0,0" Padding="12,0"/>
+                </Grid>
+
+                <!-- Excluded Process -->
+                <TextBlock Text="Excluded App (optional)" Foreground="#8E8E93" FontSize="11" Margin="0,0,0,5"/>
+                <Grid Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox x:Name="ExcludedProcessTxt" Height="32"/>
+                    <Button Grid.Column="1" Content="Pick..." Style="{StaticResource SecondaryButton}" Click="PickExcludedApp_Click" Height="32" Margin="10,0,0,0" Padding="12,0"/>
+                    <Button Grid.Column="2" Content="Browse..." Style="{StaticResource SecondaryButton}" Click="BrowseExcludedApp_Click" Height="32" Margin="10,0,0,0" Padding="12,0"/>
+                </Grid>
+
+                <!-- Auto Expand -->
+                <CheckBox x:Name="AutoExpandChk" Content="Auto-Expand" Foreground="#F2F2F7" FontSize="12" Margin="0,2,0,0" VerticalAlignment="Center"/>
+            </StackPanel>
+
+            <!-- Buttons -->
+            <Grid Grid.Row="2" Margin="0,15,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="1" Content="Cancel" Style="{StaticResource SecondaryButton}" Click="Cancel_Click" Margin="0,0,10,0" Width="80"/>
+                <Button Grid.Column="2" Content="Save" Style="{StaticResource PrimaryButton}" Click="Save_Click" Width="80"/>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

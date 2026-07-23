@@ -1,0 +1,145 @@
+<Window x:Class="KeyMapper.QuickAccessWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="KeyMapper Quick Access Menu" 
+        Height="400" 
+        Width="320"
+        WindowStyle="None" 
+        AllowsTransparency="True" 
+        Background="Transparent"
+        Topmost="True" 
+        ShowInTaskbar="False"
+        WindowStartupLocation="Manual"
+        Deactivated="Window_Deactivated"
+        PreviewKeyDown="Window_PreviewKeyDown">
+
+    <Window.Resources>
+        <!-- Search TextBox style -->
+        <Style x:Key="SearchTextBoxStyle" TargetType="TextBox">
+            <Setter Property="Background" Value="#FF1C1C1E"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#FF48484A"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="CaretBrush" Value="#FF0A84FF"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="6">
+                            <Grid>
+                                <ScrollViewer x:Name="PART_ContentHost" Focusable="false" VerticalAlignment="Center"/>
+                                <!-- Placeholder -->
+                                <TextBlock Text="Search expansions &amp; actions..." Foreground="#8E8E93" FontSize="13" IsHitTestVisible="False" Margin="10,0" VerticalAlignment="Center">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}" Value="">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsKeyboardFocused" Value="true">
+                                <Setter TargetName="border" Property="BorderBrush" Value="#FF0A84FF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Custom ListBox Style -->
+        <Style x:Key="PaletteListBoxStyle" TargetType="ListBox">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
+            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
+            <Setter Property="ItemContainerStyle">
+                <Setter.Value>
+                    <Style TargetType="ListBoxItem">
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Setter Property="Padding" Value="8,6"/>
+                        <Setter Property="Margin" Value="0,2"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ListBoxItem">
+                                    <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter TargetName="border" Property="Background" Value="#FF0A84FF"/>
+                                        </Trigger>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="border" Property="Background" Value="#FF2C2C2E"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Border Background="#E6121214" CornerRadius="12" BorderBrush="#FF0A84FF" BorderThickness="2">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="25" ShadowDepth="0" Color="#000000" Opacity="0.6"/>
+        </Border.Effect>
+        <Grid Margin="12">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Search Area -->
+            <TextBox x:Name="SearchBox" Grid.Row="0" Style="{StaticResource SearchTextBoxStyle}" Height="30" Margin="0,0,0,10" TextChanged="SearchBox_TextChanged"/>
+
+            <!-- Selection Preview Header -->
+            <Border x:Name="SelectionHeader" Grid.Row="1" Background="#FF1C1C1E" CornerRadius="6" Padding="8,6" Margin="0,0,0,10" Visibility="Collapsed">
+                <StackPanel>
+                    <TextBlock Text="Selected Text Preview" Foreground="#FF8E8E93" FontSize="10" FontWeight="Bold"/>
+                    <TextBlock x:Name="SelectionTextPreview" Foreground="#FFFFFFFF" FontSize="11" TextTrimming="CharacterEllipsis" Margin="0,2,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Menu Items List -->
+            <ListBox x:Name="MenuListBox" Grid.Row="2" Style="{StaticResource PaletteListBoxStyle}" MouseDoubleClick="MenuListBox_MouseDoubleClick">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Margin="0,2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <!-- Icon badge container -->
+                            <Border Grid.Column="0" Width="26" Height="26" CornerRadius="13" Background="{Binding IconBgColor}" Margin="0,0,8,0" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <TextBlock Text="{Binding Icon}" FontFamily="Segoe UI Emoji" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{Binding IconFgColor}"/>
+                            </Border>
+                            
+                            <StackPanel Grid.Column="1" Margin="6,0,0,0" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding Title}" Foreground="#FFFFFF" FontSize="13" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding SubTitle}" Foreground="#FFD1D1D6" FontSize="11" TextTrimming="CharacterEllipsis"/>
+                            </StackPanel>
+                            <Border Grid.Column="2" Background="#FF1C1C1E" CornerRadius="4" Padding="4,2" VerticalAlignment="Center" Margin="5,0,0,0">
+                                <TextBlock Text="{Binding TypeDisplay}" Foreground="#FF0A84FF" FontSize="9" FontWeight="Bold"/>
+                            </Border>
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Grid>
+    </Border>
+</Window>
