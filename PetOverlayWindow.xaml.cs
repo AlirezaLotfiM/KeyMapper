@@ -598,6 +598,11 @@ namespace KeyMapper
 
         private void MenuAsk_Click(object sender, RoutedEventArgs e)
         {
+            OpenConversation();
+        }
+
+        public void OpenConversation(Window? owner = null)
+        {
             ShowSpeechBubble(
                 _personality.SpeakerName,
                 _personality.ActionLine(PetAction.Command, _random));
@@ -615,7 +620,7 @@ namespace KeyMapper
                 _personality.CharacterName,
                 _activeContextKey)
             {
-                Owner = this
+                Owner = owner ?? this
             };
             assistant.Show();
         }

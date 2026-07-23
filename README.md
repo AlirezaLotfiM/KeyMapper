@@ -25,6 +25,11 @@ Examples:
 - Explain when an application or game is missing.
 - Offer the official website, store page, or trusted installation route.
 - Continue a personality-aware conversation without pretending an action succeeded.
+- Meet each character in a portrait-led conversation space with live mood, thinking feedback, contextual prompt suggestions, and screen-awareness status.
+- Keep up to 12 recent exchanges as private local memory for each character, with a two-step **New chat** control that can forget them instantly.
+- Experience a genuinely different conversational rhythm, humor, emotional response, Persian register, and point of view from Pip, Professor Owlet, and Dude.
+
+Open conversation from either the pet’s **Talk with Character** menu item or the **Talk with character** button in the control-center header.
 
 Software installation and other consequential actions require explicit confirmation.
 

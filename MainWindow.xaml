@@ -291,6 +291,21 @@
             </StackPanel>
 
             <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <Button Style="{StaticResource SecondaryButton}"
+                        Margin="0,0,10,0"
+                        Click="OpenConversation_Click"
+                        ToolTip="Talk naturally with the selected character">
+                    <StackPanel Orientation="Horizontal">
+                        <Rectangle Width="16" Height="16"
+                                   Fill="{DynamicResource AppAccentBrush}"
+                                   Margin="0,0,8,0">
+                            <Rectangle.OpacityMask>
+                                <ImageBrush ImageSource="Resources/Icons/chat.png"/>
+                            </Rectangle.OpacityMask>
+                        </Rectangle>
+                        <TextBlock Text="Talk with character" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
                 <!-- Disable / Enable Button -->
                 <Button x:Name="ToggleHookBtn" Content="Disable KeyMapper" Style="{StaticResource SecondaryButton}" Click="ToggleHook_Click" Margin="0,0,10,0"/>
             </StackPanel>

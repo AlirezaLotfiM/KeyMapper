@@ -163,7 +163,7 @@
                     <Setter Property="SnapsToDevicePixels" Value="True"/>
                 </Style>
             </ContextMenu.Resources>
-            <MenuItem Header="Talk to Character" Click="MenuAsk_Click">
+            <MenuItem Header="Talk with Character" Click="MenuAsk_Click">
                 <MenuItem.Icon>
                     <Rectangle Style="{StaticResource PetMenuIcon}">
                         <Rectangle.OpacityMask><ImageBrush ImageSource="Resources/Icons/chat.png"/></Rectangle.OpacityMask>

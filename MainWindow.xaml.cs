@@ -297,6 +297,9 @@ namespace KeyMapper
             }));
         }
 
+        private void OpenConversation_Click(object sender, RoutedEventArgs e) =>
+            _petOverlayWindow.OpenConversation(this);
+
         public void OpenCommandPalette()
         {
             Hook_OnDoubleTapLCtrl();
