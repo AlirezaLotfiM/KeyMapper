@@ -119,6 +119,20 @@ The selected theme is saved locally and applies immediately to the control cente
 
 The interface uses a shared icon set for tabs, settings sections, model actions, and the pet context menu. The Windows application and tray icon use the purple desktop-pet mark rather than the old gray placeholder. The character also uses a compact two-layer contact shadow positioned directly beneath its feet. Form connectors are centered precisely between their related input fields.
 
+### Support the project
+
+KeyMapper Desktop Pet is free to use. The **Support** tab includes optional donation details and one-click address copying for anyone who wants to help fund continued development. Donations do not unlock features, change support priority, or send information from the app.
+
+| Asset | Network | Address |
+| --- | --- | --- |
+| Bitcoin (BTC) | BEP20 / BNB Smart Chain | `0x45ECCb5357132A077eE3a717fA7D5D2F30C1E2A9` |
+| Tether (USDT) | BEP20 / BNB Smart Chain | `0x45ECCb5357132A077eE3a717fA7D5D2F30C1E2A9` |
+| TRON (TRX) | TRC20 / TRON | `TKMzF6JU5CjSoVq88oRaXnd6Ye7RUAscL1` |
+| Toncoin (TON) | TON | `UQCOxNWxA84XKNlNMDJ-GREgcaG_wMtm-e6r6fcVpIKvXTai` |
+| Ethereum (ETH) | ERC20 / Ethereum | `0x45ECCb5357132A077eE3a717fA7D5D2F30C1E2A9` |
+
+Always select the exact network shown above and verify the asset, network, and address in your wallet before sending. Transfers made on the wrong network may be permanently lost.
+
 ## Build
 
 ### Requirements

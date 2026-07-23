@@ -37,6 +37,40 @@ namespace KeyMapper
         public ObservableCollection<ShortcutMapping> Actions { get; } = new ObservableCollection<ShortcutMapping>();
         public ObservableCollection<string> Exclusions { get; } = new ObservableCollection<string>();
 
+        private static readonly DonationWalletOption[] DonationWallets =
+        [
+            new(
+                "Bitcoin (BTC)",
+                "BEP20 · BNB Smart Chain",
+                "Send BTC using the BEP20 network only.",
+                "0x45ECCb5357132A077eE3a717fA7D5D2F30C1E2A9",
+                "Resources/Icons/donate-bitcoin.png"),
+            new(
+                "Tether (USDT)",
+                "BEP20 · BNB Smart Chain",
+                "Send USDT using the BEP20 network only.",
+                "0x45ECCb5357132A077eE3a717fA7D5D2F30C1E2A9",
+                "Resources/Icons/donate-tether.png"),
+            new(
+                "TRON (TRX)",
+                "TRC20 · Tron Network",
+                "Send TRX or supported TRC20 assets only.",
+                "TKMzF6JU5CjSoVq88oRaXnd6Ye7RUAscL1",
+                "Resources/Icons/donate-tron.png"),
+            new(
+                "Toncoin (TON)",
+                "TON · The Open Network",
+                "Send TON using The Open Network only.",
+                "UQCOxNWxA84XKNlNMDJ-GREgcaG_wMtm-e6r6fcVpIKvXTai",
+                "Resources/Icons/donate-ton.png"),
+            new(
+                "Ethereum (ETH)",
+                "ERC20 · Ethereum Mainnet",
+                "Send ETH or supported ERC20 assets only.",
+                "0x45ECCb5357132A077eE3a717fA7D5D2F30C1E2A9",
+                "Resources/Icons/donate-ethereum.png")
+        ];
+
         private bool _isShuttingDown = false;
         private bool _isInitializing = true;
 
@@ -52,6 +86,7 @@ namespace KeyMapper
             ReplacementsList.ItemsSource = Replacements;
             ActionsList.ItemsSource = Actions;
             ExclusionsList.ItemsSource = Exclusions;
+            DonationWalletsList.ItemsSource = DonationWallets;
 
             // Setup subcomponents
             _hook = new KeyboardHook
@@ -299,6 +334,35 @@ namespace KeyMapper
 
         private void OpenConversation_Click(object sender, RoutedEventArgs e) =>
             _petOverlayWindow.OpenConversation(this);
+
+        private void CopyDonationAddress_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button { Tag: DonationWalletOption wallet })
+                return;
+
+            try
+            {
+                System.Windows.Clipboard.SetText(wallet.Address);
+                DonationCopyStatus.Text =
+                    $"{wallet.AssetName} address copied · {wallet.Network}. Verify both before sending.";
+                DonationCopyStatus.Foreground =
+                    (System.Windows.Media.Brush)FindResource("AppAccentBrush");
+            }
+            catch
+            {
+                DonationCopyStatus.Text =
+                    "Windows could not access the clipboard. Select the address manually and copy it.";
+                DonationCopyStatus.Foreground =
+                    (System.Windows.Media.Brush)FindResource("AppMutedTextBrush");
+            }
+        }
+
+        private void SupportTab_PreviewMouseLeftButtonDown(
+            object sender,
+            MouseButtonEventArgs e)
+        {
+            SupportTab.IsSelected = true;
+        }
 
         public void OpenCommandPalette()
         {
@@ -2031,4 +2095,11 @@ namespace KeyMapper
         public string AllowedProcessDisplay => string.IsNullOrEmpty(AllowedProcess) ? "Global" : AllowedProcess;
         public string ExcludedProcessDisplay => string.IsNullOrEmpty(ExcludedProcess) ? "None" : ExcludedProcess;
     }
+
+    public sealed record DonationWalletOption(
+        string AssetName,
+        string Network,
+        string NetworkDescription,
+        string Address,
+        string IconPath);
 }

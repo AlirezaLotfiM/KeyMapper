@@ -1296,6 +1296,231 @@
                     </ScrollViewer>
                 </Grid>
             </TabItem>
+
+            <!-- Tab 5: Support -->
+            <TabItem x:Name="SupportTab"
+                     PreviewMouseLeftButtonDown="SupportTab_PreviewMouseLeftButtonDown">
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <Rectangle Width="14" Height="14"
+                                   Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=TabItem}}"
+                                   Margin="0,0,7,0">
+                            <Rectangle.OpacityMask>
+                                <ImageBrush ImageSource="Resources/Icons/donate.png"/>
+                            </Rectangle.OpacityMask>
+                        </Rectangle>
+                        <TextBlock Text="Support"/>
+                    </StackPanel>
+                </TabItem.Header>
+
+                <Grid Margin="0,15,0,0">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled"
+                                  Padding="0,0,10,0">
+                        <StackPanel Margin="0,0,0,22">
+                        <Border Background="{DynamicResource AppSurfaceBrush}"
+                                BorderBrush="{DynamicResource AppBorderBrush}"
+                                BorderThickness="2"
+                                Padding="22"
+                                Margin="0,0,0,16">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="68"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Width="54"
+                                        Height="54"
+                                        HorizontalAlignment="Left"
+                                        VerticalAlignment="Top"
+                                        Background="{DynamicResource AppAccentSoftBrush}"
+                                        BorderBrush="{DynamicResource AppAccentBrush}"
+                                        BorderThickness="2">
+                                    <Image Source="Resources/Icons/donate.png"
+                                           Width="34"
+                                           Height="34"
+                                           Stretch="Uniform"/>
+                                </Border>
+                                <StackPanel Grid.Column="1">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Support this free project"
+                                                   Foreground="{DynamicResource AppTextBrush}"
+                                                   FontFamily="Segoe UI"
+                                                   FontSize="20"
+                                                   FontWeight="SemiBold"
+                                                   VerticalAlignment="Center"/>
+                                        <Border Margin="12,0,0,0"
+                                                Padding="8,3"
+                                                Background="{DynamicResource AppAccentSoftBrush}"
+                                                BorderBrush="{DynamicResource AppAccentBrush}"
+                                                BorderThickness="1"
+                                                VerticalAlignment="Center">
+                                            <TextBlock Text="OPTIONAL"
+                                                       Foreground="{DynamicResource AppTextBrush}"
+                                                       FontFamily="Segoe UI"
+                                                       FontSize="9"
+                                                       FontWeight="SemiBold"/>
+                                        </Border>
+                                    </StackPanel>
+                                    <TextBlock Text="KeyMapper Desktop Pet is free to use. If it saves you time or makes your desktop a little more enjoyable, you can support its continued development with a crypto donation."
+                                               Foreground="{DynamicResource AppMutedTextBrush}"
+                                               FontFamily="Segoe UI"
+                                               FontSize="12"
+                                               TextWrapping="Wrap"
+                                               LineHeight="18"
+                                               Margin="0,7,0,0"/>
+                                    <TextBlock Text="Donating never unlocks features, changes support priority, or sends any information from the app."
+                                               Foreground="{DynamicResource AppAccentBrush}"
+                                               FontFamily="Segoe UI"
+                                               FontSize="11"
+                                               FontWeight="SemiBold"
+                                               TextWrapping="Wrap"
+                                               Margin="0,7,0,0"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <Border Background="{DynamicResource AppAccentSoftBrush}"
+                                BorderBrush="{DynamicResource AppAccentBrush}"
+                                BorderThickness="2"
+                                Padding="15,12"
+                                Margin="0,0,0,16">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Path Width="20"
+                                      Height="20"
+                                      Margin="0,0,11,0"
+                                      VerticalAlignment="Top"
+                                      Fill="{DynamicResource AppAccentBrush}"
+                                      Stretch="Uniform"
+                                      Data="M13,14H11V10H13M13,18H11V16H13M1,21H23L12,2L1,21Z"/>
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="Choose the exact network shown on the card"
+                                               Foreground="{DynamicResource AppTextBrush}"
+                                               FontFamily="Segoe UI"
+                                               FontSize="12"
+                                               FontWeight="SemiBold"/>
+                                    <TextBlock Text="BEP20, ERC20, TRC20, and TON are not interchangeable. Sending an asset on the wrong network may permanently lose it. Always verify the asset, network, and address in your wallet before confirming."
+                                               Foreground="{DynamicResource AppMutedTextBrush}"
+                                               FontFamily="Segoe UI"
+                                               FontSize="11"
+                                               TextWrapping="Wrap"
+                                               LineHeight="17"
+                                               Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <ItemsControl x:Name="DonationWalletsList">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <UniformGrid Columns="2"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="{DynamicResource AppSurfaceBrush}"
+                                            BorderBrush="{DynamicResource AppBorderBrush}"
+                                            BorderThickness="2"
+                                            Padding="16"
+                                            Margin="0,0,12,12">
+                                        <StackPanel>
+                                            <Grid Margin="0,0,0,13">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="50"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Border Width="40"
+                                                        Height="40"
+                                                        HorizontalAlignment="Left"
+                                                        Background="{DynamicResource AppSurfaceAltBrush}"
+                                                        BorderBrush="{DynamicResource AppBorderBrush}"
+                                                        BorderThickness="1">
+                                                    <Image Source="{Binding IconPath}"
+                                                           Width="28"
+                                                           Height="28"
+                                                           Stretch="Uniform"/>
+                                                </Border>
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding AssetName}"
+                                                               Foreground="{DynamicResource AppTextBrush}"
+                                                               FontFamily="Segoe UI"
+                                                               FontSize="14"
+                                                               FontWeight="SemiBold"/>
+                                                    <Border HorizontalAlignment="Left"
+                                                            Margin="0,4,0,0"
+                                                            Padding="7,2"
+                                                            Background="{DynamicResource AppAccentSoftBrush}"
+                                                            BorderBrush="{DynamicResource AppAccentBrush}"
+                                                            BorderThickness="1">
+                                                        <TextBlock Text="{Binding Network}"
+                                                                   Foreground="{DynamicResource AppTextBrush}"
+                                                                   FontFamily="Segoe UI"
+                                                                   FontSize="9"
+                                                                   FontWeight="SemiBold"/>
+                                                    </Border>
+                                                </StackPanel>
+                                            </Grid>
+
+                                            <TextBlock Text="{Binding NetworkDescription}"
+                                                       Foreground="{DynamicResource AppMutedTextBrush}"
+                                                       FontFamily="Segoe UI"
+                                                       FontSize="10"
+                                                       Margin="0,0,0,7"/>
+                                            <TextBox Text="{Binding Address}"
+                                                     IsReadOnly="True"
+                                                     Height="36"
+                                                     Padding="9,7"
+                                                     Background="{DynamicResource AppInputBrush}"
+                                                     Foreground="{DynamicResource AppTextBrush}"
+                                                     BorderBrush="{DynamicResource AppBorderBrush}"
+                                                     BorderThickness="1"
+                                                     FontFamily="Segoe UI"
+                                                     FontSize="10"
+                                                     HorizontalScrollBarVisibility="Auto"
+                                                     ToolTip="Select the address or use Copy address"/>
+                                            <Button Tag="{Binding}"
+                                                    HorizontalAlignment="Left"
+                                                    Margin="0,11,0,0"
+                                                    Padding="11,7"
+                                                    Style="{StaticResource SecondaryButton}"
+                                                    Click="CopyDonationAddress_Click">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <Rectangle Width="14"
+                                                               Height="14"
+                                                               Margin="0,0,7,0"
+                                                               Fill="{DynamicResource AppAccentBrush}">
+                                                        <Rectangle.OpacityMask>
+                                                            <ImageBrush ImageSource="Resources/Icons/copy.png"/>
+                                                        </Rectangle.OpacityMask>
+                                                    </Rectangle>
+                                                    <TextBlock Text="Copy address"
+                                                               VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                            </Button>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <Border Background="{DynamicResource AppSurfaceAltBrush}"
+                                BorderBrush="{DynamicResource AppBorderBrush}"
+                                BorderThickness="1"
+                                Padding="13,10">
+                            <TextBlock x:Name="DonationCopyStatus"
+                                       Text="Choose a wallet above, then use Copy address."
+                                       Foreground="{DynamicResource AppMutedTextBrush}"
+                                       FontFamily="Segoe UI"
+                                       FontSize="11"
+                                       TextWrapping="Wrap"/>
+                        </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
         </TabControl>
     </Grid>
 </Window>
