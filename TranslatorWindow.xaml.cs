@@ -11,11 +11,14 @@ namespace KeyMapper
     {
         private readonly DispatcherTimer _liveTranslationTimer;
         private CancellationTokenSource? _translationCancellation;
+        private readonly CancellationTokenSource _setupCancellation = new();
         private string _targetLanguage = "en";
         private string _detectedSourceLanguage = string.Empty;
         private bool _isLoaded;
         private bool _isLoadingSettings;
         private bool _isApplyingDetectedLanguage;
+        private bool _localTranslationReady;
+        private bool _serviceOperationInProgress;
 
         public TranslatorWindow(string initialText)
         {
@@ -28,7 +31,7 @@ namespace KeyMapper
                 await TranslateCurrentTextAsync();
             };
 
-            Loaded += (s, e) =>
+            Loaded += async (s, e) =>
             {
                 _isLoadingSettings = true;
                 AppSettings settings = ConfigManager.Load();
@@ -42,7 +45,21 @@ namespace KeyMapper
 
                 SourceTextBox.Focus();
                 SourceTextBox.SelectAll();
-                ScheduleLiveTranslation(initialText.Length > 0);
+                LocalTranslationStatus serviceStatus =
+                    await RefreshLocalServiceUiAsync(_setupCancellation.Token);
+                if (initialText.Length > 0)
+                {
+                    if (serviceStatus.State is LocalTranslationState.Ready or
+                        LocalTranslationState.ExternalServer)
+                    {
+                        ScheduleLiveTranslation(true);
+                    }
+                    else
+                    {
+                        StatusText.Text =
+                            "Local translation needs setup. Open Settings and choose Install local translator.";
+                    }
+                }
             };
 
             Closed += (s, e) =>
@@ -50,6 +67,8 @@ namespace KeyMapper
                 _liveTranslationTimer.Stop();
                 _translationCancellation?.Cancel();
                 _translationCancellation?.Dispose();
+                _setupCancellation.Cancel();
+                _setupCancellation.Dispose();
             };
         }
 
@@ -108,6 +127,20 @@ namespace KeyMapper
             string targetAtStart = _targetLanguage;
 
             SaveAdvancedSettings();
+            if (LocalLibreTranslateManager.UsesLocalEndpoint(endpoint) &&
+                !_localTranslationReady)
+            {
+                LocalTranslationStatus localStatus =
+                    await RefreshLocalServiceUiAsync(_setupCancellation.Token);
+                if (localStatus.State != LocalTranslationState.Ready)
+                {
+                    StatusText.Text = localStatus.State == LocalTranslationState.NotInstalled
+                        ? "Local translation is not installed. Open Settings to install it."
+                        : localStatus.Message;
+                    return;
+                }
+            }
+
             _translationCancellation?.Dispose();
             _translationCancellation = new CancellationTokenSource();
             CancellationToken cancellationToken = _translationCancellation.Token;
@@ -172,6 +205,7 @@ namespace KeyMapper
         {
             if (!_isLoaded || _isLoadingSettings) return;
             SaveAdvancedSettings();
+            UpdateEndpointModeMessage();
             ScheduleLiveTranslation();
         }
 
@@ -258,10 +292,163 @@ namespace KeyMapper
             Dispatcher.BeginInvoke(() =>
             {
                 if (showSettings)
+                {
                     BodyScrollViewer.ScrollToEnd();
+                    _ = RefreshLocalServiceUiAsync(_setupCancellation.Token);
+                }
                 else
                     BodyScrollViewer.ScrollToHome();
             }, DispatcherPriority.Loaded);
+        }
+
+        private async void InstallLocalServiceButton_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBoxResult answer = System.Windows.MessageBox.Show(
+                "KeyMapper will download a private Python runtime, LibreTranslate, and English, German, and Persian language models.\n\n" +
+                "The files are stored only for your Windows account and can be removed here later. Continue?",
+                "Install local translation",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Information);
+            if (answer != MessageBoxResult.Yes)
+                return;
+
+            await RunLocalServiceSetupAsync();
+        }
+
+        private async void RepairLocalServiceButton_Click(object sender, RoutedEventArgs e) =>
+            await RunLocalServiceSetupAsync();
+
+        private async void RemoveLocalServiceButton_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBoxResult answer = System.Windows.MessageBox.Show(
+                "Remove KeyMapper's private translation runtime and downloaded language models from this Windows account?",
+                "Remove local translation",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+            if (answer != MessageBoxResult.Yes)
+                return;
+
+            SetServiceOperationState(true);
+            LocalServiceStatusText.Text = "Removing local translation...";
+            try
+            {
+                LocalTranslationStatus status =
+                    await LocalLibreTranslateManager.RemoveAsync(_setupCancellation.Token);
+                _localTranslationReady = false;
+                ApplyLocalServiceStatus(status);
+                if (!string.IsNullOrWhiteSpace(SourceTextBox.Text))
+                    StatusText.Text = "Local translation was removed.";
+            }
+            catch (OperationCanceledException) { }
+            finally
+            {
+                SetServiceOperationState(false);
+            }
+        }
+
+        private async System.Threading.Tasks.Task RunLocalServiceSetupAsync()
+        {
+            if (_serviceOperationInProgress)
+                return;
+
+            SetServiceOperationState(true);
+            LocalServiceBadge.Text = "SETTING UP";
+            LocalServiceProgressBar.Visibility = Visibility.Visible;
+            LocalServiceProgressBar.IsIndeterminate = true;
+
+            var progress = new Progress<TranslationSetupProgress>(update =>
+            {
+                LocalServiceStatusText.Text = update.Message;
+                if (update.Percent.HasValue)
+                {
+                    LocalServiceProgressBar.IsIndeterminate = false;
+                    LocalServiceProgressBar.Value = update.Percent.Value;
+                }
+                else
+                {
+                    LocalServiceProgressBar.IsIndeterminate = true;
+                }
+            });
+
+            try
+            {
+                LocalTranslationStatus status =
+                    await LocalLibreTranslateManager.InstallOrRepairAsync(
+                        progress,
+                        _setupCancellation.Token);
+                _localTranslationReady = status.State == LocalTranslationState.Ready;
+                ApplyLocalServiceStatus(status);
+
+                if (_localTranslationReady && !string.IsNullOrWhiteSpace(SourceTextBox.Text))
+                    ScheduleLiveTranslation(true);
+            }
+            catch (OperationCanceledException) { }
+            finally
+            {
+                LocalServiceProgressBar.Visibility = Visibility.Collapsed;
+                SetServiceOperationState(false);
+            }
+        }
+
+        private async System.Threading.Tasks.Task<LocalTranslationStatus>
+            RefreshLocalServiceUiAsync(CancellationToken cancellationToken)
+        {
+            LocalServiceStatusText.Text = "Checking the local translation service...";
+            LocalServiceBadge.Text = "CHECKING";
+
+            LocalTranslationStatus status =
+                await LocalLibreTranslateManager.EnsureRunningAsync(cancellationToken);
+            _localTranslationReady = status.State == LocalTranslationState.Ready;
+            ApplyLocalServiceStatus(status);
+            return status;
+        }
+
+        private void ApplyLocalServiceStatus(LocalTranslationStatus status)
+        {
+            LocalServiceStatusText.Text = status.Message;
+            LocalServiceBadge.Text = status.State switch
+            {
+                LocalTranslationState.Ready => "READY",
+                LocalTranslationState.NotInstalled => "NOT INSTALLED",
+                LocalTranslationState.ExternalServer => "CUSTOM SERVER",
+                LocalTranslationState.Starting => "STARTING",
+                _ => "NEEDS ATTENTION"
+            };
+
+            bool privateInstall = LocalLibreTranslateManager.HasPrivateInstallation;
+            bool anyInstall = LocalLibreTranslateManager.HasAnyInstallation;
+            InstallLocalServiceButton.Visibility = anyInstall
+                ? Visibility.Collapsed
+                : Visibility.Visible;
+            RepairLocalServiceButton.Visibility = privateInstall
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+            RemoveLocalServiceButton.Visibility = privateInstall
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+        }
+
+        private void UpdateEndpointModeMessage()
+        {
+            string endpoint = string.IsNullOrWhiteSpace(EndpointTextBox.Text)
+                ? "http://localhost:5000"
+                : EndpointTextBox.Text.Trim();
+            if (!LocalLibreTranslateManager.UsesLocalEndpoint(endpoint))
+            {
+                LocalServiceBadge.Text = "CUSTOM SERVER";
+                LocalServiceStatusText.Text =
+                    "The custom server below is active. Local translation remains available whenever you switch back to localhost.";
+            }
+        }
+
+        private void SetServiceOperationState(bool inProgress)
+        {
+            _serviceOperationInProgress = inProgress;
+            InstallLocalServiceButton.IsEnabled = !inProgress;
+            RepairLocalServiceButton.IsEnabled = !inProgress;
+            RemoveLocalServiceButton.IsEnabled = !inProgress;
+            EndpointTextBox.IsEnabled = !inProgress;
+            ApiKeyBox.IsEnabled = !inProgress;
         }
 
         private void CopyButton_Click(object sender, RoutedEventArgs e)

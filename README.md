@@ -73,6 +73,9 @@ The feature has its own on/off control.
 - Multi-pass OCR preprocessing and confidence reporting.
 - Copy or translate recognized text from the OCR result window.
 - Live translation with automatic source detection through LibreTranslate.
+- On first use, the translator can install its own private LibreTranslate runtime under `%LOCALAPPDATA%\KeyMapper\Translation`; no administrator access, Docker, or system-wide Python installation is required.
+- Nothing is downloaded until the user confirms **Install local translator**. Setup progress, Retry/Repair, and Remove controls are available in the translator's Settings panel.
+- The local runtime and English, German, and Persian models use roughly 1 GB of disk space. Translation text stays on the computer when the local service is selected.
 - Persian translation normalizes common colloquial spelling and preserves technical acronyms such as SVG, JSON, API, OCR, and PDF.
 - De-gibberish text typed with the wrong Persian, English, or German keyboard layout.
 - Translate selected text without leaving the current application.
@@ -171,7 +174,7 @@ Optional local AI models:
 %LOCALAPPDATA%\KeyMapper\Models
 ```
 
-LibreTranslate runtime data is also kept outside the repository. API keys are stored only in the local configuration file and are never committed intentionally.
+LibreTranslate runtime data is also kept outside the repository under `%LOCALAPPDATA%\KeyMapper\Translation`. The first-use installer downloads the official Python embeddable runtime, pip bootstrap, and LibreTranslate package, then keeps its dependencies and language models isolated from other Windows users and Python installations. API keys are stored only in the local configuration file and are never committed intentionally.
 
 ## Main technologies
 

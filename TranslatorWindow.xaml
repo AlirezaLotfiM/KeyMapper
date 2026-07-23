@@ -277,8 +277,92 @@
                 <StackPanel>
                         <TextBlock Text="Translation service" Foreground="{DynamicResource AppTextBrush}"
                                    FontFamily="Segoe UI" FontSize="13" FontWeight="SemiBold"/>
-                        <TextBlock Text="Local LibreTranslate starts automatically. You normally do not need to change anything."
+                        <TextBlock Text="Use the private translator on this computer, or connect to another LibreTranslate server."
                                    Foreground="{DynamicResource AppMutedTextBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,5,0,14"/>
+
+                        <Border Background="{DynamicResource AppSurfaceBrush}"
+                                BorderBrush="{DynamicResource AppBorderBrush}"
+                                BorderThickness="2"
+                                Padding="14"
+                                Margin="0,0,0,16">
+                            <StackPanel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock Text="Private local translation"
+                                                   Foreground="{DynamicResource AppTextBrush}"
+                                                   FontFamily="Segoe UI"
+                                                   FontSize="12"
+                                                   FontWeight="SemiBold"/>
+                                        <TextBlock Text="Runs only on this PC. Translation text is not sent to a cloud service."
+                                                   Foreground="{DynamicResource AppMutedTextBrush}"
+                                                   FontSize="10"
+                                                   TextWrapping="Wrap"
+                                                   Margin="0,4,8,0"/>
+                                    </StackPanel>
+                                    <Border Grid.Column="1"
+                                            Padding="8,4"
+                                            Background="{DynamicResource AppAccentSoftBrush}"
+                                            BorderBrush="{DynamicResource AppAccentBrush}"
+                                            BorderThickness="1"
+                                            VerticalAlignment="Top">
+                                        <TextBlock x:Name="LocalServiceBadge"
+                                                   Text="CHECKING"
+                                                   Foreground="{DynamicResource AppTextBrush}"
+                                                   FontFamily="Segoe UI"
+                                                   FontSize="9"
+                                                   FontWeight="SemiBold"/>
+                                    </Border>
+                                </Grid>
+
+                                <TextBlock x:Name="LocalServiceStatusText"
+                                           Text="Checking the local translation service..."
+                                           Foreground="{DynamicResource AppMutedTextBrush}"
+                                           FontSize="11"
+                                           TextWrapping="Wrap"
+                                           LineHeight="16"
+                                           Margin="0,12,0,0"/>
+
+                                <ProgressBar x:Name="LocalServiceProgressBar"
+                                             Visibility="Collapsed"
+                                             Height="8"
+                                             Minimum="0"
+                                             Maximum="100"
+                                             Margin="0,12,0,0"
+                                             Foreground="{DynamicResource AppAccentBrush}"
+                                             Background="{DynamicResource AppSurfaceAltBrush}"/>
+
+                                <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                                    <Button x:Name="InstallLocalServiceButton"
+                                            Content="Install local translator"
+                                            Style="{StaticResource PixelButton}"
+                                            Click="InstallLocalServiceButton_Click"/>
+                                    <Button x:Name="RepairLocalServiceButton"
+                                            Content="Repair"
+                                            Style="{StaticResource PixelButton}"
+                                            Margin="10,0,0,0"
+                                            Visibility="Collapsed"
+                                            Click="RepairLocalServiceButton_Click"/>
+                                    <Button x:Name="RemoveLocalServiceButton"
+                                            Content="Remove"
+                                            Style="{StaticResource PixelButton}"
+                                            Margin="10,0,0,0"
+                                            Visibility="Collapsed"
+                                            Click="RemoveLocalServiceButton_Click"/>
+                                </StackPanel>
+
+                                <TextBlock Text="First setup downloads the runtime and English, German, and Persian models. It can take several minutes and uses about 1 GB of disk space. Nothing is downloaded until you choose Install."
+                                           Foreground="{DynamicResource AppMutedTextBrush}"
+                                           FontSize="10"
+                                           TextWrapping="Wrap"
+                                           LineHeight="15"
+                                           Margin="0,11,0,0"/>
+                            </StackPanel>
+                        </Border>
+
                         <Expander Header="Use another LibreTranslate server (optional)"
                                   Foreground="{DynamicResource AppTextBrush}" FontSize="11">
                             <StackPanel Margin="0,12,0,6">
