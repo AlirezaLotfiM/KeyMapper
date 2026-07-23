@@ -109,7 +109,9 @@ Theme location:
 Settings → Appearance
 ```
 
-The selected theme is saved locally and applies immediately to the control center, conversation window, translator, OCR results, pet speech bubble, and pixel-style context menu. The Settings page also uses eased mouse-wheel scrolling for long sections and model lists.
+The selected theme is saved locally and applies immediately to the control center, conversation window, translator, OCR results, pet speech bubble, and pixel-style context menu. The Settings page uses eased mouse-wheel scrolling, equal-width palette previews, and two-column AI model cards with clear download and RAM labels.
+
+The interface uses a shared icon set for tabs, settings sections, model actions, and the pet context menu. The Windows application and tray icon use the purple desktop-pet mark rather than the old gray placeholder. The character also uses a compact two-layer contact shadow positioned directly beneath its feet.
 
 ## Build
 

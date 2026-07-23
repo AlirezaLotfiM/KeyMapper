@@ -64,12 +64,13 @@
                     </TransformGroup>
                 </Canvas.RenderTransform>
 
-                <!-- Shadow under pet -->
-                <Ellipse Canvas.Left="35" Canvas.Top="113" Width="70" Height="10" Fill="#30000000">
+                <!-- A tight contact shadow keeps the sprite grounded without a detached halo. -->
+                <Ellipse Canvas.Left="46" Canvas.Top="107" Width="48" Height="6" Fill="#26000000">
                     <Ellipse.Effect>
-                        <BlurEffect Radius="4"/>
+                        <BlurEffect Radius="2"/>
                     </Ellipse.Effect>
                 </Ellipse>
+                <Ellipse Canvas.Left="56" Canvas.Top="108" Width="28" Height="3" Fill="#42000000"/>
 
                 <!-- 2D Pixel Art Sprite Image -->
                 <Image x:Name="PetSpriteImage"
@@ -103,12 +104,17 @@
                                     <Grid Height="29">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="8"/>
+                                            <ColumnDefinition Width="24"/>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="22"/>
                                         </Grid.ColumnDefinitions>
                                         <Rectangle x:Name="PixelMarker" Grid.Column="0" Fill="{DynamicResource AppAccentBrush}" Visibility="Collapsed"/>
-                                        <ContentPresenter Grid.Column="1" Margin="10,0,4,0" VerticalAlignment="Center" ContentSource="Header" RecognizesAccessKey="True"/>
-                                        <TextBlock x:Name="Arrow" Grid.Column="2" Text="›" FontSize="17" Foreground="{DynamicResource AppAccentBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed"/>
+                                        <ContentPresenter Grid.Column="1"
+                                                          HorizontalAlignment="Center"
+                                                          VerticalAlignment="Center"
+                                                          ContentSource="Icon"/>
+                                        <ContentPresenter Grid.Column="2" Margin="5,0,4,0" VerticalAlignment="Center" ContentSource="Header" RecognizesAccessKey="True"/>
+                                        <TextBlock x:Name="Arrow" Grid.Column="3" Text="›" FontSize="17" Foreground="{DynamicResource AppAccentBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed"/>
                                     </Grid>
                                 </Border>
                                 <!-- WPF requires PART_Popup to display nested menu items. -->
@@ -150,41 +156,127 @@
                             <Setter.Value><ControlTemplate TargetType="{x:Type Separator}"><Border Background="{DynamicResource AppBorderBrush}" Height="1"/></ControlTemplate></Setter.Value>
                     </Setter>
                 </Style>
+                <Style x:Key="PetMenuIcon" TargetType="Rectangle">
+                    <Setter Property="Width" Value="15"/>
+                    <Setter Property="Height" Value="15"/>
+                    <Setter Property="Fill" Value="{DynamicResource AppAccentBrush}"/>
+                    <Setter Property="SnapsToDevicePixels" Value="True"/>
+                </Style>
             </ContextMenu.Resources>
-            <MenuItem Header="Talk to Character" Click="MenuAsk_Click"/>
+            <MenuItem Header="Talk to Character" Click="MenuAsk_Click">
+                <MenuItem.Icon>
+                    <Rectangle Style="{StaticResource PetMenuIcon}">
+                        <Rectangle.OpacityMask><ImageBrush ImageSource="Resources/Icons/chat.png"/></Rectangle.OpacityMask>
+                    </Rectangle>
+                </MenuItem.Icon>
+            </MenuItem>
             <MenuItem Header="De-gibberish selected text (Ctrl+Alt+K)" Click="MenuDeGibberish_Click"
-                      ToolTip="Turns text typed under the wrong Persian, English, or German keyboard layout back into the intended text."/>
-            <MenuItem Header="Translate Selected Text" Click="MenuTranslate_Click"/>
-            <MenuItem Header="OCR Screen Snipper" Click="MenuOcr_Click"/>
+                      ToolTip="Turns text typed under the wrong Persian, English, or German keyboard layout back into the intended text.">
+                <MenuItem.Icon>
+                    <Rectangle Style="{StaticResource PetMenuIcon}">
+                        <Rectangle.OpacityMask><ImageBrush ImageSource="Resources/Icons/keyboard.png"/></Rectangle.OpacityMask>
+                    </Rectangle>
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem Header="Translate Selected Text" Click="MenuTranslate_Click">
+                <MenuItem.Icon>
+                    <Rectangle Style="{StaticResource PetMenuIcon}">
+                        <Rectangle.OpacityMask><ImageBrush ImageSource="Resources/Icons/translate.png"/></Rectangle.OpacityMask>
+                    </Rectangle>
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem Header="OCR Screen Snipper" Click="MenuOcr_Click">
+                <MenuItem.Icon>
+                    <Rectangle Style="{StaticResource PetMenuIcon}">
+                        <Rectangle.OpacityMask><ImageBrush ImageSource="Resources/Icons/ocr.png"/></Rectangle.OpacityMask>
+                    </Rectangle>
+                </MenuItem.Icon>
+            </MenuItem>
             <Separator/>
             <MenuItem Header="Switch Character">
+                <MenuItem.Icon>
+                    <Rectangle Style="{StaticResource PetMenuIcon}">
+                        <Rectangle.OpacityMask><ImageBrush ImageSource="Resources/Icons/character.png"/></Rectangle.OpacityMask>
+                    </Rectangle>
+                </MenuItem.Icon>
                 <MenuItem Header="Pink Monster" Click="MenuCharPink_Click"/>
                 <MenuItem Header="Owlet Monster" Click="MenuCharOwlet_Click"/>
                 <MenuItem Header="Dude Monster" Click="MenuCharDude_Click"/>
             </MenuItem>
-            <MenuItem Header="Walking: On" Click="MenuToggleWalking_Click"/>
+            <MenuItem Header="Walking: On" Click="MenuToggleWalking_Click">
+                <MenuItem.Icon>
+                    <Rectangle Style="{StaticResource PetMenuIcon}">
+                        <Rectangle.OpacityMask><ImageBrush ImageSource="Resources/Icons/walking.png"/></Rectangle.OpacityMask>
+                    </Rectangle>
+                </MenuItem.Icon>
+            </MenuItem>
             <MenuItem Header="Movement Speed">
+                <MenuItem.Icon>
+                    <Rectangle Style="{StaticResource PetMenuIcon}">
+                        <Rectangle.OpacityMask><ImageBrush ImageSource="Resources/Icons/speed.png"/></Rectangle.OpacityMask>
+                    </Rectangle>
+                </MenuItem.Icon>
                 <MenuItem Header="Slow" Tag="45" Click="MenuSetWalkingSpeed_Click"/>
                 <MenuItem Header="Normal" Tag="92" Click="MenuSetWalkingSpeed_Click"/>
                 <MenuItem Header="Fast" Tag="160" Click="MenuSetWalkingSpeed_Click"/>
             </MenuItem>
             <MenuItem Header="Idle Animation Speed">
+                <MenuItem.Icon>
+                    <Rectangle Style="{StaticResource PetMenuIcon}">
+                        <Rectangle.OpacityMask><ImageBrush ImageSource="Resources/Icons/idle.png"/></Rectangle.OpacityMask>
+                    </Rectangle>
+                </MenuItem.Icon>
                 <MenuItem Header="Calm" Tag="750" Click="MenuSetIdleSpeed_Click"/>
                 <MenuItem Header="Normal" Tag="430" Click="MenuSetIdleSpeed_Click"/>
                 <MenuItem Header="Lively" Tag="220" Click="MenuSetIdleSpeed_Click"/>
             </MenuItem>
-            <MenuItem x:Name="CommentsToggleMenuItem" Header="Comments: On" Click="MenuToggleComments_Click"/>
+            <MenuItem x:Name="CommentsToggleMenuItem" Header="Comments: On" Click="MenuToggleComments_Click">
+                <MenuItem.Icon>
+                    <Rectangle Style="{StaticResource PetMenuIcon}">
+                        <Rectangle.OpacityMask><ImageBrush ImageSource="Resources/Icons/chat.png"/></Rectangle.OpacityMask>
+                    </Rectangle>
+                </MenuItem.Icon>
+            </MenuItem>
             <MenuItem x:Name="AiCommentsToggleMenuItem" Header="Fresh AI Comments: On" Click="MenuToggleAiComments_Click"
-                      ToolTip="Uses only a downloaded local model. Window and music titles never go to a hosted service."/>
+                      ToolTip="Uses only a downloaded local model. Window and music titles never go to a hosted service.">
+                <MenuItem.Icon>
+                    <Rectangle Style="{StaticResource PetMenuIcon}">
+                        <Rectangle.OpacityMask><ImageBrush ImageSource="Resources/Icons/ai.png"/></Rectangle.OpacityMask>
+                    </Rectangle>
+                </MenuItem.Icon>
+            </MenuItem>
             <MenuItem Header="Comment Frequency">
+                <MenuItem.Icon>
+                    <Rectangle Style="{StaticResource PetMenuIcon}">
+                        <Rectangle.OpacityMask><ImageBrush ImageSource="Resources/Icons/sound.png"/></Rectangle.OpacityMask>
+                    </Rectangle>
+                </MenuItem.Icon>
                 <MenuItem x:Name="CommentsQuietMenuItem" Header="Quiet" Tag="Quiet" Click="MenuSetCommentFrequency_Click"/>
                 <MenuItem x:Name="CommentsNormalMenuItem" Header="Normal" Tag="Normal" Click="MenuSetCommentFrequency_Click"/>
                 <MenuItem x:Name="CommentsChattyMenuItem" Header="Chatty" Tag="Chatty" Click="MenuSetCommentFrequency_Click"/>
             </MenuItem>
-            <MenuItem Header="Open KeyMapper Settings" Click="MenuSettings_Click"/>
+            <MenuItem Header="Open KeyMapper Settings" Click="MenuSettings_Click">
+                <MenuItem.Icon>
+                    <Rectangle Style="{StaticResource PetMenuIcon}">
+                        <Rectangle.OpacityMask><ImageBrush ImageSource="Resources/Icons/settings.png"/></Rectangle.OpacityMask>
+                    </Rectangle>
+                </MenuItem.Icon>
+            </MenuItem>
             <Separator/>
-            <MenuItem Header="Hide Desktop Pet" Click="MenuHide_Click"/>
-            <MenuItem Header="Exit Desktop Pet" Click="MenuExit_Click" Foreground="#B53D64"/>
+            <MenuItem Header="Hide Desktop Pet" Click="MenuHide_Click">
+                <MenuItem.Icon>
+                    <Rectangle Style="{StaticResource PetMenuIcon}">
+                        <Rectangle.OpacityMask><ImageBrush ImageSource="Resources/Icons/hide.png"/></Rectangle.OpacityMask>
+                    </Rectangle>
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem Header="Exit Desktop Pet" Click="MenuExit_Click" Foreground="#B53D64">
+                <MenuItem.Icon>
+                    <Rectangle Style="{StaticResource PetMenuIcon}" Fill="#B53D64">
+                        <Rectangle.OpacityMask><ImageBrush ImageSource="Resources/Icons/exit.png"/></Rectangle.OpacityMask>
+                    </Rectangle>
+                </MenuItem.Icon>
+            </MenuItem>
         </ContextMenu>
     </Window.ContextMenu>
 </Window>

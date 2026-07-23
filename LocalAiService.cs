@@ -26,6 +26,8 @@ namespace KeyMapper
             DownloadBytes >= 1_000_000_000
                 ? $"{DownloadBytes / 1_000_000_000d:0.##} GB download"
                 : $"{DownloadBytes / 1_000_000d:0} MB download";
+
+        public string MemoryLabel => $"{SuggestedRamGb} GB+ RAM";
     }
 
     public sealed record LocalAiDownloadProgress(

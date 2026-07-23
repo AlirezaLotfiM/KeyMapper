@@ -9,7 +9,9 @@ namespace KeyMapper
         string Id,
         string DisplayName,
         string Description,
-        string PreviewColors);
+        string PreviewBackground,
+        string PreviewSurface,
+        string PreviewAccent);
 
     public static class ThemeManager
     {
@@ -20,32 +22,44 @@ namespace KeyMapper
                     "Warm Cream",
                     "Warm Cream",
                     "The original soft paper look.",
-                    "Cream · cyan · gold"),
+                    "#FFF8E7",
+                    "#FFF0C9",
+                    "#55CAD3"),
                 new ThemeOption(
                     "Sky Paper",
                     "Sky Paper",
                     "Cool, clean, and easy to read.",
-                    "White · blue · ice"),
+                    "#F4FAFF",
+                    "#E7F4FD",
+                    "#6DB7D9"),
                 new ThemeOption(
                     "Soft Mint",
                     "Soft Mint",
                     "A calm green-tinted workspace.",
-                    "White · mint · leaf"),
+                    "#F4FBF6",
+                    "#E1F4E8",
+                    "#69B98E"),
                 new ThemeOption(
                     "Midnight Pixel",
                     "Midnight Pixel",
                     "Deep navy with bright arcade cyan.",
-                    "Navy · cyan · cloud"),
+                    "#111827",
+                    "#22304A",
+                    "#55D9E6"),
                 new ThemeOption(
                     "Graphite Gold",
                     "Graphite Gold",
                     "A neutral dark theme with warm gold.",
-                    "Graphite · gold · pearl"),
+                    "#181818",
+                    "#2D2D2D",
+                    "#F2B84B"),
                 new ThemeOption(
                     "Sunset Arcade",
                     "Sunset Arcade",
                     "A playful purple and pink night palette.",
-                    "Plum · pink · lavender")
+                    "#24172D",
+                    "#442850",
+                    "#FF78B5")
             };
 
         public static string Normalize(string? themeName) =>

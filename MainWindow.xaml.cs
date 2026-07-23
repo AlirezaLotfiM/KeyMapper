@@ -1510,10 +1510,9 @@ namespace KeyMapper
 
             bool installed = LocalAiService.Instance.IsInstalled(model.Id);
             LocalAiDescriptionTxt.Text =
-                $"{model.Description} Download: {FormatBytes(model.DownloadBytes)} · " +
-                $"suggested memory: {model.SuggestedRamGb} GB or more.";
+                $"{model.Description} {model.DownloadSize} · {model.MemoryLabel}.";
             LocalAiDownloadBtn.IsEnabled = !installed;
-            LocalAiDownloadBtn.Content =
+            LocalAiDownloadLabel.Text =
                 installed ? "Downloaded" : "Download model";
             LocalAiRemoveBtn.IsEnabled = installed;
             LocalAiStatusTxt.Text = status ??
