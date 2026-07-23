@@ -16,9 +16,9 @@
         WindowStartupLocation="CenterOwner">
     <Window.Resources>
         <Style x:Key="PixelButton" TargetType="Button">
-            <Setter Property="Background" Value="#FFFDF7"/>
-            <Setter Property="Foreground" Value="#30445E"/>
-            <Setter Property="BorderBrush" Value="#B8A77F"/>
+            <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}"/>
             <Setter Property="BorderThickness" Value="2"/>
             <Setter Property="Padding" Value="12,7"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
@@ -37,11 +37,11 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Background" Value="#F8EBC8"/>
-                                <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="#9F8958"/>
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="{DynamicResource AppAccentSoftBrush}"/>
+                                <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="{DynamicResource AppAccentBrush}"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Background" Value="#EEDBAA"/>
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="{DynamicResource AppSurfaceAltBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -69,11 +69,11 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Background" Value="#F8EBC8"/>
-                                <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="#9F8958"/>
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="{DynamicResource AppAccentSoftBrush}"/>
+                                <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="{DynamicResource AppAccentBrush}"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Background" Value="#EEDBAA"/>
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="{DynamicResource AppSurfaceAltBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -82,9 +82,9 @@
         </Style>
 
         <Style x:Key="LanguageChip" TargetType="RadioButton">
-            <Setter Property="Foreground" Value="#52657B"/>
-            <Setter Property="Background" Value="#FFFDF7"/>
-            <Setter Property="BorderBrush" Value="#C9B98F"/>
+            <Setter Property="Foreground" Value="{DynamicResource AppMutedTextBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}"/>
             <Setter Property="BorderThickness" Value="2"/>
             <Setter Property="Padding" Value="16,9"/>
             <Setter Property="Margin" Value="0,0,10,0"/>
@@ -103,12 +103,12 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Chip" Property="BorderBrush" Value="#62AAB2"/>
+                                <Setter TargetName="Chip" Property="BorderBrush" Value="{DynamicResource AppAccentBrush}"/>
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="Chip" Property="Background" Value="#CDEFF0"/>
-                                <Setter TargetName="Chip" Property="BorderBrush" Value="#318D99"/>
-                                <Setter Property="Foreground" Value="#174B52"/>
+                                <Setter TargetName="Chip" Property="Background" Value="{DynamicResource AppAccentSoftBrush}"/>
+                                <Setter TargetName="Chip" Property="BorderBrush" Value="{DynamicResource AppAccentBrush}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -117,21 +117,21 @@
         </Style>
 
         <Style x:Key="EditorBox" TargetType="TextBox">
-            <Setter Property="Background" Value="#FFFFFF"/>
-            <Setter Property="Foreground" Value="#26384F"/>
-            <Setter Property="CaretBrush" Value="#318D99"/>
-            <Setter Property="BorderBrush" Value="#C8B991"/>
+            <Setter Property="Background" Value="{DynamicResource AppInputBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}"/>
+            <Setter Property="CaretBrush" Value="{DynamicResource AppAccentBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}"/>
             <Setter Property="BorderThickness" Value="2"/>
             <Setter Property="Padding" Value="11"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
             <Setter Property="FontSize" Value="13"/>
-            <Setter Property="SelectionBrush" Value="#B9E3E5"/>
+            <Setter Property="SelectionBrush" Value="{DynamicResource AppAccentSoftBrush}"/>
         </Style>
     </Window.Resources>
 
     <Border Margin="16"
-            Background="#FFF8E7"
-            BorderBrush="#40536C"
+            Background="{DynamicResource AppBackgroundBrush}"
+            BorderBrush="{DynamicResource AppBorderBrush}"
             BorderThickness="3"
             SnapsToDevicePixels="True">
         <Border.Effect>
@@ -164,10 +164,10 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <StackPanel>
-                    <TextBlock Text="Live translator" Foreground="#26384F"
+                    <TextBlock Text="Live translator" Foreground="{DynamicResource AppTextBrush}"
                                FontFamily="Segoe UI" FontSize="19" FontWeight="SemiBold"/>
                     <TextBlock Text="Type normally. Translation updates by itself."
-                               Foreground="#6B7B8F" FontSize="11" Margin="0,3,0,0"/>
+                               Foreground="{DynamicResource AppMutedTextBrush}" FontSize="11" Margin="0,3,0,0"/>
                 </StackPanel>
                 <Button Grid.Column="1" Style="{StaticResource PixelButton}"
                         Padding="12,8" Margin="0,0,10,0" Click="ToggleSettingsButton_Click">
@@ -207,10 +207,10 @@
                           PanningMode="VerticalOnly"
                           CanContentScroll="False">
                 <StackPanel>
-            <Border Background="#FFF0C9" BorderBrush="#DEC995"
+            <Border Background="{DynamicResource AppSurfaceAltBrush}" BorderBrush="{DynamicResource AppBorderBrush}"
                     BorderThickness="0,2,0,2" Padding="24,16">
                 <StackPanel>
-                    <TextBlock Text="Translate into" Foreground="#6B5A3A"
+                    <TextBlock Text="Translate into" Foreground="{DynamicResource AppTextBrush}"
                                FontFamily="Segoe UI" FontSize="10" FontWeight="SemiBold" Margin="0,0,0,10"/>
                     <StackPanel Orientation="Horizontal">
                         <RadioButton x:Name="EnglishTarget" GroupName="TargetLanguage" Content="ENGLISH"
@@ -224,7 +224,7 @@
             </Border>
 
             <StackPanel Margin="24,20,24,0">
-                <TextBlock Text="Your text" Foreground="#6B7B8F" FontFamily="Segoe UI" FontSize="10" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                <TextBlock Text="Your text" Foreground="{DynamicResource AppMutedTextBrush}" FontFamily="Segoe UI" FontSize="10" FontWeight="SemiBold" Margin="0,0,0,8"/>
                 <TextBox x:Name="SourceTextBox" Height="92" Style="{StaticResource EditorBox}"
                          AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
                          TextChanged="SourceTextBox_TextChanged"/>
@@ -240,7 +240,7 @@
                     <TextBlock Text="Live" Foreground="#246548" FontFamily="Segoe UI"
                                FontWeight="SemiBold" FontSize="10"/>
                 </Border>
-                <TextBlock x:Name="StatusText" Grid.Column="1" Foreground="#6B7B8F" FontSize="11"
+                <TextBlock x:Name="StatusText" Grid.Column="1" Foreground="{DynamicResource AppMutedTextBrush}" FontSize="11"
                            Text="Waiting for text" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
             </Grid>
 
@@ -250,7 +250,7 @@
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock Text="Translation" Foreground="#6B7B8F" FontFamily="Segoe UI"
+                    <TextBlock Text="Translation" Foreground="{DynamicResource AppMutedTextBrush}" FontFamily="Segoe UI"
                                FontSize="10" FontWeight="SemiBold" VerticalAlignment="Center"/>
                     <Button Grid.Column="1" Style="{StaticResource IconButton}"
                             Width="40" Height="36"
@@ -268,30 +268,30 @@
                 </Grid>
                 <TextBox x:Name="ResultTextBox" Height="92" Style="{StaticResource EditorBox}"
                          IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap"
-                         VerticalScrollBarVisibility="Auto" Foreground="#176147"/>
+                         VerticalScrollBarVisibility="Auto" Foreground="{DynamicResource AppTextBrush}"/>
             </StackPanel>
 
             <Border x:Name="ServerSettingsPanel" Visibility="Collapsed"
-                    Background="#F7EFD9" BorderBrush="#D4C49A" BorderThickness="0,2,0,0"
+                    Background="{DynamicResource AppSurfaceAltBrush}" BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="0,2,0,0"
                     Padding="24,20,34,24" Margin="0,20,0,0">
                 <StackPanel>
-                        <TextBlock Text="Translation service" Foreground="#30445E"
+                        <TextBlock Text="Translation service" Foreground="{DynamicResource AppTextBrush}"
                                    FontFamily="Segoe UI" FontSize="13" FontWeight="SemiBold"/>
                         <TextBlock Text="Local LibreTranslate starts automatically. You normally do not need to change anything."
-                                   Foreground="#6B7B8F" FontSize="11" TextWrapping="Wrap" Margin="0,5,0,14"/>
+                                   Foreground="{DynamicResource AppMutedTextBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,5,0,14"/>
                         <Expander Header="Use another LibreTranslate server (optional)"
-                                  Foreground="#30445E" FontSize="11">
+                                  Foreground="{DynamicResource AppTextBrush}" FontSize="11">
                             <StackPanel Margin="0,12,0,6">
-                                <TextBlock Text="Server address" Foreground="#52657B" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                                <TextBlock Text="Server address" Foreground="{DynamicResource AppMutedTextBrush}" FontWeight="SemiBold" Margin="0,0,0,6"/>
                                 <TextBox x:Name="EndpointTextBox" Style="{StaticResource EditorBox}"
                                          Height="38" Padding="9,6" FontFamily="Segoe UI" FontSize="11"
                                          TextChanged="AdvancedSetting_Changed"/>
                                 <TextBlock Text="API key (only if that server requires one)"
-                                           Foreground="#52657B" FontWeight="SemiBold" Margin="0,14,0,6"/>
+                                           Foreground="{DynamicResource AppMutedTextBrush}" FontWeight="SemiBold" Margin="0,14,0,6"/>
                                 <PasswordBox x:Name="ApiKeyBox"
                                              Height="38"
-                                             Background="#FFFFFF" Foreground="#26384F"
-                                             BorderBrush="#C8B991" BorderThickness="2"
+                                             Background="{DynamicResource AppInputBrush}" Foreground="{DynamicResource AppTextBrush}"
+                                             BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="2"
                                              Padding="9,6" FontFamily="Segoe UI" FontSize="11"
                                              PasswordChanged="AdvancedSetting_Changed"/>
                             </StackPanel>

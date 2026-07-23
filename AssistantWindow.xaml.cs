@@ -89,8 +89,8 @@ namespace KeyMapper
             var text = CreateMessageText(message);
             var bubble = new Border
             {
-                Background = new SolidColorBrush(Color.FromRgb(205, 239, 240)),
-                BorderBrush = new SolidColorBrush(Color.FromRgb(49, 141, 153)),
+                Background = ThemeBrush("AppAccentSoftBrush"),
+                BorderBrush = ThemeBrush("AppAccentBrush"),
                 BorderThickness = new Thickness(2),
                 Padding = new Thickness(13, 10, 13, 10),
                 Margin = new Thickness(70, 0, 0, 12),
@@ -115,7 +115,7 @@ namespace KeyMapper
             container.Children.Add(new TextBlock
             {
                 Text = _speakerName,
-                Foreground = new SolidColorBrush(Color.FromRgb(33, 119, 131)),
+                Foreground = ThemeBrush("AppAccentBrush"),
                 FontFamily = new FontFamily("Segoe UI"),
                 FontSize = 11,
                 FontWeight = FontWeights.SemiBold,
@@ -124,8 +124,8 @@ namespace KeyMapper
 
             var bubble = new Border
             {
-                Background = new SolidColorBrush(Color.FromRgb(255, 240, 201)),
-                BorderBrush = new SolidColorBrush(Color.FromRgb(202, 182, 132)),
+                Background = ThemeBrush("AppSurfaceAltBrush"),
+                BorderBrush = ThemeBrush("AppBorderBrush"),
                 BorderThickness = new Thickness(2),
                 Padding = new Thickness(13, 10, 13, 10),
                 Child = CreateMessageText(message)
@@ -149,10 +149,8 @@ namespace KeyMapper
                     };
                     if (action.IsPrimary)
                     {
-                        button.Background =
-                            new SolidColorBrush(Color.FromRgb(205, 239, 240));
-                        button.BorderBrush =
-                            new SolidColorBrush(Color.FromRgb(49, 141, 153));
+                        button.Background = ThemeBrush("AppAccentSoftBrush");
+                        button.BorderBrush = ThemeBrush("AppAccentBrush");
                     }
                     button.Click += ActionButton_Click;
                     actionPanel.Children.Add(button);
@@ -202,14 +200,14 @@ namespace KeyMapper
             }
         }
 
-        private static TextBlock CreateMessageText(string message)
+        private TextBlock CreateMessageText(string message)
         {
             bool persian = ContainsPersian(message);
             return new TextBlock
             {
                 Text = message,
                 TextWrapping = TextWrapping.Wrap,
-                Foreground = new SolidColorBrush(Color.FromRgb(38, 56, 79)),
+                Foreground = ThemeBrush("AppTextBrush"),
                 FontFamily = new FontFamily("Segoe UI"),
                 FontSize = 13,
                 LineHeight = 20,
@@ -221,6 +219,9 @@ namespace KeyMapper
                     : TextAlignment.Left
             };
         }
+
+        private Brush ThemeBrush(string resourceKey) =>
+            (Brush)FindResource(resourceKey);
 
         private void SetBusy(bool busy)
         {

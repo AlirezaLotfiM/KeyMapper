@@ -29,7 +29,7 @@
                                             <Thumb>
                                                 <Thumb.Template>
                                                     <ControlTemplate TargetType="Thumb">
-                                                        <Border Background="#B8A77F" CornerRadius="0"/>
+                                                        <Border Background="{DynamicResource AppBorderBrush}" CornerRadius="0"/>
                                                     </ControlTemplate>
                                                 </Thumb.Template>
                                             </Thumb>
@@ -51,7 +51,7 @@
                                             <Thumb>
                                                 <Thumb.Template>
                                                     <ControlTemplate TargetType="Thumb">
-                                                        <Border Background="#B8A77F" CornerRadius="0"/>
+                                                        <Border Background="{DynamicResource AppBorderBrush}" CornerRadius="0"/>
                                                     </ControlTemplate>
                                                 </Thumb.Template>
                                             </Thumb>
@@ -114,7 +114,7 @@
 
         <!-- TextBox style -->
         <Style TargetType="TextBox">
-            <Setter Property="Background" Value="#FFFFFF"/>
+            <Setter Property="Background" Value="{DynamicResource AppInputBrush}"/>
             <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}"/>
             <Setter Property="BorderThickness" Value="2"/>
@@ -156,7 +156,7 @@
             </Setter>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#F6E4B4"/>
+                    <Setter Property="Background" Value="{DynamicResource AppAccentSoftBrush}"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -179,7 +179,7 @@
                                 <Setter TargetName="border" Property="Background" Value="{DynamicResource AppAccentSoftBrush}"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#9CD8DB"/>
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource AppSurfaceAltBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -202,11 +202,11 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#F8EBC8"/>
-                                <Setter TargetName="border" Property="BorderBrush" Value="#9F8958"/>
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource AppAccentSoftBrush}"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource AppAccentBrush}"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#EEDBAA"/>
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource AppSurfaceAltBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -265,7 +265,7 @@
             </Grid.ColumnDefinitions>
             
             <StackPanel Grid.Column="0" Orientation="Horizontal">
-                <TextBlock Text="Desktop Pet Control Center" FontFamily="Segoe UI" FontSize="22" FontWeight="SemiBold" Foreground="#26384F" VerticalAlignment="Center"/>
+                <TextBlock Text="Desktop Pet Control Center" FontFamily="Segoe UI" FontSize="22" FontWeight="SemiBold" Foreground="{DynamicResource AppTextBrush}" VerticalAlignment="Center"/>
                 <!-- Status Badge -->
                 <Border x:Name="StatusBadge" Margin="14,0,0,0" Padding="10,5" BorderBrush="#53A77D" BorderThickness="1" Background="#E1F4EA" VerticalAlignment="Center">
                     <TextBlock x:Name="StatusText" Text="KeyMapper is on" Foreground="#246548" FontFamily="Segoe UI" FontSize="11" FontWeight="SemiBold"/>
@@ -290,7 +290,7 @@
                     </Grid.RowDefinitions>
                     
                     <!-- Replacements List -->
-                    <ListView x:Name="ReplacementsList" Grid.Row="0" Background="#FFFDF7" BorderBrush="#D6C59C" BorderThickness="2" Margin="0,0,0,15" Padding="5" MouseDoubleClick="ReplacementsList_MouseDoubleClick" ItemContainerStyle="{StaticResource ModernListViewItem}">
+                    <ListView x:Name="ReplacementsList" Grid.Row="0" Background="{DynamicResource AppSurfaceBrush}" BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="2" Margin="0,0,0,15" Padding="5" MouseDoubleClick="ReplacementsList_MouseDoubleClick" ItemContainerStyle="{StaticResource ModernListViewItem}">
                         <ListView.ItemTemplate>
                             <DataTemplate>
                                 <Grid>
@@ -302,11 +302,11 @@
                                         <ColumnDefinition Width="100"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="{Binding Shortcut}" Foreground="#217783" FontWeight="Bold" FontSize="14" VerticalAlignment="Center"/>
-                                    <TextBlock Grid.Column="1" Text="{Binding Target}" Foreground="#26384F" FontSize="14" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
-                                    <TextBlock Grid.Column="2" Text="{Binding AllowedProcessDisplay}" Foreground="#8E8E93" FontSize="13" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
-                                    <TextBlock Grid.Column="3" Text="{Binding ExcludedProcessDisplay}" Foreground="#8E8E93" FontSize="13" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
-                                    <CheckBox Grid.Column="4" Content="Auto-Expand" IsChecked="{Binding IsAutoExpand, Mode=TwoWay}" Foreground="#8E8E93" VerticalAlignment="Center" FontSize="12" Click="SettingChanged"/>
+                                    <TextBlock Grid.Column="0" Text="{Binding Shortcut}" Foreground="{DynamicResource AppAccentBrush}" FontWeight="Bold" FontSize="14" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding Target}" Foreground="{DynamicResource AppTextBrush}" FontSize="14" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding AllowedProcessDisplay}" Foreground="{DynamicResource AppMutedTextBrush}" FontSize="13" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Grid.Column="3" Text="{Binding ExcludedProcessDisplay}" Foreground="{DynamicResource AppMutedTextBrush}" FontSize="13" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                    <CheckBox Grid.Column="4" Content="Auto-Expand" IsChecked="{Binding IsAutoExpand, Mode=TwoWay}" Foreground="{DynamicResource AppMutedTextBrush}" VerticalAlignment="Center" FontSize="12" Click="SettingChanged"/>
                                     <Button Grid.Column="5" Click="DeleteReplacement_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="5">
                                         <Path Data="M9,3V4H4V6H5V19A2,2 0 0,0 7,21H17A2,2 0 0,0 19,19V6H20V4H15V3H9M7,6H17V19H7V6M9,8V17H11V8H9M13,8V17H15V8H13Z" Fill="#FF453A" Width="14" Height="14" Stretch="Uniform"/>
                                     </Button>
@@ -316,11 +316,11 @@
                     </ListView>
 
                     <!-- Add Form -->
-                    <Border Grid.Row="1" Background="#FFFDF7" BorderBrush="#D6C59C" BorderThickness="2" Padding="16,13">
+                    <Border Grid.Row="1" Background="{DynamicResource AppSurfaceBrush}" BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="2" Padding="16,13">
                         <StackPanel>
-                            <TextBlock Text="Create a text expansion" Foreground="#26384F" FontSize="15" FontWeight="SemiBold"/>
+                            <TextBlock Text="Create a text expansion" Foreground="{DynamicResource AppTextBrush}" FontSize="15" FontWeight="SemiBold"/>
                             <TextBlock Text="Choose a short trigger and the text that should replace it."
-                                       Foreground="#6B7B8F" FontSize="11" Margin="0,2,0,11"/>
+                                       Foreground="{DynamicResource AppMutedTextBrush}" FontSize="11" Margin="0,2,0,11"/>
 
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -329,18 +329,18 @@
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0">
-                                    <TextBlock Text="When I type" Foreground="#52657B" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                                    <TextBlock Text="When I type" Foreground="{DynamicResource AppMutedTextBrush}" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,5"/>
                                     <TextBox x:Name="AddRepShortcutTxt" Height="34" ToolTip="Example: mail"/>
                                 </StackPanel>
-                                <TextBlock Grid.Column="1" Text="→" Foreground="#318D99" FontSize="17"
+                                <TextBlock Grid.Column="1" Text="→" Foreground="{DynamicResource AppAccentBrush}" FontSize="17"
                                            HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,17,0,0"/>
                                 <StackPanel Grid.Column="2">
-                                    <TextBlock Text="Replace it with" Foreground="#52657B" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                                    <TextBlock Text="Replace it with" Foreground="{DynamicResource AppMutedTextBrush}" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,5"/>
                                     <TextBox x:Name="AddRepTargetTxt" Height="46" AcceptsReturn="True"
                                              VerticalScrollBarVisibility="Auto" TextWrapping="Wrap" AcceptsTab="True"
                                              ToolTip="Example: mymail@mail.ir"/>
                                     <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                                        <TextBlock Text="Add dynamic value:" Foreground="#6B7B8F" FontSize="10"
+                                        <TextBlock Text="Add dynamic value:" Foreground="{DynamicResource AppMutedTextBrush}" FontSize="10"
                                                    VerticalAlignment="Center" Margin="0,0,7,0"/>
                                         <Button Content="{}{date}" Style="{StaticResource MiniChip}" Click="InsertRepMacro_Click" Tag="{}{date}"/>
                                         <Button Content="{}{time}" Style="{StaticResource MiniChip}" Click="InsertRepMacro_Click" Tag="{}{time}"/>
@@ -351,16 +351,16 @@
                                 </StackPanel>
                             </Grid>
 
-                            <Expander Margin="0,10,0,0" Foreground="#30445E">
+                            <Expander Margin="0,10,0,0" Foreground="{DynamicResource AppTextBrush}">
                                 <Expander.Header>
                                     <TextBlock Text="Limit this expansion to specific apps (optional)"
                                                FontWeight="SemiBold" FontSize="11"/>
                                 </Expander.Header>
-                                <Border Background="#FFF8E7" BorderBrush="#E1D3AE" BorderThickness="1"
+                                <Border Background="{DynamicResource AppBackgroundBrush}" BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="1"
                                         Padding="12,10" Margin="0,7,0,0">
                                     <StackPanel>
                                         <TextBlock Text="Leave both fields blank to use the expansion everywhere."
-                                                   Foreground="#6B7B8F" FontSize="10" Margin="0,0,0,9"/>
+                                                   Foreground="{DynamicResource AppMutedTextBrush}" FontSize="10" Margin="0,0,0,9"/>
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*"/>
@@ -368,7 +368,7 @@
                                                 <ColumnDefinition Width="*"/>
                                             </Grid.ColumnDefinitions>
                                             <StackPanel Grid.Column="0">
-                                                <TextBlock Text="Only use in this app" Foreground="#52657B" FontSize="11" Margin="0,0,0,5"/>
+                                                <TextBlock Text="Only use in this app" Foreground="{DynamicResource AppMutedTextBrush}" FontSize="11" Margin="0,0,0,5"/>
                                                 <Grid>
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="*"/>
@@ -383,7 +383,7 @@
                                                 </Grid>
                                             </StackPanel>
                                             <StackPanel Grid.Column="2">
-                                                <TextBlock Text="Never use in this app" Foreground="#52657B" FontSize="11" Margin="0,0,0,5"/>
+                                                <TextBlock Text="Never use in this app" Foreground="{DynamicResource AppMutedTextBrush}" FontSize="11" Margin="0,0,0,5"/>
                                                 <Grid>
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="*"/>
@@ -419,7 +419,7 @@
                     </Grid.RowDefinitions>
 
                     <!-- Actions List -->
-                    <ListView x:Name="ActionsList" Grid.Row="0" Background="#FFFDF7" BorderBrush="#D6C59C" BorderThickness="2" Margin="0,0,0,15" Padding="5" MouseDoubleClick="ActionsList_MouseDoubleClick" ItemContainerStyle="{StaticResource ModernListViewItem}">
+                    <ListView x:Name="ActionsList" Grid.Row="0" Background="{DynamicResource AppSurfaceBrush}" BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="2" Margin="0,0,0,15" Padding="5" MouseDoubleClick="ActionsList_MouseDoubleClick" ItemContainerStyle="{StaticResource ModernListViewItem}">
                         <ListView.ItemTemplate>
                             <DataTemplate>
                                 <Grid>
@@ -431,9 +431,9 @@
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Grid.Column="0" Text="{Binding Shortcut}" Foreground="#2F8A63" FontWeight="Bold" FontSize="14" VerticalAlignment="Center"/>
-                                    <TextBlock Grid.Column="1" Text="{Binding Target}" Foreground="#26384F" FontSize="14" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
-                                    <TextBlock Grid.Column="2" Text="{Binding AllowedProcessDisplay}" Foreground="#8E8E93" FontSize="13" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
-                                    <TextBlock Grid.Column="3" Text="{Binding ExcludedProcessDisplay}" Foreground="#8E8E93" FontSize="13" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding Target}" Foreground="{DynamicResource AppTextBrush}" FontSize="14" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding AllowedProcessDisplay}" Foreground="{DynamicResource AppMutedTextBrush}" FontSize="13" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Grid.Column="3" Text="{Binding ExcludedProcessDisplay}" Foreground="{DynamicResource AppMutedTextBrush}" FontSize="13" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
                                     <Button Grid.Column="4" Click="DeleteAction_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="5">
                                         <Path Data="M9,3V4H4V6H5V19A2,2 0 0,0 7,21H17A2,2 0 0,0 19,19V6H20V4H15V3H9M7,6H17V19H7V6M9,8V17H11V8H9M13,8V17H15V8H13Z" Fill="#FF453A" Width="14" Height="14" Stretch="Uniform"/>
                                     </Button>
@@ -443,7 +443,7 @@
                     </ListView>
 
                     <!-- Add Form -->
-                    <Border Grid.Row="1" Background="#FFF0C9" BorderBrush="#D6C59C" BorderThickness="2" Padding="15">
+                    <Border Grid.Row="1" Background="{DynamicResource AppSurfaceAltBrush}" BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="2" Padding="15">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
@@ -459,14 +459,14 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0" Margin="0,0,15,0">
-                                    <TextBlock Text="Abbreviation (e.g. tlg)" Foreground="#8E8E93" FontSize="11" Margin="0,0,0,5"/>
+                                    <TextBlock Text="Abbreviation (e.g. tlg)" Foreground="{DynamicResource AppMutedTextBrush}" FontSize="11" Margin="0,0,0,5"/>
                                     <TextBox x:Name="AddActShortcutTxt" Height="32"/>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Margin="0,0,10,0">
-                                    <TextBlock Text="App Path or Command (e.g. calc.exe)" Foreground="#8E8E93" FontSize="11" Margin="0,0,0,5"/>
+                                    <TextBlock Text="App Path or Command (e.g. calc.exe)" Foreground="{DynamicResource AppMutedTextBrush}" FontSize="11" Margin="0,0,0,5"/>
                                     <TextBox x:Name="AddActTargetTxt" Height="50" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" TextWrapping="Wrap" AcceptsTab="True"/>
                                     <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                                        <TextBlock Text="Insert: " Foreground="#8E8E93" FontSize="10" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                        <TextBlock Text="Insert: " Foreground="{DynamicResource AppMutedTextBrush}" FontSize="10" VerticalAlignment="Center" Margin="0,0,5,0"/>
                                         <Button Content="{}{date}" Style="{StaticResource MiniChip}" Click="InsertActMacro_Click" Tag="{}{date}"/>
                                         <Button Content="{}{time}" Style="{StaticResource MiniChip}" Click="InsertActMacro_Click" Tag="{}{time}"/>
                                         <Button Content="{}{clip}" Style="{StaticResource MiniChip}" Click="InsertActMacro_Click" Tag="{}{clip}"/>
@@ -496,7 +496,7 @@
 
                                 <!-- Allowed App -->
                                 <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                                    <TextBlock Text="Allowed App (optional)" Foreground="#8E8E93" FontSize="11" Margin="0,0,0,5"/>
+                                    <TextBlock Text="Allowed App (optional)" Foreground="{DynamicResource AppMutedTextBrush}" FontSize="11" Margin="0,0,0,5"/>
                                     <TextBox x:Name="AddActAllowedProcessTxt" Height="32"/>
                                 </StackPanel>
                                 <Button Grid.Column="1" Content="Pick..." Style="{StaticResource SecondaryButton}" Click="PickAllowedActApp_Click" VerticalAlignment="Bottom" Height="32" Margin="0,0,10,0"/>
@@ -504,7 +504,7 @@
 
                                 <!-- Excluded App -->
                                 <StackPanel Grid.Column="4" Margin="0,0,10,0">
-                                    <TextBlock Text="Excluded App (optional)" Foreground="#8E8E93" FontSize="11" Margin="0,0,0,5"/>
+                                    <TextBlock Text="Excluded App (optional)" Foreground="{DynamicResource AppMutedTextBrush}" FontSize="11" Margin="0,0,0,5"/>
                                     <TextBox x:Name="AddActExcludedProcessTxt" Height="32"/>
                                 </StackPanel>
                                 <Button Grid.Column="5" Content="Pick..." Style="{StaticResource SecondaryButton}" Click="PickExcludedActApp_Click" VerticalAlignment="Bottom" Height="32" Margin="0,0,10,0"/>
@@ -525,24 +525,26 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
+                    <local:SmoothScrollViewer Grid.Row="0"
+                                              VerticalScrollBarVisibility="Auto"
+                                              HorizontalScrollBarVisibility="Disabled">
                         <StackPanel Margin="0,0,0,20">
                             <!-- Toggle Options -->
                             <Border Background="{DynamicResource AppSurfaceBrush}" BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="2" Padding="15" Margin="0,0,0,15">
                                 <StackPanel>
                                     <TextBlock Text="Everyday Settings" FontFamily="Segoe UI" Foreground="{DynamicResource AppTextBrush}" FontSize="16" FontWeight="Bold" Margin="0,0,0,15"/>
                                     
-                                    <CheckBox x:Name="SuppressKeysChk" Content="Keep shortcut keystrokes out of the active app" Foreground="#26384F" Margin="0,0,0,12" Checked="SettingChanged" Unchecked="SettingChanged"/>
-                                    <TextBlock Text="If checked, the keys you type after Left Ctrl will not be sent to the active application until you cancel or submit." Foreground="#8E8E93" FontSize="11" Margin="20,0,0,15"/>
+                                    <CheckBox x:Name="SuppressKeysChk" Content="Keep shortcut keystrokes out of the active app" Foreground="{DynamicResource AppTextBrush}" Margin="0,0,0,12" Checked="SettingChanged" Unchecked="SettingChanged"/>
+                                    <TextBlock Text="If checked, the keys you type after Left Ctrl will not be sent to the active application until you cancel or submit." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="11" Margin="20,0,0,15"/>
 
-                                    <CheckBox x:Name="ShowOverlayChk" Content="Show what I am typing for a shortcut" Foreground="#26384F" Margin="0,0,0,12" Checked="SettingChanged" Unchecked="SettingChanged"/>
-                                    <TextBlock Text="Displays a small overlay at the bottom right showing current typed trigger." Foreground="#8E8E93" FontSize="11" Margin="20,0,0,15"/>
+                                    <CheckBox x:Name="ShowOverlayChk" Content="Show what I am typing for a shortcut" Foreground="{DynamicResource AppTextBrush}" Margin="0,0,0,12" Checked="SettingChanged" Unchecked="SettingChanged"/>
+                                    <TextBlock Text="Displays a small overlay at the bottom right showing current typed trigger." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="11" Margin="20,0,0,15"/>
 
-                                    <CheckBox x:Name="RunAtStartupChk" Content="Launch the desktop pet when I sign in to Windows" Foreground="#26384F" Checked="SettingChanged" Unchecked="SettingChanged" Margin="0,0,0,12"/>
-                                    <TextBlock Text="Off by default. Uncheck this at any time to opt out; it affects only your Windows account." Foreground="#8E8E93" FontSize="11" Margin="20,0,0,15"/>
+                                    <CheckBox x:Name="RunAtStartupChk" Content="Launch the desktop pet when I sign in to Windows" Foreground="{DynamicResource AppTextBrush}" Checked="SettingChanged" Unchecked="SettingChanged" Margin="0,0,0,12"/>
+                                    <TextBlock Text="Off by default. Uncheck this at any time to opt out; it affects only your Windows account." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="11" Margin="20,0,0,15"/>
 
-                                    <CheckBox x:Name="PlaySoundsChk" Content="Play sounds when an action succeeds" Foreground="#26384F" Checked="SettingChanged" Unchecked="SettingChanged"/>
-                                    <TextBlock Text="Plays mechanical click sounds when recording, and a chime when a shortcut triggers." Foreground="#8E8E93" FontSize="11" Margin="20,0,0,5"/>
+                                    <CheckBox x:Name="PlaySoundsChk" Content="Play sounds when an action succeeds" Foreground="{DynamicResource AppTextBrush}" Checked="SettingChanged" Unchecked="SettingChanged"/>
+                                    <TextBlock Text="Plays mechanical click sounds when recording, and a chime when a shortcut triggers." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="11" Margin="20,0,0,5"/>
                                 </StackPanel>
                             </Border>
 
@@ -553,7 +555,7 @@
                                                FontSize="16"
                                                FontWeight="Bold"
                                                Margin="0,0,0,5"/>
-                                    <TextBlock Text="Choose a light color theme. The app never forces a dark theme."
+                                    <TextBlock Text="Choose a light, dark, or colorful theme. Changes apply immediately."
                                                Foreground="{DynamicResource AppMutedTextBrush}"
                                                FontSize="11"
                                                Margin="0,0,0,13"/>
@@ -690,7 +692,7 @@
                                                          Maximum="100"
                                                          Visibility="Collapsed"/>
                                             <TextBlock x:Name="LocalAiStatusTxt"
-                                                       Foreground="#597089"
+                                                       Foreground="{DynamicResource AppMutedTextBrush}"
                                                        FontSize="11"
                                                        TextWrapping="Wrap"/>
                                         </StackPanel>
@@ -709,7 +711,7 @@
                                               Unchecked="SettingChanged"
                                               Margin="0,0,0,5"/>
                                     <TextBlock Text="Ambient AI stays local: only the current window title or music title/artist is used. Hosted services are never called for background comments."
-                                               Foreground="#8E8E93"
+                                               Foreground="{DynamicResource AppMutedTextBrush}"
                                                FontSize="11"
                                                TextWrapping="Wrap"
                                                Margin="20,0,0,14"/>
@@ -761,12 +763,12 @@
                                               Foreground="{DynamicResource AppTextBrush}">
                                         <StackPanel Margin="0,12,0,0">
                                             <TextBlock Text="Computer actions still use the safe local command system. These fields only affect natural conversation."
-                                                       Foreground="#6B7B8F"
+                                                       Foreground="{DynamicResource AppMutedTextBrush}"
                                                        FontSize="11"
                                                        TextWrapping="Wrap"
                                                        Margin="0,0,0,10"/>
                                             <TextBlock Text="Chat-completions endpoint"
-                                                       Foreground="#26384F"
+                                                       Foreground="{DynamicResource AppTextBrush}"
                                                        FontWeight="SemiBold"
                                                        Margin="0,0,0,5"/>
                                             <TextBox x:Name="AiEndpointTxt"
@@ -782,7 +784,7 @@
                                                 </Grid.ColumnDefinitions>
                                                 <StackPanel>
                                                     <TextBlock Text="API key (optional for local servers)"
-                                                               Foreground="#26384F"
+                                                               Foreground="{DynamicResource AppTextBrush}"
                                                                FontWeight="SemiBold"
                                                                Margin="0,0,0,5"/>
                                                     <PasswordBox x:Name="AiApiKeyTxt"
@@ -791,7 +793,7 @@
                                                 </StackPanel>
                                                 <StackPanel Grid.Column="2">
                                                     <TextBlock Text="Model name"
-                                                               Foreground="#26384F"
+                                                               Foreground="{DynamicResource AppTextBrush}"
                                                                FontWeight="SemiBold"
                                                                Margin="0,0,0,5"/>
                                                     <TextBox x:Name="AiModelTxt"
@@ -805,10 +807,10 @@
                             </Border>
 
                             <!-- Backup & Restore -->
-                            <Border Background="#FFF0C9" BorderBrush="#D6C59C" BorderThickness="2" Padding="15" Margin="0,0,0,15">
+                            <Border Background="{DynamicResource AppSurfaceAltBrush}" BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="2" Padding="15" Margin="0,0,0,15">
                                 <StackPanel>
-                                    <TextBlock Text="Advanced: Backup and Restore" FontFamily="Segoe UI" Foreground="#26384F" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
-                                    <TextBlock Text="Export your expansions and actions to a file, or import from an existing backup." Foreground="#8E8E93" FontSize="11" Margin="0,0,0,12"/>
+                                    <TextBlock Text="Advanced: Backup and Restore" FontFamily="Segoe UI" Foreground="{DynamicResource AppTextBrush}" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+                                    <TextBlock Text="Export your expansions and actions to a file, or import from an existing backup." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="11" Margin="0,0,0,12"/>
                                     <StackPanel Orientation="Horizontal">
                                         <Button Content="Export Mappings..." Style="{StaticResource SecondaryButton}" Click="ExportMappings_Click" Margin="0,0,12,0" Padding="15,0" Height="32"/>
                                         <Button Content="Import Mappings..." Style="{StaticResource SecondaryButton}" Click="ImportMappings_Click" Padding="15,0" Height="32"/>
@@ -817,16 +819,16 @@
                             </Border>
 
                             <!-- Exclusions -->
-                            <Border Background="#FFFDF7" BorderBrush="#D6C59C" BorderThickness="2" Padding="15">
+                            <Border Background="{DynamicResource AppSurfaceBrush}" BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="2" Padding="15">
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="*"/>
                                         <RowDefinition Height="Auto"/>
                                     </Grid.RowDefinitions>
-                                    <TextBlock Grid.Row="0" Text="Advanced: Apps Where Features Stay Off" FontFamily="Segoe UI" Foreground="#26384F" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+                                    <TextBlock Grid.Row="0" Text="Advanced: Apps Where Features Stay Off" FontFamily="Segoe UI" Foreground="{DynamicResource AppTextBrush}" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
                                     
-                                    <ListView x:Name="ExclusionsList" Grid.Row="1" Height="120" Background="#FFFFFF" BorderBrush="#D6C59C" BorderThickness="2" Margin="0,0,0,10" Padding="5">
+                                    <ListView x:Name="ExclusionsList" Grid.Row="1" Height="120" Background="{DynamicResource AppInputBrush}" BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="2" Margin="0,0,0,10" Padding="5">
                                         <ListView.ItemTemplate>
                                             <DataTemplate>
                                                 <Grid>
@@ -834,7 +836,7 @@
                                                         <ColumnDefinition Width="*"/>
                                                         <ColumnDefinition Width="Auto"/>
                                                     </Grid.ColumnDefinitions>
-                                                    <TextBlock Grid.Column="0" Text="{Binding}" Foreground="#26384F" FontSize="13" VerticalAlignment="Center"/>
+                                                    <TextBlock Grid.Column="0" Text="{Binding}" Foreground="{DynamicResource AppTextBrush}" FontSize="13" VerticalAlignment="Center"/>
                                                     <Button Grid.Column="1" Click="DeleteExclusion_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="5">
                                                         <Path Data="M9,3V4H4V6H5V19A2,2 0 0,0 7,21H17A2,2 0 0,0 19,19V6H20V4H15V3H9M7,6H17V19H7V6M9,8V17H11V8H9M13,8V17H15V8H13Z" Fill="#FF453A" Width="12" Height="12" Stretch="Uniform"/>
                                                     </Button>
@@ -856,7 +858,7 @@
                                 </Grid>
                             </Border>
                         </StackPanel>
-                    </ScrollViewer>
+                    </local:SmoothScrollViewer>
                 </Grid>
             </TabItem>
 
@@ -866,45 +868,45 @@
                     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,0,10,0">
                         <StackPanel Margin="0,0,0,20">
                             <!-- Welcome Header -->
-                            <Border Background="#FFFDF7" BorderBrush="#D6C59C" BorderThickness="2" Padding="20" Margin="0,0,0,15">
+                            <Border Background="{DynamicResource AppSurfaceBrush}" BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="2" Padding="20" Margin="0,0,0,15">
                                 <StackPanel>
-                                    <TextBlock Text="Welcome to Desktop Pet" FontFamily="Segoe UI" FontSize="20" FontWeight="Bold" Foreground="#217783" Margin="0,0,0,8"/>
-                                    <TextBlock Text="Your companion can expand text, run actions, de-gibberish text typed under the wrong keyboard layout, translate selected text, read the screen with OCR, and offer context-aware help." Foreground="#26384F" FontSize="13" TextWrapping="Wrap" LineHeight="18"/>
+                                    <TextBlock Text="Welcome to Desktop Pet" FontFamily="Segoe UI" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource AppAccentBrush}" Margin="0,0,0,8"/>
+                                    <TextBlock Text="Your companion can expand text, run actions, de-gibberish text typed under the wrong keyboard layout, translate selected text, read the screen with OCR, and offer context-aware help." Foreground="{DynamicResource AppTextBrush}" FontSize="13" TextWrapping="Wrap" LineHeight="18"/>
                                 </StackPanel>
                             </Border>
 
                             <!-- Modes of Operation -->
-                            <Border Background="#FFF0C9" BorderBrush="#D6C59C" BorderThickness="2" Padding="20" Margin="0,0,0,15">
+                            <Border Background="{DynamicResource AppSurfaceAltBrush}" BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="2" Padding="20" Margin="0,0,0,15">
                                 <StackPanel>
-                                    <TextBlock Text="1. How Shortcuts Work" FontFamily="Segoe UI" FontSize="16" FontWeight="Bold" Foreground="#26384F" Margin="0,0,0,12"/>
+                                    <TextBlock Text="1. How Shortcuts Work" FontFamily="Segoe UI" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource AppTextBrush}" Margin="0,0,0,12"/>
                                     
                                     <TextBlock Text="• Auto-Expand Mode (Trigger Character)" FontWeight="SemiBold" Foreground="#30D158" FontSize="13" Margin="0,0,0,4"/>
-                                    <TextBlock Text="Type your abbreviation followed by a semicolon (e.g. typing 'mail;' where 'mail' is mapped). The abbreviation is instantly erased and replaced by your expanded text. Perfect for fast, uninterrupted typing." Foreground="#8E8E93" FontSize="12" TextWrapping="Wrap" Margin="10,0,0,12" LineHeight="16"/>
+                                    <TextBlock Text="Type your abbreviation followed by a semicolon (e.g. typing 'mail;' where 'mail' is mapped). The abbreviation is instantly erased and replaced by your expanded text. Perfect for fast, uninterrupted typing." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="12" TextWrapping="Wrap" Margin="10,0,0,12" LineHeight="16"/>
 
                                     <TextBlock Text="• Standard Mode (Interception Buffer)" FontWeight="SemiBold" Foreground="#30D158" FontSize="13" Margin="0,0,0,4"/>
-                                    <TextBlock Text="Tap Left Ctrl (starts recording a mechanical click sound) → Type your abbreviation (e.g. 'mail') → Tap Right Ctrl (submits). The text is replaced. To cancel recording, tap Left Ctrl again." Foreground="#8E8E93" FontSize="12" TextWrapping="Wrap" Margin="10,0,0,0" LineHeight="16"/>
+                                    <TextBlock Text="Tap Left Ctrl (starts recording a mechanical click sound) → Type your abbreviation (e.g. 'mail') → Tap Right Ctrl (submits). The text is replaced. To cancel recording, tap Left Ctrl again." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="12" TextWrapping="Wrap" Margin="10,0,0,0" LineHeight="16"/>
                                 </StackPanel>
                             </Border>
 
                             <!-- Text Expansions & Macros -->
-                            <Border Background="#FFFDF7" BorderBrush="#D6C59C" BorderThickness="2" Padding="20" Margin="0,0,0,15">
+                            <Border Background="{DynamicResource AppSurfaceBrush}" BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="2" Padding="20" Margin="0,0,0,15">
                                 <StackPanel>
-                                    <TextBlock Text="2. Dynamic Text Pieces" FontFamily="Segoe UI" FontSize="16" FontWeight="Bold" Foreground="#26384F" Margin="0,0,0,12"/>
-                                    <TextBlock Text="These placeholders automatically insert useful information into an expansion:" Foreground="#26384F" FontSize="13" TextWrapping="Wrap" Margin="0,0,0,10"/>
+                                    <TextBlock Text="2. Dynamic Text Pieces" FontFamily="Segoe UI" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource AppTextBrush}" Margin="0,0,0,12"/>
+                                    <TextBlock Text="These placeholders automatically insert useful information into an expansion:" Foreground="{DynamicResource AppTextBrush}" FontSize="13" TextWrapping="Wrap" Margin="0,0,0,10"/>
                                     
-                                    <TextBlock Text="• {date}: Inserts the current local date (e.g. 2026-07-20)." Foreground="#8E8E93" FontSize="12" Margin="10,0,0,4"/>
-                                    <TextBlock Text="• {time}: Inserts the current local time (e.g. 23:51)." Foreground="#8E8E93" FontSize="12" Margin="10,0,0,4"/>
-                                    <TextBlock Text="• {clip}: Pastes the current contents of your clipboard." Foreground="#8E8E93" FontSize="12" Margin="10,0,0,4"/>
-                                    <TextBlock Text="• {sel}: Grabs the active text selection and inserts it." Foreground="#8E8E93" FontSize="12" Margin="10,0,0,4"/>
-                                    <TextBlock Text="• {cursor}: Places your keyboard cursor at this position after pasting." Foreground="#8E8E93" FontSize="12" Margin="10,0,0,0"/>
+                                    <TextBlock Text="• {date}: Inserts the current local date (e.g. 2026-07-20)." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="12" Margin="10,0,0,4"/>
+                                    <TextBlock Text="• {time}: Inserts the current local time (e.g. 23:51)." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="12" Margin="10,0,0,4"/>
+                                    <TextBlock Text="• {clip}: Pastes the current contents of your clipboard." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="12" Margin="10,0,0,4"/>
+                                    <TextBlock Text="• {sel}: Grabs the active text selection and inserts it." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="12" Margin="10,0,0,4"/>
+                                    <TextBlock Text="• {cursor}: Places your keyboard cursor at this position after pasting." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="12" Margin="10,0,0,0"/>
                                 </StackPanel>
                             </Border>
 
                             <!-- Text Functions -->
-                            <Border Background="#FFF0C9" BorderBrush="#D6C59C" BorderThickness="2" Padding="20" Margin="0,0,0,15">
+                            <Border Background="{DynamicResource AppSurfaceAltBrush}" BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="2" Padding="20" Margin="0,0,0,15">
                                 <StackPanel>
-                                    <TextBlock Text="3. Advanced Text Functions" FontFamily="Segoe UI" FontSize="16" FontWeight="Bold" Foreground="#26384F" Margin="0,0,0,12"/>
-                                    <TextBlock Text="Advanced users can prefix a target with 'fn:' to transform selected or typed text:" Foreground="#26384F" FontSize="13" TextWrapping="Wrap" Margin="0,0,0,10" LineHeight="18"/>
+                                    <TextBlock Text="3. Advanced Text Functions" FontFamily="Segoe UI" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource AppTextBrush}" Margin="0,0,0,12"/>
+                                    <TextBlock Text="Advanced users can prefix a target with 'fn:' to transform selected or typed text:" Foreground="{DynamicResource AppTextBrush}" FontSize="13" TextWrapping="Wrap" Margin="0,0,0,10" LineHeight="18"/>
                                     
                                     <Grid Margin="10,0,0,0">
                                         <Grid.ColumnDefinitions>
@@ -923,54 +925,54 @@
                                         </Grid.RowDefinitions>
 
                                         <TextBlock Grid.Row="0" Grid.Column="0" Text="fn:upper" Foreground="#007AFF" FontSize="12" FontWeight="SemiBold" Margin="0,4,0,4"/>
-                                        <TextBlock Grid.Row="0" Grid.Column="1" Text="Converts text to UPPERCASE." Foreground="#8E8E93" FontSize="12" Margin="0,4,0,4"/>
+                                        <TextBlock Grid.Row="0" Grid.Column="1" Text="Converts text to UPPERCASE." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="12" Margin="0,4,0,4"/>
 
                                         <TextBlock Grid.Row="1" Grid.Column="0" Text="fn:lower" Foreground="#007AFF" FontSize="12" FontWeight="SemiBold" Margin="0,4,0,4"/>
-                                        <TextBlock Grid.Row="1" Grid.Column="1" Text="Converts text to lowercase." Foreground="#8E8E93" FontSize="12" Margin="0,4,0,4"/>
+                                        <TextBlock Grid.Row="1" Grid.Column="1" Text="Converts text to lowercase." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="12" Margin="0,4,0,4"/>
 
                                         <TextBlock Grid.Row="2" Grid.Column="0" Text="fn:title" Foreground="#007AFF" FontSize="12" FontWeight="SemiBold" Margin="0,4,0,4"/>
-                                        <TextBlock Grid.Row="2" Grid.Column="1" Text="Converts text to Title Case (Capitalizes Words)." Foreground="#8E8E93" FontSize="12" Margin="0,4,0,4"/>
+                                        <TextBlock Grid.Row="2" Grid.Column="1" Text="Converts text to Title Case (Capitalizes Words)." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="12" Margin="0,4,0,4"/>
 
                                         <TextBlock Grid.Row="3" Grid.Column="0" Text="fn:rev / fn:reverse" Foreground="#007AFF" FontSize="12" FontWeight="SemiBold" Margin="0,4,0,4"/>
-                                        <TextBlock Grid.Row="3" Grid.Column="1" Text="Reverses the text string (e.g. 'hello' → 'olleh')." Foreground="#8E8E93" FontSize="12" Margin="0,4,0,4"/>
+                                        <TextBlock Grid.Row="3" Grid.Column="1" Text="Reverses the text string (e.g. 'hello' → 'olleh')." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="12" Margin="0,4,0,4"/>
 
                                         <TextBlock Grid.Row="4" Grid.Column="0" Text="fn:len" Foreground="#007AFF" FontSize="12" FontWeight="SemiBold" Margin="0,4,0,4"/>
-                                        <TextBlock Grid.Row="4" Grid.Column="1" Text="Returns the character length of the input." Foreground="#8E8E93" FontSize="12" Margin="0,4,0,4"/>
+                                        <TextBlock Grid.Row="4" Grid.Column="1" Text="Returns the character length of the input." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="12" Margin="0,4,0,4"/>
 
                                         <TextBlock Grid.Row="5" Grid.Column="0" Text="fn:calc" Foreground="#007AFF" FontSize="12" FontWeight="SemiBold" Margin="0,4,0,4"/>
-                                        <TextBlock Grid.Row="5" Grid.Column="1" Text="Evaluates mathematical expressions (e.g. '12*3' → '36')." Foreground="#8E8E93" FontSize="12" Margin="0,4,0,4"/>
+                                        <TextBlock Grid.Row="5" Grid.Column="1" Text="Evaluates mathematical expressions (e.g. '12*3' → '36')." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="12" Margin="0,4,0,4"/>
 
                                         <TextBlock Grid.Row="6" Grid.Column="0" Text="fn:morse / fn:mc" Foreground="#007AFF" FontSize="12" FontWeight="SemiBold" Margin="0,4,0,4"/>
-                                        <TextBlock Grid.Row="6" Grid.Column="1" Text="Converts text to Morse Code." Foreground="#8E8E93" FontSize="12" Margin="0,4,0,4"/>
+                                        <TextBlock Grid.Row="6" Grid.Column="1" Text="Converts text to Morse Code." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="12" Margin="0,4,0,4"/>
 
                                         <TextBlock Grid.Row="7" Grid.Column="0" Text="fn:unmorse / fn:umc" Foreground="#007AFF" FontSize="12" FontWeight="SemiBold" Margin="0,4,0,4"/>
-                                        <TextBlock Grid.Row="7" Grid.Column="1" Text="Translates Morse Code back to text (supports Unicode middle dots, bullets, and dashes)." Foreground="#8E8E93" FontSize="12" Margin="0,4,0,4"/>
+                                        <TextBlock Grid.Row="7" Grid.Column="1" Text="Translates Morse Code back to text (supports Unicode middle dots, bullets, and dashes)." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="12" Margin="0,4,0,4"/>
                                     </Grid>
                                 </StackPanel>
                             </Border>
 
                             <!-- Scope Control -->
-                            <Border Background="#FFFDF7" BorderBrush="#D6C59C" BorderThickness="2" Padding="20" Margin="0,0,0,15">
+                            <Border Background="{DynamicResource AppSurfaceBrush}" BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="2" Padding="20" Margin="0,0,0,15">
                                 <StackPanel>
-                                    <TextBlock Text="4. Choose Where Features Work" FontFamily="Segoe UI" FontSize="16" FontWeight="Bold" Foreground="#26384F" Margin="0,0,0,12"/>
-                                    <TextBlock Text="You can allow a shortcut only in one app, block it in one app, or disable all features in selected apps." Foreground="#26384F" FontSize="13" TextWrapping="Wrap" Margin="0,0,0,10" LineHeight="18"/>
+                                    <TextBlock Text="4. Choose Where Features Work" FontFamily="Segoe UI" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource AppTextBrush}" Margin="0,0,0,12"/>
+                                    <TextBlock Text="You can allow a shortcut only in one app, block it in one app, or disable all features in selected apps." Foreground="{DynamicResource AppTextBrush}" FontSize="13" TextWrapping="Wrap" Margin="0,0,0,10" LineHeight="18"/>
                                     
-                                    <TextBlock Text="• Allowed App: The shortcut will ONLY trigger when this program is active." Foreground="#8E8E93" FontSize="12" Margin="10,0,0,4"/>
-                                    <TextBlock Text="• Excluded App: The shortcut will trigger everywhere EXCEPT in this program." Foreground="#8E8E93" FontSize="12" Margin="10,0,0,4"/>
-                                    <TextBlock Text="• Pick Button: Choose from a list of currently running windows." Foreground="#8E8E93" FontSize="12" Margin="10,0,0,4"/>
-                                    <TextBlock Text="• Browse Button: Select the executable file (.exe) path from your disk." Foreground="#8E8E93" FontSize="12" Margin="10,0,0,0"/>
+                                    <TextBlock Text="• Allowed App: The shortcut will ONLY trigger when this program is active." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="12" Margin="10,0,0,4"/>
+                                    <TextBlock Text="• Excluded App: The shortcut will trigger everywhere EXCEPT in this program." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="12" Margin="10,0,0,4"/>
+                                    <TextBlock Text="• Pick Button: Choose from a list of currently running windows." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="12" Margin="10,0,0,4"/>
+                                    <TextBlock Text="• Browse Button: Select the executable file (.exe) path from your disk." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="12" Margin="10,0,0,0"/>
                                 </StackPanel>
                             </Border>
 
                             <!-- Shortcuts and Controls -->
-                            <Border Background="#FFF0C9" BorderBrush="#D6C59C" BorderThickness="2" Padding="20">
+                            <Border Background="{DynamicResource AppSurfaceAltBrush}" BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="2" Padding="20">
                                 <StackPanel>
-                                    <TextBlock Text="5. Keyboard Controls" FontFamily="Segoe UI" FontSize="16" FontWeight="Bold" Foreground="#26384F" Margin="0,0,0,12"/>
+                                    <TextBlock Text="5. Keyboard Controls" FontFamily="Segoe UI" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource AppTextBrush}" Margin="0,0,0,12"/>
                                     
-                                    <TextBlock Text="• Ctrl + Alt + P: Global Pause/Resume shortcut. Swallows keys so it doesn't type." Foreground="#8E8E93" FontSize="12" Margin="10,0,0,4"/>
-                                    <TextBlock Text="• Ctrl + Alt + K: De-gibberish selected text. Example: Persian-layout اثممخ becomes hello." Foreground="#8E8E93" FontSize="12" Margin="10,0,0,4" TextWrapping="Wrap"/>
-                                    <TextBlock Text="• Scroll Lock: Alternative Pause/Resume toggle key." Foreground="#8E8E93" FontSize="12" Margin="10,0,0,4"/>
-                                    <TextBlock Text="• Minimize Window: Closing the main window automatically minimizes it to the system tray. Use the tray icon menu to open the dashboard or fully Exit." Foreground="#8E8E93" FontSize="12" Margin="10,0,0,0" TextWrapping="Wrap" LineHeight="16"/>
+                                    <TextBlock Text="• Ctrl + Alt + P: Global Pause/Resume shortcut. Swallows keys so it doesn't type." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="12" Margin="10,0,0,4"/>
+                                    <TextBlock Text="• Ctrl + Alt + K: De-gibberish selected text. Example: Persian-layout اثممخ becomes hello." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="12" Margin="10,0,0,4" TextWrapping="Wrap"/>
+                                    <TextBlock Text="• Scroll Lock: Alternative Pause/Resume toggle key." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="12" Margin="10,0,0,4"/>
+                                    <TextBlock Text="• Minimize Window: Closing the main window automatically minimizes it to the system tray. Use the tray icon menu to open the dashboard or fully Exit." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="12" Margin="10,0,0,0" TextWrapping="Wrap" LineHeight="16"/>
                                 </StackPanel>
                             </Border>
                         </StackPanel>

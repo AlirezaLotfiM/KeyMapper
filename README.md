@@ -37,6 +37,9 @@ The program recommends a model based on available memory and CPU threads. A mode
 | Lite | Qwen3 0.6B Q8 | 639 MB | Modest PCs and basic Persian/English conversation |
 | Balanced | Qwen3 1.7B Q8 | 1.83 GB | Better personality and conversation on most modern PCs |
 | Quality | Qwen3 4B Q4_K_M | 2.5 GB | More nuanced replies on systems with generous memory |
+| Classic | Qwen2.5 3B Instruct Q4_K_M | 2.1 GB | Direct, concise instruction-following as an alternative to Qwen3 |
+| Pro | Qwen3 8B Q4_K_M | 5.03 GB | Richer bilingual conversation on powerful desktops |
+| Max | Qwen3 14B Q4_K_M | 9 GB | Highest local quality for high-memory systems |
 
 Downloaded models are stored under:
 
@@ -44,7 +47,7 @@ Downloaded models are stored under:
 %LOCALAPPDATA%\KeyMapper\Models
 ```
 
-They can be removed from Settings at any time. Inference uses [LLamaSharp](https://github.com/SciSharp/LLamaSharp) with a CPU backend for broad Windows compatibility. The selected [Qwen3 GGUF](https://huggingface.co/Qwen) model runs locally after download.
+They can be removed from Settings at any time. Inference uses [LLamaSharp](https://github.com/SciSharp/LLamaSharp) with a CPU backend for broad Windows compatibility. The selected official [Qwen GGUF](https://huggingface.co/Qwen) model runs locally after download.
 
 ### PixelYar Cloud preview
 
@@ -89,13 +92,16 @@ Settings → Everyday Settings → Launch the desktop pet when I sign in to Wind
 
 Uncheck it at any time to opt out. The setting affects only the current Windows user.
 
-### Light color themes
+### Color themes
 
-The interface uses Segoe UI and does not force a dark theme. Choose between:
+The interface uses Segoe UI and includes light, dark, and colorful palettes:
 
 - Warm Cream
 - Sky Paper
 - Soft Mint
+- Midnight Pixel
+- Graphite Gold
+- Sunset Arcade
 
 Theme location:
 
@@ -103,7 +109,7 @@ Theme location:
 Settings → Appearance
 ```
 
-The selected theme is saved locally and is also applied to the pet speech bubble and pixel-style context menu.
+The selected theme is saved locally and applies immediately to the control center, conversation window, translator, OCR results, pet speech bubble, and pixel-style context menu. The Settings page also uses eased mouse-wheel scrolling for long sections and model lists.
 
 ## Build
 
@@ -149,7 +155,7 @@ LibreTranslate runtime data is also kept outside the repository. API keys are st
 
 - C# and WPF
 - LLamaSharp and llama.cpp
-- Qwen3 GGUF models
+- Official Qwen3 and Qwen2.5 GGUF models
 - Tesseract OCR
 - LibreTranslate
 - Windows global keyboard and mouse hooks

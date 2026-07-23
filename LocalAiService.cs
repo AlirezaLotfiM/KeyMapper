@@ -77,7 +77,31 @@ namespace KeyMapper
                     "Qwen3-4B-Q4_K_M.gguf",
                     "https://huggingface.co/Qwen/Qwen3-4B-GGUF/resolve/main/Qwen3-4B-Q4_K_M.gguf?download=true",
                     2_500_000_000,
-                    16)
+                    16),
+                new LocalAiModelOption(
+                    "qwen2.5-3b-q4",
+                    "Classic · Qwen2.5 3B",
+                    "A dependable instruction model and a useful alternative for direct, concise replies.",
+                    "qwen2.5-3b-instruct-q4_k_m.gguf",
+                    "https://huggingface.co/Qwen/Qwen2.5-3B-Instruct-GGUF/resolve/main/qwen2.5-3b-instruct-q4_k_m.gguf?download=true",
+                    2_100_000_000,
+                    12),
+                new LocalAiModelOption(
+                    "qwen3-8b-q4",
+                    "Pro · Qwen3 8B",
+                    "Richer Persian and English conversation for powerful desktops. CPU replies will be slower.",
+                    "Qwen3-8B-Q4_K_M.gguf",
+                    "https://huggingface.co/Qwen/Qwen3-8B-GGUF/resolve/main/Qwen3-8B-Q4_K_M.gguf?download=true",
+                    5_030_000_000,
+                    24),
+                new LocalAiModelOption(
+                    "qwen3-14b-q4",
+                    "Max · Qwen3 14B",
+                    "The most capable local option. Intended for high-memory systems and patient, longer chats.",
+                    "Qwen3-14B-Q4_K_M.gguf",
+                    "https://huggingface.co/Qwen/Qwen3-14B-GGUF/resolve/main/Qwen3-14B-Q4_K_M.gguf?download=true",
+                    9_000_000_000,
+                    32)
             };
 
         private readonly HttpClient _httpClient = new()
@@ -103,14 +127,19 @@ namespace KeyMapper
         public LocalAiModelOption GetRecommendedModel()
         {
             double ramGb = GetTotalMemoryBytes() / 1024d / 1024d / 1024d;
-            if (ramGb >= 30 && Environment.ProcessorCount >= 12)
+            if (ramGb >= 46 && Environment.ProcessorCount >= 16)
             {
-                return Models[2];
+                return FindModel("qwen3-8b-q4")!;
+            }
+
+            if (ramGb >= 22 && Environment.ProcessorCount >= 12)
+            {
+                return FindModel("qwen3-4b-q4")!;
             }
 
             return ramGb >= 9
-                ? Models[1]
-                : Models[0];
+                ? FindModel("qwen3-1.7b-q8")!
+                : FindModel("qwen3-0.6b-q8")!;
         }
 
         public string GetHardwareSummary()

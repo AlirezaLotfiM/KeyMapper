@@ -16,9 +16,9 @@
         WindowStartupLocation="CenterOwner">
     <Window.Resources>
         <Style x:Key="AssistantButton" TargetType="Button">
-            <Setter Property="Background" Value="#FFFDF7"/>
-            <Setter Property="Foreground" Value="#30445E"/>
-            <Setter Property="BorderBrush" Value="#B8A77F"/>
+            <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}"/>
             <Setter Property="BorderThickness" Value="2"/>
             <Setter Property="Padding" Value="14,9"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
@@ -37,11 +37,11 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Background" Value="#F8EBC8"/>
-                                <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="#9F8958"/>
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="{DynamicResource AppAccentSoftBrush}"/>
+                                <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="{DynamicResource AppAccentBrush}"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Background" Value="#EEDBAA"/>
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="{DynamicResource AppSurfaceAltBrush}"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.55"/>
@@ -54,8 +54,8 @@
     </Window.Resources>
 
     <Border Margin="16"
-            Background="#FFF8E7"
-            BorderBrush="#40536C"
+            Background="{DynamicResource AppBackgroundBrush}"
+            BorderBrush="{DynamicResource AppBorderBrush}"
             BorderThickness="3">
         <Border.Effect>
             <DropShadowEffect BlurRadius="18" ShadowDepth="6" Color="#6B5A3A" Opacity="0.35"/>
@@ -90,12 +90,12 @@
                 <StackPanel>
                     <TextBlock x:Name="WindowTitleText"
                                Text="Talk to your companion"
-                               Foreground="#26384F"
+                               Foreground="{DynamicResource AppTextBrush}"
                                FontFamily="Segoe UI"
                                FontSize="20"
                                FontWeight="SemiBold"/>
                     <TextBlock Text="Persian or English · apps, websites, and Steam games"
-                               Foreground="#6B7B8F"
+                               Foreground="{DynamicResource AppMutedTextBrush}"
                                FontFamily="Segoe UI"
                                FontSize="11"
                                Margin="0,4,0,0"/>
@@ -124,8 +124,8 @@
 
             <Border Grid.Row="2"
                     Margin="24,0,24,0"
-                    Background="#FFFCF4"
-                    BorderBrush="#D8C9A2"
+                    Background="{DynamicResource AppSurfaceBrush}"
+                    BorderBrush="{DynamicResource AppBorderBrush}"
                     BorderThickness="2">
                 <ScrollViewer x:Name="ConversationScrollViewer"
                               VerticalScrollBarVisibility="Auto"
@@ -137,8 +137,8 @@
 
             <Border Grid.Row="3"
                     Margin="24,18,24,24"
-                    Background="#FFF0C9"
-                    BorderBrush="#D8C9A2"
+                    Background="{DynamicResource AppSurfaceAltBrush}"
+                    BorderBrush="{DynamicResource AppBorderBrush}"
                     BorderThickness="2"
                     Padding="14">
                 <Grid>
@@ -173,10 +173,10 @@
                         <TextBox x:Name="PromptTextBox"
                                  MinHeight="48"
                                  MaxHeight="100"
-                                 Background="#FFFFFF"
-                                 Foreground="#26384F"
-                                 CaretBrush="#318D99"
-                                 BorderBrush="#B8A77F"
+                                 Background="{DynamicResource AppInputBrush}"
+                                 Foreground="{DynamicResource AppTextBrush}"
+                                 CaretBrush="{DynamicResource AppAccentBrush}"
+                                 BorderBrush="{DynamicResource AppBorderBrush}"
                                  BorderThickness="2"
                                  Padding="12,10"
                                  FontFamily="Segoe UI"
@@ -191,8 +191,8 @@
                                 Content="Send"
                                 MinWidth="78"
                                 Margin="10,0,0,0"
-                                Background="#CDEFF0"
-                                BorderBrush="#318D99"
+                                Background="{DynamicResource AppAccentSoftBrush}"
+                                BorderBrush="{DynamicResource AppAccentBrush}"
                                 Style="{StaticResource AssistantButton}"
                                 Click="SendButton_Click"/>
                     </Grid>

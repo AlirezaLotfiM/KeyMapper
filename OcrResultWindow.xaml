@@ -16,9 +16,9 @@
         WindowStartupLocation="CenterOwner">
     <Window.Resources>
         <Style x:Key="OcrButton" TargetType="Button">
-            <Setter Property="Background" Value="#FFFDF7"/>
-            <Setter Property="Foreground" Value="#30445E"/>
-            <Setter Property="BorderBrush" Value="#B8A77F"/>
+            <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}"/>
             <Setter Property="BorderThickness" Value="2"/>
             <Setter Property="Padding" Value="16,10"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
@@ -37,11 +37,11 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Background" Value="#F8EBC8"/>
-                                <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="#9F8958"/>
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="{DynamicResource AppAccentSoftBrush}"/>
+                                <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="{DynamicResource AppAccentBrush}"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Background" Value="#EEDBAA"/>
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="{DynamicResource AppSurfaceAltBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -57,8 +57,8 @@
     </Window.Resources>
 
     <Border Margin="16"
-            Background="#FFF8E7"
-            BorderBrush="#40536C"
+            Background="{DynamicResource AppBackgroundBrush}"
+            BorderBrush="{DynamicResource AppBorderBrush}"
             BorderThickness="3"
             SnapsToDevicePixels="True">
         <Border.Effect>
@@ -93,12 +93,12 @@
                 </Grid.ColumnDefinitions>
                 <StackPanel>
                     <TextBlock Text="Screen text"
-                               Foreground="#26384F"
+                               Foreground="{DynamicResource AppTextBrush}"
                                FontFamily="Segoe UI"
                                FontSize="20"
                                FontWeight="SemiBold"/>
                     <TextBlock Text="Review what your companion found before using it."
-                               Foreground="#6B7B8F"
+                               Foreground="{DynamicResource AppMutedTextBrush}"
                                FontFamily="Segoe UI"
                                FontSize="11"
                                Margin="0,4,0,0"/>
@@ -123,8 +123,8 @@
             </Grid>
 
             <Border Grid.Row="2"
-                    Background="#FFF0C9"
-                    BorderBrush="#DEC995"
+                    Background="{DynamicResource AppSurfaceAltBrush}"
+                    BorderBrush="{DynamicResource AppBorderBrush}"
                     BorderThickness="0,2,0,2"
                     Padding="24,14">
                 <Grid>
@@ -146,7 +146,7 @@
                     <TextBlock x:Name="DetailsText"
                                Grid.Column="1"
                                VerticalAlignment="Center"
-                               Foreground="#52657B"
+                               Foreground="{DynamicResource AppMutedTextBrush}"
                                FontFamily="Segoe UI"
                                FontSize="11"
                                TextTrimming="CharacterEllipsis"/>
@@ -159,17 +159,17 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
                 <TextBlock Text="Recognized text"
-                           Foreground="#6B7B8F"
+                           Foreground="{DynamicResource AppMutedTextBrush}"
                            FontFamily="Segoe UI"
                            FontSize="10"
                            FontWeight="SemiBold"
                            Margin="0,0,0,8"/>
                 <TextBox x:Name="RecognizedTextBox"
                          Grid.Row="1"
-                         Background="#FFFFFF"
-                         Foreground="#26384F"
-                         CaretBrush="#318D99"
-                         BorderBrush="#C8B991"
+                         Background="{DynamicResource AppInputBrush}"
+                         Foreground="{DynamicResource AppTextBrush}"
+                         CaretBrush="{DynamicResource AppAccentBrush}"
+                         BorderBrush="{DynamicResource AppBorderBrush}"
                          BorderThickness="2"
                          Padding="14"
                          FontFamily="Segoe UI"
@@ -178,7 +178,7 @@
                          AcceptsTab="True"
                          TextWrapping="Wrap"
                          VerticalScrollBarVisibility="Auto"
-                         SelectionBrush="#B9E3E5"/>
+                         SelectionBrush="{DynamicResource AppAccentSoftBrush}"/>
             </Grid>
 
             <Grid Grid.Row="4" Margin="24,18,24,24">
@@ -189,7 +189,7 @@
                 </Grid.ColumnDefinitions>
                 <TextBlock x:Name="ActionStatusText"
                            VerticalAlignment="Center"
-                           Foreground="#6B7B8F"
+                           Foreground="{DynamicResource AppMutedTextBrush}"
                            FontFamily="Segoe UI"
                            FontSize="11"
                            Text="Edit anything before using it."/>
@@ -211,8 +211,8 @@
                 </Button>
                 <Button Grid.Column="2"
                         Style="{StaticResource OcrButton}"
-                        Background="#CDEFF0"
-                        BorderBrush="#318D99"
+                        Background="{DynamicResource AppAccentSoftBrush}"
+                        BorderBrush="{DynamicResource AppAccentBrush}"
                         Click="TranslateButton_Click">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="Translate" VerticalAlignment="Center"/>
