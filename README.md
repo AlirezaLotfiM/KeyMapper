@@ -68,6 +68,7 @@ The feature has its own on/off control.
 - Multi-pass OCR preprocessing and confidence reporting.
 - Copy or translate recognized text from the OCR result window.
 - Live translation with automatic source detection through LibreTranslate.
+- Persian translation normalizes common colloquial spelling and preserves technical acronyms such as SVG, JSON, API, OCR, and PDF.
 - De-gibberish text typed with the wrong Persian, English, or German keyboard layout.
 - Translate selected text without leaving the current application.
 
