@@ -73,11 +73,16 @@ namespace KeyMapper
                 double width = SelectionRectangle.Width;
                 double height = SelectionRectangle.Height;
 
+                System.Windows.Point screenPoint = PointToScreen(new System.Windows.Point(x, y));
+                System.Windows.Media.Matrix matrix = PresentationSource.FromVisual(this)?.CompositionTarget?.TransformToDevice ?? System.Windows.Media.Matrix.Identity;
+                int physicalWidth = (int)Math.Round(width * matrix.M11);
+                int physicalHeight = (int)Math.Round(height * matrix.M22);
+
                 Hide();
 
-                if (width > 5 && height > 5)
+                if (physicalWidth > 5 && physicalHeight > 5)
                 {
-                    Bitmap capturedBitmap = CaptureScreenRegion((int)x, (int)y, (int)width, (int)height);
+                    Bitmap capturedBitmap = CaptureScreenRegion((int)Math.Round(screenPoint.X), (int)Math.Round(screenPoint.Y), physicalWidth, physicalHeight);
                     _onSnipCompleted?.Invoke(capturedBitmap);
                 }
 

@@ -45,6 +45,7 @@ namespace KeyMapper
         public bool LibreTranslateAutoCopy { get; set; } = false;
         public string LayoutFixHotkey { get; set; } = "Ctrl+Alt+K";
         public string CurrentCharacter { get; set; } = "Pink Monster";
+        public bool PetHorizontalOnlyWalking { get; set; } = false;
     }
 
     public class OldAppSettings

@@ -196,6 +196,17 @@ namespace KeyMapper
                     ? new FileInfo(partialPath).Length
                     : 0;
 
+                // If already completed or within tolerance, finalize the file
+                if (existingLength >= model.DownloadBytes - 2048)
+                {
+                    File.Move(partialPath, finalPath, true);
+                    progress?.Report(new LocalAiDownloadProgress(
+                        model.Id,
+                        model.DownloadBytes,
+                        model.DownloadBytes));
+                    return;
+                }
+
                 using var request = new HttpRequestMessage(
                     HttpMethod.Get,
                     model.DownloadUrl);
@@ -209,6 +220,21 @@ namespace KeyMapper
                     request,
                     HttpCompletionOption.ResponseHeadersRead,
                     cancellationToken);
+
+                if (response.StatusCode == System.Net.HttpStatusCode.RequestedRangeNotSatisfiable)
+                {
+                    // 416 means the full file has already been downloaded
+                    if (File.Exists(partialPath))
+                    {
+                        File.Move(partialPath, finalPath, true);
+                    }
+                    progress?.Report(new LocalAiDownloadProgress(
+                        model.Id,
+                        model.DownloadBytes,
+                        model.DownloadBytes));
+                    return;
+                }
+
                 response.EnsureSuccessStatusCode();
 
                 bool resumed =

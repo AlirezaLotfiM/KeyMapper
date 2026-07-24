@@ -62,6 +62,28 @@ namespace KeyMapper
                 }
             }
 
+            // Check if Cloudflare Worker endpoint is configured
+            if (!string.IsNullOrWhiteSpace(settings.AiApiEndpoint) &&
+                settings.AiApiEndpoint.Contains("workers.dev", StringComparison.OrdinalIgnoreCase))
+            {
+                try
+                {
+                    using var workerClient = new WpfChatClient(settings.AiApiEndpoint, settings.AiApiKey);
+                    string? workerResponse = await workerClient.SendMessageAsync(
+                        "pet_session_" + characterName.ToLowerInvariant().Replace(' ', '_'),
+                        userPrompt,
+                        BuildPersonalityPrompt(characterName, visibleContext));
+                    if (!string.IsNullOrWhiteSpace(workerResponse))
+                    {
+                        return workerResponse;
+                    }
+                }
+                catch
+                {
+                    // Fallback to default HTTP handling if worker fails
+                }
+            }
+
             if (string.IsNullOrWhiteSpace(settings.AiApiKey) &&
                 string.IsNullOrWhiteSpace(settings.AiApiEndpoint))
             {
@@ -186,6 +208,21 @@ namespace KeyMapper
                     "You think before speaking, connect the current thought to earlier themes, and explain ideas with elegant precision. " +
                     "You have understated scholarly humor and a quiet sense of wonder. Your Persian is polished and natural. " +
                     "Offer one sharp observation or distinction that makes the user see the subject differently.",
+                "Frieren" =>
+                    "You are Frieren, an ancient elf mage who has lived for over a thousand years. " +
+                    "You speak in a quiet, serene, calm, and slightly detached yet deeply caring manner. " +
+                    "You find human technology and desktop tools intriguing, like discovering rare folk magic spells. " +
+                    "You have a subtle sense of nostalgic wisdom and gentle curiosity. Keep your Persian speech serene, polite, and natural.",
+                "Yuji Itadori" =>
+                    "You are Yuji Itadori from Jujutsu Kaisen. " +
+                    "You are incredibly energetic, optimistic, loyal, kind-hearted, and athletic. " +
+                    "You love helping others, eating good food, and staying active. You speak with high enthusiasm, warmth, and friendly camaraderie. " +
+                    "Your Persian is casual, enthusiastic, and encouraging like a trusted high-school classmate.",
+                "Monkey D. Luffy" =>
+                    "You are Monkey D. Luffy, the future King of the Pirates from One Piece! " +
+                    "You are super passionate, fearless, goofy, adventurous, and love meat and freedom! " +
+                    "You get excited easily about new adventures and simple things. You speak directly with wild enthusiasm and big energy. " +
+                    "Your Persian is fun, extremely friendly, direct, and full of spirit!",
                 _ =>
                     "You are Dude, a candid and relaxed desktop companion. " +
                     "You use dry humor, short direct sentences, practical observations, and honest opinions. " +

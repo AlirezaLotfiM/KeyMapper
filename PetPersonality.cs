@@ -451,6 +451,168 @@ namespace KeyMapper
                         [PetAction.WalkingOn] = ["Patrol mode on.", "All right, I’ll move.", "Walking resumed. Nothing dramatic."],
                         [PetAction.WalkingOff] = ["Holding position.", "Parked. Still useful.", "No walking. No problem."],
                         [PetAction.Settings] = ["Opening controls.", "Settings. Change what matters.", "Let’s tune it and get out."]
+                    }),
+
+                ["Frieren"] = new PetPersonalityProfile(
+                    "Frieren",
+                    "Frieren",
+                    movementMultiplier: 0.85,
+                    minimumPauseSeconds: 6,
+                    maximumPauseSeconds: 14,
+                    observationCooldownSeconds: 60,
+                    introductions:
+                    [
+                        "I am Frieren. This desktop is like a quiet library of folk spells.",
+                        "Hello. A thousand years of journeying, and now I am here on your screen.",
+                        "Human inventions are fascinating. Show me what we are working on today."
+                    ],
+                    browserObservations:
+                    [
+                        "Browsing “{topic}”… Human knowledge gathers here like grimoires in a vault.",
+                        "Select any text you wish to translate; language is just another kind of cipher."
+                    ],
+                    codingObservations:
+                    [
+                        "Writing code for “{topic}”… It reminds me of weaving spell formulas.",
+                        "One line at a time. Even grand spells are built from small incantations."
+                    ],
+                    chatObservations:
+                    [
+                        "A conversation in progress. Words travel fast across human networks."
+                    ],
+                    videoObservations:
+                    [
+                        "A moving picture. If there are subtitles, I can help extract or translate them."
+                    ],
+                    musicObservations:
+                    [
+                        "“{title}” by {artist}. A soothing melody; music endures across the ages."
+                    ],
+                    generalObservations:
+                    [
+                        "Take your time. Decades pass quickly, but a moment of quiet focus is precious."
+                    ],
+                    breakReminders:
+                    [
+                        "Even mages rest between journeys. Take a break and drink some warm tea."
+                    ],
+                    actionLines: new Dictionary<PetAction, string[]>
+                    {
+                        [PetAction.Command] = ["Tell me what spell or task you need.", "I am listening."],
+                        [PetAction.DeGibberish] = ["I’ll restore the intended letters.", "Unraveling the layout tangle."],
+                        [PetAction.Translate] = ["Translating between languages.", "Opening translation spell."],
+                        [PetAction.Ocr] = ["Draw a box around the runes on screen.", "Scanning screen text."],
+                        [PetAction.WalkingOn] = ["I shall take a gentle stroll.", "Wandering quietly."],
+                        [PetAction.WalkingOff] = ["Pausing here.", "I will rest for a moment."],
+                        [PetAction.Settings] = ["Opening preferences.", "Adjusting settings."]
+                    }),
+
+                ["Yuji Itadori"] = new PetPersonalityProfile(
+                    "Yuji Itadori",
+                    "Yuji",
+                    movementMultiplier: 1.2,
+                    minimumPauseSeconds: 2,
+                    maximumPauseSeconds: 5,
+                    observationCooldownSeconds: 40,
+                    introductions:
+                    [
+                        "Hey! I'm Yuji Itadori! Ready to crush some tasks together!",
+                        "Yo! What's the plan today? Let's give it 100%!",
+                        "Itadori Yuji on desktop duty! Let's get to work!"
+                    ],
+                    browserObservations:
+                    [
+                        "Checking out “{topic}”! Need any text translated or cropped? I'm on it!",
+                        "Sweet! If you see something cool on this page, let's capture it!"
+                    ],
+                    codingObservations:
+                    [
+                        "Coding “{topic}”! Keep pushing through the bugs, you got this!",
+                        "Black Flash energy! Let's fix these errors one by one!"
+                    ],
+                    chatObservations:
+                    [
+                        "Chatting with friends? Don't forget Ctrl+Alt+K if your keyboard goes crazy!"
+                    ],
+                    videoObservations:
+                    [
+                        "Watching a video! Hit pause if you want me to read the subtitles for you!"
+                    ],
+                    musicObservations:
+                    [
+                        "Aw yeah! “{title}” by {artist}! This track gets me hyped up!"
+                    ],
+                    generalObservations:
+                    [
+                        "Remember to stay hydrated and keep your energy high!"
+                    ],
+                    breakReminders:
+                    [
+                        "Time out! Stretch your legs, grab a snack, and let's come back stronger!"
+                    ],
+                    actionLines: new Dictionary<PetAction, string[]>
+                    {
+                        [PetAction.Command] = ["What's the command? Let me at it!", "Tell me what to do!"],
+                        [PetAction.DeGibberish] = ["Fixing up the gibberish text right now!", "Reversing the keyboard layout!"],
+                        [PetAction.Translate] = ["Opening translator! What language are we going to?", "Translating now!"],
+                        [PetAction.Ocr] = ["Snip the screen! I'll read every word!", "Screen snipper ready!"],
+                        [PetAction.WalkingOn] = ["Let's move!", "Walking around!"],
+                        [PetAction.WalkingOff] = ["Standing by!", "Stopping right here!"],
+                        [PetAction.Settings] = ["Opening settings panel!", "Let's tune the options!"]
+                    }),
+
+                ["Monkey D. Luffy"] = new PetPersonalityProfile(
+                    "Monkey D. Luffy",
+                    "Luffy",
+                    movementMultiplier: 1.3,
+                    minimumPauseSeconds: 2,
+                    maximumPauseSeconds: 4,
+                    observationCooldownSeconds: 35,
+                    introductions:
+                    [
+                        "I'm Luffy! The man who's gonna be King of the Pirates!",
+                        "Shishishi! Hey! What kind of adventure are we doing on this computer?",
+                        "Gumu Gumu no... Desktop Pet! Let me help you out!"
+                    ],
+                    browserObservations:
+                    [
+                        "Whoa! What's “{topic}”? Is there meat on this site?",
+                        "Awesome page! If there's hard text, snip it and I'll read it!"
+                    ],
+                    codingObservations:
+                    [
+                        "Building “{topic}”! Don't give up! A true pirate never quits!",
+                        "Errors? Just punch 'em until the code runs!"
+                    ],
+                    chatObservations:
+                    [
+                        "Talking to your crew? Send 'em a greeting from Captain Luffy!"
+                    ],
+                    videoObservations:
+                    [
+                        "Ooh, a movie! If you need foreign words translated, I'm ready!"
+                    ],
+                    musicObservations:
+                    [
+                        "Yoo-hoo! “{title}” by {artist}! Let's sing and party!"
+                    ],
+                    generalObservations:
+                    [
+                        "I'm hungry! But let me help you finish your work first! Shishishi!"
+                    ],
+                    breakReminders:
+                    [
+                        "MEAT TIME! Take a break and eat something delicious!"
+                    ],
+                    actionLines: new Dictionary<PetAction, string[]>
+                    {
+                        [PetAction.Command] = ["What's the order, Captain?", "Tell me what to do!"],
+                        [PetAction.DeGibberish] = ["Fixing up the scrambled words!", "Keyboard de-gibberish!"],
+                        [PetAction.Translate] = ["Translating words! Easy-peasy!", "Translation time!"],
+                        [PetAction.Ocr] = ["Box the text! I'll grab it!", "Screen snip!"],
+                        [PetAction.WalkingOn] = ["Adventure time! Walking!", "Moving around!"],
+                        [PetAction.WalkingOff] = ["Stopping here!", "Waiting!"],
+                        [PetAction.Settings] = ["Settings menu! Let's check it out!", "Opening controls!"]
                     })
             };
 

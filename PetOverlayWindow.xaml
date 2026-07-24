@@ -202,14 +202,19 @@
                 <MenuItem Header="Pink Monster" Click="MenuCharPink_Click"/>
                 <MenuItem Header="Owlet Monster" Click="MenuCharOwlet_Click"/>
                 <MenuItem Header="Dude Monster" Click="MenuCharDude_Click"/>
+                <Separator/>
+                <MenuItem Header="Frieren" Click="MenuCharFrieren_Click"/>
+                <MenuItem Header="Yuji Itadori" Click="MenuCharYuji_Click"/>
+                <MenuItem Header="Monkey D. Luffy" Click="MenuCharLuffy_Click"/>
             </MenuItem>
-            <MenuItem Header="Walking: On" Click="MenuToggleWalking_Click">
+            <MenuItem x:Name="WalkingToggleMenuItem" Header="Walking: On" Click="MenuToggleWalking_Click">
                 <MenuItem.Icon>
                     <Rectangle Style="{StaticResource PetMenuIcon}">
                         <Rectangle.OpacityMask><ImageBrush ImageSource="Resources/Icons/walking.png"/></Rectangle.OpacityMask>
                     </Rectangle>
                 </MenuItem.Icon>
             </MenuItem>
+            <MenuItem x:Name="HorizontalWalkingToggleMenuItem" Header="Horizontal Only: Off" Click="MenuToggleHorizontalWalking_Click"/>
             <MenuItem Header="Movement Speed">
                 <MenuItem.Icon>
                     <Rectangle Style="{StaticResource PetMenuIcon}">

@@ -186,6 +186,15 @@ namespace KeyMapper
                 }
 
                 progress?.Report(new TranslationSetupProgress(
+                    "Preparing Python build tools (setuptools & wheel)...",
+                    null));
+                await RunProcessAsync(
+                    PythonExecutable,
+                    "-m pip install --disable-pip-version-check --no-warn-script-location setuptools wheel",
+                    TranslationRoot,
+                    cancellationToken);
+
+                progress?.Report(new TranslationSetupProgress(
                     "Installing LibreTranslate and its language engine...",
                     null));
                 await RunProcessAsync(

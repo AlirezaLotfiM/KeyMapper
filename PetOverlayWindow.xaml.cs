@@ -56,6 +56,7 @@ namespace KeyMapper
         private bool _isContextMenuOpen;
         private bool _facingRight = true;
         private bool _walkingEnabled = true;
+        private bool _horizontalOnlyWalking;
         private double _walkingSpeed = 92;
         private int _idleAnimationIntervalMs = 430;
         private bool _commentsEnabled = true;
@@ -128,6 +129,7 @@ namespace KeyMapper
             _commentsEnabled = settings.PetCommentsEnabled;
             _aiAmbientCommentsEnabled = settings.AiAmbientCommentsEnabled;
             _commentFrequency = NormalizeCommentFrequency(settings.PetCommentFrequency);
+            _horizontalOnlyWalking = settings.PetHorizontalOnlyWalking;
             UpdateCommentMenuState();
             SetCharacter(settings.CurrentCharacter ?? "Pink Monster");
 
@@ -153,12 +155,18 @@ namespace KeyMapper
                 {
                     "Owlet Monster" => "OwletMonster",
                     "Dude Monster" => "DudeMonster",
+                    "Frieren" => "Frieren",
+                    "Yuji Itadori" => "Yuji",
+                    "Monkey D. Luffy" => "Luffy",
                     _ => "PinkMonster"
                 };
                 string spritePrefix = folderName switch
                 {
                     "OwletMonster" => "Owlet_Monster",
                     "DudeMonster" => "Dude_Monster",
+                    "Frieren" => "Frieren",
+                    "Yuji" => "Yuji",
+                    "Luffy" => "Luffy",
                     _ => "Pink_Monster"
                 };
 
@@ -353,9 +361,10 @@ namespace KeyMapper
                 Rect workArea = SystemParameters.WorkArea;
                 double maxLeft = Math.Max(workArea.Left + 8, workArea.Right - ActualWidth - 8);
                 double maxTop = Math.Max(workArea.Top + 8, workArea.Bottom - ActualHeight - 8);
+                double targetY = _horizontalOnlyWalking ? Top : (workArea.Top + 8 + _random.NextDouble() * (maxTop - workArea.Top - 8));
                 _wanderTarget = new Point(
                     workArea.Left + 8 + _random.NextDouble() * (maxLeft - workArea.Left - 8),
-                    workArea.Top + 8 + _random.NextDouble() * (maxTop - workArea.Top - 8));
+                    targetY);
                 isWalking = true;
             }
 
@@ -725,6 +734,26 @@ namespace KeyMapper
                 _commentFrequency == "Normal" ? "Normal  ✓" : "Normal";
             CommentsChattyMenuItem.Header =
                 _commentFrequency == "Chatty" ? "Chatty  ✓" : "Chatty";
+            if (HorizontalWalkingToggleMenuItem != null)
+            {
+                HorizontalWalkingToggleMenuItem.Header =
+                    _horizontalOnlyWalking ? "Horizontal Only: On" : "Horizontal Only: Off";
+            }
+        }
+
+        private void MenuToggleHorizontalWalking_Click(object sender, RoutedEventArgs e)
+        {
+            _horizontalOnlyWalking = !_horizontalOnlyWalking;
+            var settings = ConfigManager.Load();
+            settings.PetHorizontalOnlyWalking = _horizontalOnlyWalking;
+            ConfigManager.Save(settings);
+            UpdateCommentMenuState();
+            ShowSpeechBubble(
+                _personality.SpeakerName,
+                _horizontalOnlyWalking
+                    ? "Horizontal-only walking enabled. I'll stay on this line!"
+                    : "Free movement enabled. I can walk everywhere!",
+                5);
         }
 
         private double ScaleCommentDelay(double seconds) =>
@@ -882,6 +911,10 @@ namespace KeyMapper
         {
             SetCharacter("Dude Monster");
         }
+
+        private void MenuCharFrieren_Click(object sender, RoutedEventArgs e) => SetCharacter("Frieren");
+        private void MenuCharYuji_Click(object sender, RoutedEventArgs e) => SetCharacter("Yuji Itadori");
+        private void MenuCharLuffy_Click(object sender, RoutedEventArgs e) => SetCharacter("Monkey D. Luffy");
 
         private void MenuHide_Click(object sender, RoutedEventArgs e)
         {
