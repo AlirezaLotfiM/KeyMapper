@@ -103,8 +103,50 @@ namespace KeyMapper
                     "Qwen3-14B-Q4_K_M.gguf",
                     "https://huggingface.co/Qwen/Qwen3-14B-GGUF/resolve/main/Qwen3-14B-Q4_K_M.gguf?download=true",
                     9_000_000_000,
-                    32)
+                    32),
+                new LocalAiModelOption(
+                    "llama3.2-3b-instruct",
+                    "Meta · Llama 3.2 3B",
+                    "Meta's highly capable 3B model. Outstanding for intelligent agent reasoning and code.",
+                    "Llama-3.2-3B-Instruct-Q4_K_M.gguf",
+                    "https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q4_K_M.gguf?download=true",
+                    2_020_000_000,
+                    12),
+                new LocalAiModelOption(
+                    "deepseek-r1-1.5b",
+                    "Reasoning · DeepSeek R1 1.5B",
+                    "DeepSeek's famous reasoning & chain-of-thought model. Extremely smart for its light footprint.",
+                    "DeepSeek-R1-Distill-Qwen-1.5B-Q4_K_M.gguf",
+                    "https://huggingface.co/unsloth/DeepSeek-R1-Distill-Qwen-1.5B-GGUF/resolve/main/DeepSeek-R1-Distill-Qwen-1.5B-Q4_K_M.gguf?download=true",
+                    1_100_000_000,
+                    8),
+                new LocalAiModelOption(
+                    "phi3.5-mini",
+                    "Microsoft · Phi-3.5 Mini 3.8B",
+                    "Microsoft's state-of-the-art small language model. Excellent reasoning and speed.",
+                    "Phi-3.5-mini-instruct-Q4_K_M.gguf",
+                    "https://huggingface.co/bartowski/Phi-3.5-mini-instruct-GGUF/resolve/main/Phi-3.5-mini-instruct-Q4_K_M.gguf?download=true",
+                    2_390_000_000,
+                    12)
             };
+
+        public IReadOnlyList<FileInfo> GetInstalledModelsList()
+        {
+            try
+            {
+                if (!Directory.Exists(ModelsFolder))
+                {
+                    Directory.CreateDirectory(ModelsFolder);
+                    return Array.Empty<FileInfo>();
+                }
+                var dirInfo = new DirectoryInfo(ModelsFolder);
+                return dirInfo.GetFiles("*.gguf", SearchOption.AllDirectories);
+            }
+            catch
+            {
+                return Array.Empty<FileInfo>();
+            }
+        }
 
         private readonly HttpClient _httpClient = new()
         {
@@ -165,16 +207,17 @@ namespace KeyMapper
 
         public bool IsInstalled(string? modelId)
         {
-            if (!string.IsNullOrWhiteSpace(modelId))
+            if (string.IsNullOrWhiteSpace(modelId)) return false;
+            
+            LocalAiModelOption? model = FindModel(modelId);
+            if (model != null && File.Exists(GetModelPath(model)))
             {
-                LocalAiModelOption? model = FindModel(modelId);
-                if (model != null && File.Exists(GetModelPath(model)))
-                {
-                    return true;
-                }
+                return true;
             }
 
-            return GetFirstInstalledModelId() != null;
+            // Check if modelId is actually a direct filename
+            string directPath = Path.Combine(ModelsFolder, modelId);
+            return File.Exists(directPath);
         }
 
         public string? GetFirstInstalledModelId()

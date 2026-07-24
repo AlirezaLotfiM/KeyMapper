@@ -123,6 +123,35 @@ namespace KeyMapper
             _musicTimer.Tick += MusicTimer_Tick;
 
             Loaded += PetOverlayWindow_Loaded;
+
+            // Connect Smart Reminders and System Health Alerts
+            ReminderService.Instance.OnReminderTriggered += item =>
+            {
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    SoundManager.PlayAlarmSound();
+                    ShowPersistentReminderBubble(item.Note);
+                }));
+            };
+
+            SystemHealthService.Instance.OnHourlyChime += hour =>
+            {
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    SoundManager.PlayHourlyChime();
+                    string timeStr = hour == 0 ? "12:00 AM (Midnight)" : hour == 12 ? "12:00 PM (Noon)" : $"{hour}:00";
+                    ShowSpeechBubble(_personality.SpeakerName, $"⏰ Top of the hour! It's {timeStr}", 8);
+                }));
+            };
+
+            SystemHealthService.Instance.OnSystemWarning += warning =>
+            {
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    SoundManager.PlayAlarmSound();
+                    ShowSpeechBubble(_personality.SpeakerName, warning, 10);
+                }));
+            };
             Closed += (s, e) =>
             {
                 _behaviorTimer.Stop();
@@ -260,10 +289,19 @@ namespace KeyMapper
             });
         }
 
+        private void SetAutoFlowDirection(string text)
+        {
+            bool hasPersian = System.Text.RegularExpressions.Regex.IsMatch(text ?? "", @"[\u0600-\u06FF]");
+            FlowDirection dir = hasPersian ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
+            SpeechBubbleText.FlowDirection = dir;
+            SpeechBubbleTitle.FlowDirection = dir;
+        }
+
         public void ShowSpeechBubble(string title, string message, int autoHideSeconds = 6)
         {
             Dispatcher.Invoke(() =>
             {
+                SetAutoFlowDirection(message);
                 SpeechBubbleTitle.Text = title;
                 SpeechBubbleText.Text = message;
                 SpeechBubble.Visibility = Visibility.Visible;
@@ -980,6 +1018,35 @@ namespace KeyMapper
         private void MenuExit_Click(object sender, RoutedEventArgs e)
         {
             System.Windows.Application.Current.Shutdown();
+        }
+
+        private string _activeReminderNote = string.Empty;
+
+        private void ShowPersistentReminderBubble(string note)
+        {
+            _activeReminderNote = note;
+            SetAutoFlowDirection(note);
+            SpeechBubbleTitle.Text = "⏰ Reminder Alert";
+            SpeechBubbleText.Text = note;
+            ReminderButtonsPanel.Visibility = Visibility.Visible;
+            SpeechBubble.Visibility = Visibility.Visible;
+            _speechBubbleTimer.Stop(); // Do NOT auto-hide. Wait for user input!
+        }
+
+        private void ReminderDismissBtn_Click(object sender, RoutedEventArgs e)
+        {
+            SpeechBubble.Visibility = Visibility.Collapsed;
+            ReminderButtonsPanel.Visibility = Visibility.Collapsed;
+        }
+
+        private void ReminderSnoozeBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (!string.IsNullOrWhiteSpace(_activeReminderNote))
+            {
+                ReminderService.Instance.AddReminder(_activeReminderNote, TimeSpan.FromMinutes(5));
+            }
+            SpeechBubble.Visibility = Visibility.Collapsed;
+            ReminderButtonsPanel.Visibility = Visibility.Collapsed;
         }
     }
 }

@@ -12,6 +12,9 @@ namespace KeyMapper
         private static SoundPlayer? _successPlayer;
         private static SoundPlayer? _cancelPlayer;
 
+        private static SoundPlayer? _alarmPlayer;
+        private static SoundPlayer? _chimePlayer;
+
         static SoundManager()
         {
             InitializePlayers();
@@ -43,6 +46,25 @@ namespace KeyMapper
                 {
                     _cancelPlayer = new SoundPlayer(cancelPath);
                     _cancelPlayer.Load();
+                }
+
+                // Alarm Sound
+                string alarmPath = @"C:\Windows\Media\alarm01.wav";
+                if (!File.Exists(alarmPath)) alarmPath = @"C:\Windows\Media\Windows Notify Calendar.wav";
+                if (!File.Exists(alarmPath)) alarmPath = @"C:\Windows\Media\tada.wav";
+                if (File.Exists(alarmPath))
+                {
+                    _alarmPlayer = new SoundPlayer(alarmPath);
+                    _alarmPlayer.Load();
+                }
+
+                // Chime Sound
+                string chimePath = @"C:\Windows\Media\chimes.wav";
+                if (!File.Exists(chimePath)) chimePath = @"C:\Windows\Media\ding.wav";
+                if (File.Exists(chimePath))
+                {
+                    _chimePlayer = new SoundPlayer(chimePath);
+                    _chimePlayer.Load();
                 }
             }
             catch
@@ -88,6 +110,28 @@ namespace KeyMapper
             {
                 // Ignore
             }
+        }
+
+        public static void PlayAlarmSound()
+        {
+            if (!PlaySounds) return;
+            try
+            {
+                if (_alarmPlayer != null) _alarmPlayer.Play();
+                else SystemSounds.Exclamation.Play();
+            }
+            catch { try { SystemSounds.Exclamation.Play(); } catch { } }
+        }
+
+        public static void PlayHourlyChime()
+        {
+            if (!PlaySounds) return;
+            try
+            {
+                if (_chimePlayer != null) _chimePlayer.Play();
+                else SystemSounds.Asterisk.Play();
+            }
+            catch { try { SystemSounds.Asterisk.Play(); } catch { } }
         }
     }
 }

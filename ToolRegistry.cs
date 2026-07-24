@@ -115,7 +115,49 @@ namespace KeyMapper
                 };
             }
 
-            // 2. Steam Game Launch Command
+            // 1.5. Reminder & Alarm Command
+            if (lower.Contains("reminder") || lower.Contains("remind") || lower.Contains("alarm") || lower.Contains("timer") ||
+                lower.Contains("یادم") || lower.Contains("یادآور") || lower.Contains("تایمر") || lower.Contains("آلارم") || lower.Contains("هشدار"))
+            {
+                var matchMins = System.Text.RegularExpressions.Regex.Match(lower, @"(\d{1,3})\s*(?:دقیقه|دقیقه‌|min|minute|minutes|mins)");
+                if (matchMins.Success && int.TryParse(matchMins.Groups[1].Value, out int mins))
+                {
+                    // Clean up note text
+                    string note = prompt;
+                    var rem = ReminderService.Instance.AddReminder(note, TimeSpan.FromMinutes(mins));
+                    return new ToolExecutionResult
+                    {
+                        Success = true,
+                        OutputMessage = $"⏰ یادآور برای {mins} دقیقه دیگر (ساعت {rem.TargetTime:HH:mm}) با موفقیت تنظیم شد: \"{note}\""
+                    };
+                }
+
+                var matchClock = System.Text.RegularExpressions.Regex.Match(lower, @"(?:ساعت|at)\s*(\d{1,2})(?::(\d{2}))?");
+                if (matchClock.Success && int.TryParse(matchClock.Groups[1].Value, out int hour))
+                {
+                    int minute = matchClock.Groups[2].Success && int.TryParse(matchClock.Groups[2].Value, out int m) ? m : 0;
+                    DateTime target = DateTime.Today.AddHours(hour).AddMinutes(minute);
+                    if (target <= DateTime.Now) target = target.AddDays(1);
+
+                    var rem = ReminderService.Instance.AddReminderAt(prompt, target);
+                    return new ToolExecutionResult
+                    {
+                        Success = true,
+                        OutputMessage = $"⏰ یادآور برای ساعت {target:HH:mm} تنظیم شد: \"{prompt}\""
+                    };
+                }
+            }
+
+            // 1.6. System Hardware Report
+            if (lower.Contains("hardware") || lower.Contains("رم") || lower.Contains("سیپیو") || lower.Contains("باتری") || lower.Contains("battery") || lower.Contains("سخت افزار") || lower.Contains("مصرف منابع"))
+            {
+                var health = SystemHealthService.Instance.GetCurrentHealth();
+                string status = $"💻 System Health Report:\n" +
+                                $"• RAM Usage: {health.RamUsagePercent}% ({health.UsedRamMb / 1024d:0.#} GB / {health.TotalRamMb / 1024d:0.#} GB)\n" +
+                                $"• Top Memory Process: {health.TopProcessName} ({health.TopProcessRamMb} MB)\n" +
+                                $"• Battery: {health.BatteryPercent}% ({(health.IsCharging ? "Charging ⚡" : "On Battery 🔋")})";
+                return new ToolExecutionResult { Success = true, OutputMessage = status };
+            }
             if (lower.StartsWith("play ") || lower.StartsWith("launch game ") || lower.Contains("steam game"))
             {
                 string gameName = prompt.Replace("play ", "", StringComparison.OrdinalIgnoreCase)

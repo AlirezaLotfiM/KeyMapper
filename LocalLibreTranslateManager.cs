@@ -70,13 +70,14 @@ namespace KeyMapper
         {
             var installedCodes = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "en" };
 
-            // 1. Query running LibreTranslate server /languages endpoint
+            // 1. Query running LibreTranslate server /languages endpoint with strict 1.5s timeout
             try
             {
-                using var response = await DownloadClient.GetAsync("http://localhost:5000/languages");
+                using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(1500));
+                using var response = await DownloadClient.GetAsync("http://localhost:5000/languages", cts.Token);
                 if (response.IsSuccessStatusCode)
                 {
-                    string json = await response.Content.ReadAsStringAsync();
+                    string json = await response.Content.ReadAsStringAsync(cts.Token);
                     using var doc = JsonDocument.Parse(json);
                     foreach (var elem in doc.RootElement.EnumerateArray())
                     {

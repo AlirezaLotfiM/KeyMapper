@@ -50,6 +50,12 @@
                 <TextBlock x:Name="SpeechBubbleText" Text="Beep boop! Ready to automate!"
                            Foreground="{DynamicResource AppTextBrush}" FontSize="12" TextWrapping="Wrap" MaxHeight="120"
                            ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+
+                <!-- Interactive Reminder Buttons -->
+                <StackPanel x:Name="ReminderButtonsPanel" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0" Visibility="Collapsed">
+                    <Button x:Name="ReminderSnoozeBtn" Content="⏰ 5m Snooze" Background="{DynamicResource AppSurfaceBrush}" Foreground="{DynamicResource AppTextBrush}" BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="1" Height="26" FontSize="10" Padding="8,0" Margin="0,0,6,0" Click="ReminderSnoozeBtn_Click"/>
+                    <Button x:Name="ReminderDismissBtn" Content="✓ OK" Background="{DynamicResource AppAccentBrush}" Foreground="#FFFFFF" BorderThickness="0" Height="26" FontSize="10" FontWeight="Bold" Padding="10,0" Click="ReminderDismissBtn_Click"/>
+                </StackPanel>
             </StackPanel>
         </Border>
 

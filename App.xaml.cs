@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 
 namespace KeyMapper
@@ -52,23 +53,23 @@ namespace KeyMapper
             ThemeManager.Apply(ConfigManager.Load().ThemeName);
             _mainWindow = new MainWindow();
             this.MainWindow = _mainWindow;
-            _ = LocalLibreTranslateManager.EnsureRunningAsync();
 
-            // This is a pet-first application.  Keep the control centre available from
-            // the tray, but do not make it the first thing the user sees at startup.
+            // Start translator asynchronously in background without blocking UI thread startup
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await LocalLibreTranslateManager.EnsureRunningAsync();
+                }
+                catch { }
+            });
+
+            // Show MainWindow and Pet Overlay Window immediately at startup
+            _mainWindow.Show();
+            _mainWindow.WindowState = WindowState.Normal;
+            _mainWindow.Activate();
             _mainWindow.ShowPetOverlayWindow();
             _mainWindow.ShowStartupNotification();
-
-            // The desktop shortcut intentionally passes --show. Respect it on the
-            // first process too (the single-instance signal already handles later
-            // shortcut launches).
-            if (e.Args.Any(argument =>
-                    string.Equals(argument, "--show", StringComparison.OrdinalIgnoreCase)))
-            {
-                _mainWindow.Show();
-                _mainWindow.WindowState = WindowState.Normal;
-                _mainWindow.Activate();
-            }
         }
 
         private void ListenForShowSignal()

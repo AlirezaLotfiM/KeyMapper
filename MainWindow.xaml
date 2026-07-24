@@ -786,7 +786,21 @@
                                         </Grid>
                                     </Border>
 
-                                    <TextBlock Text="Choose one model"
+                                     <StackPanel Margin="0,0,0,16">
+                                         <TextBlock Text="Active Installed AI Model"
+                                                    Foreground="{DynamicResource AppTextBrush}"
+                                                    FontWeight="SemiBold"
+                                                    FontSize="13"
+                                                    Margin="0,0,0,6"/>
+                                         <ComboBox x:Name="ActiveModelComboBox"
+                                                   Height="36"
+                                                   Padding="10,6"
+                                                   FontSize="12"
+                                                   FontWeight="SemiBold"
+                                                   SelectionChanged="ActiveModelComboBox_SelectionChanged"/>
+                                     </StackPanel>
+
+                                     <TextBlock Text="Models Catalog (Download additional models)"
                                                Foreground="{DynamicResource AppTextBrush}"
                                                FontWeight="SemiBold"
                                                Margin="0,0,0,10"/>

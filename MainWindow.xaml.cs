@@ -191,6 +191,8 @@ namespace KeyMapper
             {
                 Exclusions.Add(process.ToLower());
             }
+
+            PopulateInstalledModels();
         }
 
         private void SaveSettings()
@@ -1631,6 +1633,7 @@ namespace KeyMapper
                 _settings.LocalAiEnabled = true;
                 LocalAiEnabledChk.IsChecked = true;
                 ConfigManager.Save(_settings);
+                PopulateInstalledModels();
                 RefreshLocalAiModelUi("Ready · model downloaded and enabled.");
             }
             catch (Exception ex)
@@ -2089,6 +2092,45 @@ namespace KeyMapper
                     Debug.WriteLine($"Failed to open QuickAccess window: {ex.Message}");
                 }
             }));
+        }
+
+        private void PopulateInstalledModels()
+        {
+            if (ActiveModelComboBox == null) return;
+            ActiveModelComboBox.Items.Clear();
+
+            var installedFiles = LocalAiService.Instance.GetInstalledModelsList();
+            foreach (var file in installedFiles)
+            {
+                ActiveModelComboBox.Items.Add(file.Name);
+            }
+
+            AppSettings settings = ConfigManager.Load();
+            if (!string.IsNullOrWhiteSpace(settings.LocalAiModelId))
+            {
+                var modelOpt = LocalAiService.Instance.FindModel(settings.LocalAiModelId);
+                string fileName = modelOpt?.FileName ?? settings.LocalAiModelId;
+                if (ActiveModelComboBox.Items.Contains(fileName))
+                {
+                    ActiveModelComboBox.SelectedItem = fileName;
+                }
+            }
+
+            if (ActiveModelComboBox.SelectedIndex < 0 && ActiveModelComboBox.Items.Count > 0)
+            {
+                ActiveModelComboBox.SelectedIndex = 0;
+            }
+        }
+
+        private void ActiveModelComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (ActiveModelComboBox?.SelectedItem is string selectedFileName)
+            {
+                AppSettings settings = ConfigManager.Load();
+                var match = LocalAiService.Models.FirstOrDefault(m => string.Equals(m.FileName, selectedFileName, StringComparison.OrdinalIgnoreCase));
+                settings.LocalAiModelId = match?.Id ?? selectedFileName;
+                ConfigManager.Save(settings);
+            }
         }
 
         #endregion
