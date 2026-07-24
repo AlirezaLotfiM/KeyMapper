@@ -39,6 +39,28 @@ namespace KeyMapper
         [DllImport("user32.dll", CharSet = CharSet.Unicode)]
         private static extern int GetWindowTextLength(IntPtr hWnd);
 
+        [StructLayout(LayoutKind.Sequential)]
+        private struct RECT
+        {
+            public int Left;
+            public int Top;
+            public int Right;
+            public int Bottom;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct POINT
+        {
+            public int X;
+            public int Y;
+        }
+
+        [DllImport("user32.dll")]
+        private static extern bool GetCursorPos(out POINT lpPoint);
+
+        [DllImport("user32.dll")]
+        private static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
+
         private readonly PetStateMachine _stateMachine;
         private readonly DispatcherTimer _speechBubbleTimer;
         private readonly DispatcherTimer _behaviorTimer;
@@ -342,10 +364,19 @@ namespace KeyMapper
 
             if (_stateMachine.CurrentState != PetState.Idle)
             {
-                // Work can pause wandering without freezing the character itself.
-                // Keep the idle sprite cycling while OCR or another task runs.
                 AdvanceSpriteFrame(false);
                 return;
+            }
+
+            // 1. Mouse Curiosity: track mouse cursor direction when idle
+            if (!_wanderTarget.HasValue && GetCursorPos(out POINT mousePos))
+            {
+                bool mouseOnRight = mousePos.X >= Left + (ActualWidth / 2);
+                if (mouseOnRight != _facingRight)
+                {
+                    _facingRight = mouseOnRight;
+                    PetSpriteImage.RenderTransform = new System.Windows.Media.ScaleTransform(_facingRight ? 1 : -1, 1, 60, 60);
+                }
             }
 
             if (!_walkingEnabled)
@@ -359,26 +390,48 @@ namespace KeyMapper
             if (!isWalking && DateTime.Now >= _nextWanderAt)
             {
                 Rect workArea = SystemParameters.WorkArea;
-                double maxLeft = Math.Max(workArea.Left + 8, workArea.Right - ActualWidth - 8);
-                double maxTop = Math.Max(workArea.Top + 8, workArea.Bottom - ActualHeight - 8);
-                double targetY = _horizontalOnlyWalking ? Top : (workArea.Top + 8 + _random.NextDouble() * (maxTop - workArea.Top - 8));
-                _wanderTarget = new Point(
-                    workArea.Left + 8 + _random.NextDouble() * (maxLeft - workArea.Left - 8),
-                    targetY);
-                isWalking = true;
+
+                // Check if active foreground window is available to sit/walk on its top edge
+                if (_lastExternalWindow != IntPtr.Zero && GetWindowRect(_lastExternalWindow, out RECT winRect))
+                {
+                    int winWidth = winRect.Right - winRect.Left;
+                    int winHeight = winRect.Bottom - winRect.Top;
+                    if (winWidth > 200 && winHeight > 150 && winRect.Top > 20 && winRect.Top < workArea.Bottom - 100)
+                    {
+                        double targetX = winRect.Left + _random.Next(20, Math.Max(30, winWidth - 100));
+                        double targetY = Math.Max(workArea.Top + 10, winRect.Top - ActualHeight + 6);
+                        _wanderTarget = new Point(targetX, targetY);
+                        isWalking = true;
+                    }
+                }
+
+                if (!isWalking)
+                {
+                    double maxLeft = Math.Max(workArea.Left + 8, workArea.Right - ActualWidth - 8);
+                    double maxTop = Math.Max(workArea.Top + 8, workArea.Bottom - ActualHeight - 8);
+                    double targetY = _horizontalOnlyWalking ? Top : (workArea.Top + 8 + _random.NextDouble() * (maxTop - workArea.Top - 8));
+                    _wanderTarget = new Point(
+                        workArea.Left + 8 + _random.NextDouble() * (maxLeft - workArea.Left - 8),
+                        targetY);
+                    isWalking = true;
+                }
             }
 
             if (isWalking && _wanderTarget is Point target)
             {
+                Rect workArea = SystemParameters.WorkArea;
+                double clampedTargetX = Math.Clamp(target.X, workArea.Left + 10, workArea.Right - ActualWidth - 10);
+                double clampedTargetY = Math.Clamp(target.Y, workArea.Top + 10, workArea.Bottom - ActualHeight - 10);
+
                 double step = _walkingSpeed * _personality.MovementMultiplier * _behaviorTimer.Interval.TotalSeconds;
-                double dx = target.X - Left;
-                double dy = target.Y - Top;
+                double dx = clampedTargetX - Left;
+                double dy = clampedTargetY - Top;
                 double distance = Math.Sqrt(dx * dx + dy * dy);
 
                 if (distance <= step)
                 {
-                    Left = target.X;
-                    Top = target.Y;
+                    Left = clampedTargetX;
+                    Top = clampedTargetY;
                     _wanderTarget = null;
                     _nextWanderAt = DateTime.Now.AddSeconds(
                         _personality.MinimumPauseSeconds +
@@ -391,8 +444,8 @@ namespace KeyMapper
                 {
                     _facingRight = dx >= 0;
                     PetSpriteImage.RenderTransform = new System.Windows.Media.ScaleTransform(_facingRight ? 1 : -1, 1, 60, 60);
-                    Left += dx / distance * step;
-                    Top += dy / distance * step;
+                    Left = Math.Clamp(Left + (dx / distance * step), workArea.Left + 10, workArea.Right - ActualWidth - 10);
+                    Top = Math.Clamp(Top + (dy / distance * step), workArea.Top + 10, workArea.Bottom - ActualHeight - 10);
                 }
             }
 
@@ -534,13 +587,16 @@ namespace KeyMapper
 
         private async Task ShowMusicObservationAsync(PlayingTrack track)
         {
+            TrackDetails details = await MusicGenreService.Instance.FetchTrackDetailsAsync(track.Title, track.Artist);
+            string genreLabel = string.IsNullOrWhiteSpace(details.Genre) ? "" : $" (Genre: {details.Genre})";
+
             string fallback = _personality.MusicObservation(
                 track.Title,
-                track.Artist,
+                $"{track.Artist}{genreLabel}",
                 _random);
             string? generated = await TryCreateAmbientCommentAsync(
                 _activeContextKey,
-                track.Title,
+                $"{track.Title}{genreLabel}",
                 track.Artist);
             if (SpeechBubble.Visibility != Visibility.Visible &&
                 !_isContextMenuOpen)

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
@@ -6,6 +7,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -61,6 +63,173 @@ namespace KeyMapper
 
         public static bool UsesLocalEndpoint(string endpointText) =>
             TryGetLocalEndpoint(endpointText, out _, out _);
+
+        public static void RestartServer() => StopPrivateServer();
+
+        public static async Task<HashSet<string>> GetInstalledLanguageCodesAsync()
+        {
+            var installedCodes = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "en" };
+
+            // 1. Query running LibreTranslate server /languages endpoint
+            try
+            {
+                using var response = await DownloadClient.GetAsync("http://localhost:5000/languages");
+                if (response.IsSuccessStatusCode)
+                {
+                    string json = await response.Content.ReadAsStringAsync();
+                    using var doc = JsonDocument.Parse(json);
+                    foreach (var elem in doc.RootElement.EnumerateArray())
+                    {
+                        if (elem.TryGetProperty("code", out var codeProp))
+                        {
+                            string? code = codeProp.GetString();
+                            if (!string.IsNullOrWhiteSpace(code))
+                            {
+                                installedCodes.Add(code);
+                            }
+                        }
+                    }
+                }
+            }
+            catch { }
+
+            // 2. Query filesystem fallback with strict language package matching
+            try
+            {
+                string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                string[] searchDirs =
+                [
+                    Path.Combine(localAppData, "argos-translate", "packages"),
+                    Path.Combine(TranslationRoot, "Data", "models"),
+                    Path.Combine(TranslationRoot, "Config", "argos-translate", "packages")
+                ];
+
+                string[] knownTargetLangs = ["fa", "ko", "de", "fr", "es"];
+
+                foreach (var dir in searchDirs)
+                {
+                    if (Directory.Exists(dir))
+                    {
+                        var packageEntries = Directory.GetFileSystemEntries(dir, "*", SearchOption.AllDirectories);
+                        foreach (var entry in packageEntries)
+                        {
+                            string lower = Path.GetFileName(entry).ToLowerInvariant();
+                            foreach (var lang in knownTargetLangs)
+                            {
+                                if (lower.Contains($"_{lang}") || lower.Contains($"{lang}_") || lower.Contains($"translate-{lang}") || lower.Contains($"-{lang}-"))
+                                {
+                                    installedCodes.Add(lang);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch { }
+
+            return installedCodes;
+        }
+
+        public static bool IsLanguageInstalled(string langCode)
+        {
+            if (string.IsNullOrWhiteSpace(langCode)) return false;
+            if (langCode.Equals("en", StringComparison.OrdinalIgnoreCase)) return true;
+
+            var codes = GetInstalledLanguageCodesAsync().GetAwaiter().GetResult();
+            return codes.Contains(langCode);
+        }
+
+        public static async Task DownloadLanguageModelAsync(
+            string langCode,
+            IProgress<TranslationSetupProgress>? progress = null,
+            CancellationToken cancellationToken = default)
+        {
+            Directory.CreateDirectory(DataRoot);
+            progress?.Report(new TranslationSetupProgress($"Initializing {langCode.ToUpper()} package search...", 5));
+
+            if (File.Exists(PythonExecutable))
+            {
+                string argosExe = Path.Combine(PythonRoot, "Scripts", "argospm.exe");
+                if (File.Exists(argosExe))
+                {
+                    progress?.Report(new TranslationSetupProgress($"Updating package index...", 15));
+                    try { await RunProcessAsync(argosExe, "update", TranslationRoot, cancellationToken); } catch { }
+                    
+                    progress?.Report(new TranslationSetupProgress($"Downloading {langCode.ToUpper()} model package (1/2)...", 35));
+                    try
+                    {
+                        await RunProcessWithProgressAsync(argosExe, $"install translate-en_{langCode}", TranslationRoot, (msg, pct) =>
+                        {
+                            progress?.Report(new TranslationSetupProgress($"Downloading {langCode.ToUpper()} (en->{langCode}): {msg}", pct ?? 45));
+                        }, cancellationToken);
+                    }
+                    catch { }
+
+                    progress?.Report(new TranslationSetupProgress($"Downloading {langCode.ToUpper()} model package (2/2)...", 75));
+                    try
+                    {
+                        await RunProcessWithProgressAsync(argosExe, $"install translate-{langCode}_en", TranslationRoot, (msg, pct) =>
+                        {
+                            progress?.Report(new TranslationSetupProgress($"Downloading {langCode.ToUpper()} ({langCode}->en): {msg}", pct ?? 85));
+                        }, cancellationToken);
+                    }
+                    catch { }
+
+                    try
+                    {
+                        await RunProcessAsync(argosExe, $"install {langCode}", TranslationRoot, cancellationToken);
+                    }
+                    catch { }
+                }
+            }
+            progress?.Report(new TranslationSetupProgress($"{langCode.ToUpper()} model installed!", 100));
+        }
+
+        private static async Task RunProcessWithProgressAsync(
+            string fileName,
+            string arguments,
+            string workingDirectory,
+            Action<string, double?> onProgress,
+            CancellationToken cancellationToken)
+        {
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = fileName,
+                Arguments = arguments,
+                WorkingDirectory = workingDirectory,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                WindowStyle = ProcessWindowStyle.Hidden,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
+            };
+            ApplyPrivateEnvironment(startInfo);
+
+            using Process process = Process.Start(startInfo)
+                ?? throw new InvalidOperationException($"Could not start {Path.GetFileName(fileName)}.");
+
+            cancellationToken.Register(() => { try { if (!process.HasExited) process.Kill(true); } catch { } });
+
+            void ParseLine(string? line)
+            {
+                if (string.IsNullOrWhiteSpace(line)) return;
+                double? percent = null;
+                var match = System.Text.RegularExpressions.Regex.Match(line, @"(\d{1,3})%");
+                if (match.Success && double.TryParse(match.Groups[1].Value, out double p))
+                {
+                    percent = p;
+                }
+                onProgress(line.Trim(), percent);
+            }
+
+            process.OutputDataReceived += (s, e) => ParseLine(e.Data);
+            process.ErrorDataReceived += (s, e) => ParseLine(e.Data);
+
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+
+            await process.WaitForExitAsync(cancellationToken);
+        }
 
         public static async Task<LocalTranslationStatus> EnsureRunningAsync(
             CancellationToken cancellationToken = default)
@@ -413,7 +582,7 @@ namespace KeyMapper
             {
                 FileName = executable,
                 Arguments =
-                    $"--host {host} --port {port} --load-only en,de,fa --disable-web-ui",
+                    $"--host {host} --port {port} --disable-web-ui",
                 WorkingDirectory = TranslationRoot,
                 UseShellExecute = false,
                 CreateNoWindow = true,

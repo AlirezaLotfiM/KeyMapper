@@ -212,14 +212,11 @@
                 <StackPanel>
                     <TextBlock Text="Translate into" Foreground="{DynamicResource AppTextBrush}"
                                FontFamily="Segoe UI" FontSize="10" FontWeight="SemiBold" Margin="0,0,0,10"/>
-                    <StackPanel Orientation="Horizontal">
-                        <RadioButton x:Name="EnglishTarget" GroupName="TargetLanguage" Content="ENGLISH"
-                                     Tag="en" IsChecked="True" Style="{StaticResource LanguageChip}" Checked="TargetLanguage_Checked"/>
-                        <RadioButton x:Name="GermanTarget" GroupName="TargetLanguage" Content="GERMAN"
-                                     Tag="de" Style="{StaticResource LanguageChip}" Checked="TargetLanguage_Checked"/>
-                        <RadioButton x:Name="PersianTarget" GroupName="TargetLanguage" Content="PERSIAN"
-                                     Tag="fa" Style="{StaticResource LanguageChip}" Checked="TargetLanguage_Checked"/>
-                    </StackPanel>
+                    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" PanningMode="HorizontalOnly">
+                        <StackPanel x:Name="TargetChipsPanel" Orientation="Horizontal" Margin="0,0,0,4">
+                            <!-- Dynamically generated based on installed languages -->
+                        </StackPanel>
+                    </ScrollViewer>
                 </StackPanel>
             </Border>
 
@@ -354,14 +351,74 @@
                                             Click="RemoveLocalServiceButton_Click"/>
                                 </StackPanel>
 
-                                <TextBlock Text="First setup downloads the runtime and English, German, and Persian models. It can take several minutes and uses about 1 GB of disk space. Nothing is downloaded until you choose Install."
-                                           Foreground="{DynamicResource AppMutedTextBrush}"
-                                           FontSize="10"
-                                           TextWrapping="Wrap"
-                                           LineHeight="15"
-                                           Margin="0,11,0,0"/>
-                            </StackPanel>
-                        </Border>
+                                 <TextBlock Text="Language Models (Download separately)"
+                                            Foreground="{DynamicResource AppTextBrush}"
+                                            FontSize="11" FontWeight="SemiBold"
+                                            Margin="0,16,0,8"/>
+
+                                 <StackPanel x:Name="LanguageModelsPanel">
+                                     <!-- Persian Card -->
+                                     <Border Background="{DynamicResource AppSurfaceBrush}" BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="1" Padding="10,8" Margin="0,0,0,6">
+                                         <Grid>
+                                             <Grid.ColumnDefinitions>
+                                                 <ColumnDefinition Width="*"/>
+                                                 <ColumnDefinition Width="Auto"/>
+                                             </Grid.ColumnDefinitions>
+                                             <StackPanel VerticalAlignment="Center">
+                                                 <TextBlock Text="Persian (فارسی)" Foreground="{DynamicResource AppTextBrush}" FontWeight="SemiBold" FontSize="11"/>
+                                                 <TextBlock Text="Translation between English &amp; Persian" Foreground="{DynamicResource AppMutedTextBrush}" FontSize="9"/>
+                                             </StackPanel>
+                                             <Button x:Name="DownloadPersianBtn" Grid.Column="1" Content="Download" Style="{StaticResource PixelButton}" Padding="8,4" FontSize="10" Click="DownloadLanguageBtn_Click" Tag="fa"/>
+                                         </Grid>
+                                     </Border>
+
+                                     <!-- Korean Card -->
+                                     <Border Background="{DynamicResource AppSurfaceBrush}" BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="1" Padding="10,8" Margin="0,0,0,6">
+                                         <Grid>
+                                             <Grid.ColumnDefinitions>
+                                                 <ColumnDefinition Width="*"/>
+                                                 <ColumnDefinition Width="Auto"/>
+                                             </Grid.ColumnDefinitions>
+                                             <StackPanel VerticalAlignment="Center">
+                                                 <TextBlock Text="Korean (한국어)" Foreground="{DynamicResource AppTextBrush}" FontWeight="SemiBold" FontSize="11"/>
+                                                 <TextBlock Text="Translation between English &amp; Korean" Foreground="{DynamicResource AppMutedTextBrush}" FontSize="9"/>
+                                             </StackPanel>
+                                             <Button x:Name="DownloadKoreanBtn" Grid.Column="1" Content="Download" Style="{StaticResource PixelButton}" Padding="8,4" FontSize="10" Click="DownloadLanguageBtn_Click" Tag="ko"/>
+                                         </Grid>
+                                     </Border>
+
+                                     <!-- German Card -->
+                                     <Border Background="{DynamicResource AppSurfaceBrush}" BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="1" Padding="10,8" Margin="0,0,0,6">
+                                         <Grid>
+                                             <Grid.ColumnDefinitions>
+                                                 <ColumnDefinition Width="*"/>
+                                                 <ColumnDefinition Width="Auto"/>
+                                             </Grid.ColumnDefinitions>
+                                             <StackPanel VerticalAlignment="Center">
+                                                 <TextBlock Text="German (Deutsch)" Foreground="{DynamicResource AppTextBrush}" FontWeight="SemiBold" FontSize="11"/>
+                                                 <TextBlock Text="Translation between English &amp; German" Foreground="{DynamicResource AppMutedTextBrush}" FontSize="9"/>
+                                             </StackPanel>
+                                             <Button x:Name="DownloadGermanBtn" Grid.Column="1" Content="Download" Style="{StaticResource PixelButton}" Padding="8,4" FontSize="10" Click="DownloadLanguageBtn_Click" Tag="de"/>
+                                         </Grid>
+                                     </Border>
+
+                                     <!-- French Card -->
+                                     <Border Background="{DynamicResource AppSurfaceBrush}" BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="1" Padding="10,8" Margin="0,0,0,6">
+                                         <Grid>
+                                             <Grid.ColumnDefinitions>
+                                                 <ColumnDefinition Width="*"/>
+                                                 <ColumnDefinition Width="Auto"/>
+                                             </Grid.ColumnDefinitions>
+                                             <StackPanel VerticalAlignment="Center">
+                                                 <TextBlock Text="French (Français)" Foreground="{DynamicResource AppTextBrush}" FontWeight="SemiBold" FontSize="11"/>
+                                                 <TextBlock Text="Translation between English &amp; French" Foreground="{DynamicResource AppMutedTextBrush}" FontSize="9"/>
+                                             </StackPanel>
+                                             <Button x:Name="DownloadFrenchBtn" Grid.Column="1" Content="Download" Style="{StaticResource PixelButton}" Padding="8,4" FontSize="10" Click="DownloadLanguageBtn_Click" Tag="fr"/>
+                                         </Grid>
+                                     </Border>
+                                 </StackPanel>
+                             </StackPanel>
+                         </Border>
 
                         <Expander Header="Use another LibreTranslate server (optional)"
                                   Foreground="{DynamicResource AppTextBrush}" FontSize="11">

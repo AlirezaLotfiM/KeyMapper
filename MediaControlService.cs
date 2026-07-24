@@ -48,5 +48,20 @@ namespace KeyMapper
             SendMediaKey(VK_MEDIA_PREV_TRACK);
             SendMediaKey(VK_MEDIA_PREV_TRACK);
         }
+        public static void SetVolumePercent(int percent)
+        {
+            percent = Math.Clamp(percent, 0, 100);
+            // Mute-zero baseline: send 50 VolumeDown keys to guarantee 0%
+            for (int i = 0; i < 50; i++)
+            {
+                SendMediaKey(VK_VOLUME_DOWN);
+            }
+            // Send VolumeUp steps (each step is 2%)
+            int steps = (int)Math.Round(percent / 2.0);
+            for (int i = 0; i < steps; i++)
+            {
+                SendMediaKey(VK_VOLUME_UP);
+            }
+        }
     }
 }

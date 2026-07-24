@@ -88,6 +88,15 @@ namespace KeyMapper
                     persian);
             }
 
+            // 1. Instant 0ms execution for media and volume controls
+            if (TryExecuteMediaAction(normalized, out string fastMessage))
+            {
+                return new AssistantReply(fastMessage, [], persian);
+            }
+
+            // 2. Execute app/game/URL launching instantly
+            var toolResult = await ToolRegistry.Instance.ExecuteCommandAsync(prompt);
+
             KnownApplication? knownApp = FindKnownApplication(normalized);
             bool websiteIntent = ContainsAny(normalized, WebsiteWords);
             bool launchIntent = IsLaunchIntent(normalized);
@@ -96,11 +105,6 @@ namespace KeyMapper
             if (knownApp?.Name == "Steam" && websiteIntent)
             {
                 OpenUrl("https://store.steampowered.com/");
-                return Reply(
-                    characterName,
-                    "website-opened",
-                    persian,
-                    "Steam");
             }
 
             bool cyberpunkMentioned =
@@ -110,35 +114,27 @@ namespace KeyMapper
             bool gameIntent = cyberpunkMentioned ||
                               ContainsAny(normalized, GameWords) ||
                               SteamAutomationService.Instance.FindInstalledGame(target) != null;
+
             if (launchIntent && gameIntent)
             {
-                return HandleGame(target, characterName, persian);
+                _ = HandleGame(target, characterName, persian);
             }
-
-            if (launchIntent && knownApp != null)
+            else if (launchIntent && knownApp != null)
             {
-                return HandleKnownApplication(
-                    knownApp,
-                    characterName,
-                    persian);
+                _ = HandleKnownApplication(knownApp, characterName, persian);
             }
-
-            if (launchIntent)
+            else if (launchIntent)
             {
-                return HandleGeneralApplication(
-                    target,
-                    characterName,
-                    persian);
+                _ = HandleGeneralApplication(target, characterName, persian);
             }
 
-            if (cyberpunkMentioned)
+            // 3. If a tool command (like IP address, volume, system info) executed, return its real result immediately!
+            if (toolResult.Success && !string.IsNullOrWhiteSpace(toolResult.OutputMessage) && toolResult.OutputMessage != "No tool command matched.")
             {
-                return MissingGameReply(
-                    "Cyberpunk 2077",
-                    characterName,
-                    persian);
+                return new AssistantReply(toolResult.OutputMessage, [], persian);
             }
 
+            // 4. Generate intelligent AI response for general chat
             AppSettings settings = ConfigManager.Load();
             string? generated = await AiAssistantService.Instance.ProcessConversationAsync(
                 prompt,
@@ -146,12 +142,12 @@ namespace KeyMapper
                 visibleContext,
                 history ?? [],
                 settings);
-            return new AssistantReply(
-                string.IsNullOrWhiteSpace(generated)
-                    ? OfflineConversation(prompt, characterName, persian)
-                    : generated,
-                [],
-                persian);
+
+            string finalMessage = !string.IsNullOrWhiteSpace(generated)
+                ? generated
+                : (persian ? "امری باشه در خدمتم!" : "How can I help you today?");
+
+            return new AssistantReply(finalMessage, [], persian);
         }
 
         public async Task<AssistantReply> ExecuteActionAsync(
@@ -432,6 +428,97 @@ namespace KeyMapper
         private static bool ContainsAny(string value, IEnumerable<string> needles) =>
             needles.Any(needle =>
                 value.Contains(needle, StringComparison.OrdinalIgnoreCase));
+
+        private static bool TryExecuteMediaAction(string text, out string message)
+        {
+            string lower = text.ToLowerInvariant();
+            message = string.Empty;
+
+            // Check if user is asking about currently playing music
+            if (lower.Contains("what music") || lower.Contains("what song") || lower.Contains("currently playing") ||
+                lower.Contains("چه موزیکی") || lower.Contains("چه آهنگی") || lower.Contains("چی داره پخش") ||
+                lower.Contains("اسم آهنگ") || lower.Contains("نام آهنگ") || lower.Contains("موزیک چیست"))
+            {
+                var track = MusicPresenceService.Instance.GetCurrentTrackAsync().GetAwaiter().GetResult();
+                if (track != null && !string.IsNullOrWhiteSpace(track.Title))
+                {
+                    message = ContainsPersian(text)
+                        ? $"الان آهنگ “{track.Title}” از {track.Artist} داره پخش میشه 🎵"
+                        : $"Now playing: “{track.Title}” by {track.Artist} 🎵";
+                }
+                else
+                {
+                    message = ContainsPersian(text)
+                        ? "الان هیچ موزیکی در حال پخش نیست یا اطلاعاتش توسط پلیر ارسال نشده."
+                        : "No music is currently playing or published by the player.";
+                }
+                return true;
+            }
+
+            if (lower.Contains("play music") || lower.Contains("pause music") || lower.Contains("toggle music") ||
+                lower.Contains("توقف موزیک") || lower.Contains("استپ موزیک") ||
+                lower.Contains("متوقف کن") || lower.Contains("آهنگ رو متوقف") || lower.Contains("آهنگ متوقف") ||
+                lower.Contains("استپ کن") || lower.Contains("آهنگو قطع") ||
+                lower.Equals("play", StringComparison.OrdinalIgnoreCase) || lower.Equals("pause", StringComparison.OrdinalIgnoreCase) ||
+                lower.Equals("stop", StringComparison.OrdinalIgnoreCase))
+            {
+                MediaControlService.PlayPause();
+                message = ContainsPersian(text) ? "پخش موزیک رو تغییر دادم." : "Toggled music playback.";
+                return true;
+            }
+
+            if (lower.Contains("next track") || lower.Contains("next song") || lower.Contains("برو بعدی") || lower.Contains("آهنگ بعدی") || lower.Contains("بعدی"))
+            {
+                MediaControlService.NextTrack();
+                message = ContainsPersian(text) ? "رفتم آهنگ بعدی." : "Skipped to next track.";
+                return true;
+            }
+
+            if (lower.Contains("prev track") || lower.Contains("previous song") || lower.Contains("برو قبلی") || lower.Contains("آهنگ قبلی") || lower.Contains("قبلی"))
+            {
+                MediaControlService.PreviousTrack();
+                message = ContainsPersian(text) ? "رفتم آهنگ قبلی." : "Went back to previous track.";
+                return true;
+            }
+
+            if (lower.Contains("restart song") || lower.Contains("restart track") || lower.Contains("از اول پخش کن") || lower.Contains("از اول موزیک") || lower.Contains("از اول"))
+            {
+                MediaControlService.RestartTrack();
+                message = ContainsPersian(text) ? "آهنگ رو از اول پخش کردم." : "Restarted current track.";
+                return true;
+            }
+
+            var volumeNumberMatch = System.Text.RegularExpressions.Regex.Match(lower, @"(?:volume|vol|صدا).*?(\d{1,3})");
+            if (volumeNumberMatch.Success && int.TryParse(volumeNumberMatch.Groups[1].Value, out int targetVolume))
+            {
+                MediaControlService.SetVolumePercent(targetVolume);
+                message = ContainsPersian(text) ? $"میزان صدا روی {targetVolume}٪ تنظیم شد." : $"Set volume to {targetVolume}%.";
+                return true;
+            }
+
+            if (lower.Contains("volume up") || lower.Contains("louder") || lower.Contains("صدا رو بالا ببر") || lower.Contains("صدا زیاد") || lower.Contains("زیاد کن صدا") || lower.Contains("صدا رو زیاد"))
+            {
+                MediaControlService.VolumeUp(8);
+                message = ContainsPersian(text) ? "صدا رو زیاد کردم." : "Increased volume.";
+                return true;
+            }
+
+            if (lower.Contains("volume down") || lower.Contains("quieter") || lower.Contains("صدا رو پایین ببر") || lower.Contains("صدا کم") || lower.Contains("کم کن صدا") || lower.Contains("صدا رو کم") || lower.Contains("lower volume"))
+            {
+                MediaControlService.VolumeDown(8);
+                message = ContainsPersian(text) ? "صدا رو کم کردم." : "Decreased volume.";
+                return true;
+            }
+
+            if (lower.Contains("mute") || lower.Contains("قطع صدا") || lower.Contains("صدا بی صدا") || lower.Contains("بی صدا"))
+            {
+                MediaControlService.ToggleMute();
+                message = ContainsPersian(text) ? "صدا رو قطع/وصل کردم." : "Toggled mute.";
+                return true;
+            }
+
+            return false;
+        }
 
         private static void OpenUrl(string url) =>
             Process.Start(new ProcessStartInfo

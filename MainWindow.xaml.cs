@@ -131,6 +131,7 @@ namespace KeyMapper
             ShowOverlayChk.IsChecked = _settings.ShowOverlay;
             RunAtStartupChk.IsChecked = _settings.RunAtStartup;
             PlaySoundsChk.IsChecked = _settings.PlaySounds;
+            UserNameTxt.Text = _settings.UserName ?? string.Empty;
             AiEndpointTxt.Text = _settings.AiApiEndpoint;
             AiApiKeyTxt.Password = _settings.AiApiKey;
             AiModelTxt.Text = _settings.AiModel;
@@ -234,6 +235,7 @@ namespace KeyMapper
             _settings.AiModel = string.IsNullOrWhiteSpace(AiModelTxt.Text)
                 ? "gpt-4o-mini"
                 : AiModelTxt.Text.Trim();
+            _settings.UserName = UserNameTxt != null ? UserNameTxt.Text.Trim() : string.Empty;
 
             ConfigManager.Save(_settings);
 
@@ -246,6 +248,8 @@ namespace KeyMapper
                 _hook.AutoExpandShortcuts = _settings.AutoExpandShortcuts;
             }
         }
+
+
 
         private string GetActiveProcessName()
         {
@@ -1543,6 +1547,13 @@ namespace KeyMapper
 
         private void SettingChanged(object sender, RoutedEventArgs e)
         {
+            if (_isInitializing) return;
+            SaveSettings();
+        }
+
+        private void SettingChanged(object sender, TextChangedEventArgs e)
+        {
+            if (_isInitializing) return;
             SaveSettings();
         }
 

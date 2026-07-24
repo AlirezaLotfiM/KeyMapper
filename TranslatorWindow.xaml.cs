@@ -1,8 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Threading;
 
 namespace KeyMapper
@@ -223,12 +226,15 @@ namespace KeyMapper
         private void ResetDetectedLanguage()
         {
             _detectedSourceLanguage = string.Empty;
-            EnglishTarget.IsEnabled = true;
-            GermanTarget.IsEnabled = true;
-            PersianTarget.IsEnabled = true;
-            EnglishTarget.ToolTip = null;
-            GermanTarget.ToolTip = null;
-            PersianTarget.ToolTip = null;
+            if (TargetChipsPanel == null) return;
+            foreach (UIElement child in TargetChipsPanel.Children)
+            {
+                if (child is RadioButton chip)
+                {
+                    chip.IsEnabled = true;
+                    chip.ToolTip = null;
+                }
+            }
         }
 
         private void UpdateLanguageChoices(string sourceLanguage)
@@ -252,13 +258,18 @@ namespace KeyMapper
             _isApplyingDetectedLanguage = false;
         }
 
-        private RadioButton? ButtonForLanguage(string language) => language switch
+        private RadioButton? ButtonForLanguage(string language)
         {
-            "en" => EnglishTarget,
-            "de" => GermanTarget,
-            "fa" => PersianTarget,
-            _ => null
-        };
+            if (TargetChipsPanel == null) return null;
+            foreach (UIElement child in TargetChipsPanel.Children)
+            {
+                if (child is RadioButton chip && chip.Tag is string tag && tag.Equals(language, StringComparison.OrdinalIgnoreCase))
+                {
+                    return chip;
+                }
+            }
+            return null;
+        }
 
         private static string ChooseAlternateTarget(string sourceLanguage) => sourceLanguage switch
         {
@@ -426,6 +437,173 @@ namespace KeyMapper
             RemoveLocalServiceButton.Visibility = privateInstall
                 ? Visibility.Visible
                 : Visibility.Collapsed;
+
+            _ = RefreshDynamicLanguageListsAsync();
+        }
+
+        private readonly struct LangMeta
+        {
+            public string Code { get; }
+            public string DisplayName { get; }
+            public string Description { get; }
+            public LangMeta(string code, string displayName, string description)
+            {
+                Code = code;
+                DisplayName = displayName;
+                Description = description;
+            }
+        }
+
+        private static readonly LangMeta[] AllSupportedLanguages =
+        [
+            new("en", "ENGLISH", "English Language"),
+            new("fa", "PERSIAN (فارسی)", "Translation between English & Persian"),
+            new("ko", "KOREAN (한국어)", "Translation between English & Korean"),
+            new("de", "GERMAN (Deutsch)", "Translation between English & German"),
+            new("fr", "FRENCH (Français)", "Translation between English & French"),
+            new("es", "SPANISH (Español)", "Translation between English & Spanish")
+        ];
+
+        private async Task RefreshDynamicLanguageListsAsync()
+        {
+            if (TargetChipsPanel == null || LanguageModelsPanel == null) return;
+
+            HashSet<string> installedCodes = await LocalLibreTranslateManager.GetInstalledLanguageCodesAsync();
+
+            TargetChipsPanel.Children.Clear();
+            LanguageModelsPanel.Children.Clear();
+
+            bool anyChipChecked = false;
+
+            foreach (var lang in AllSupportedLanguages)
+            {
+                bool isInstalled = installedCodes.Contains(lang.Code);
+
+                if (isInstalled)
+                {
+                    // Add to top target language chips
+                    var chip = new RadioButton
+                    {
+                        GroupName = "TargetLanguage",
+                        Content = lang.DisplayName,
+                        Tag = lang.Code,
+                        Style = (Style)FindResource("LanguageChip")
+                    };
+                    chip.Checked += TargetLanguage_Checked;
+
+                    if (lang.Code == _targetLanguage)
+                    {
+                        chip.IsChecked = true;
+                        anyChipChecked = true;
+                    }
+
+                    TargetChipsPanel.Children.Add(chip);
+                }
+                else
+                {
+                    // Add to bottom download cards list
+                    var border = new Border
+                    {
+                        Background = (Brush)FindResource("AppSurfaceBrush"),
+                        BorderBrush = (Brush)FindResource("AppBorderBrush"),
+                        BorderThickness = new Thickness(1, 1, 1, 1),
+                        Padding = new Thickness(10, 8, 10, 8),
+                        Margin = new Thickness(0, 0, 0, 6)
+                    };
+
+                    var grid = new Grid();
+                    grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                    grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+                    var stack = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
+                    var txtTitle = new TextBlock
+                    {
+                        Text = lang.DisplayName,
+                        Foreground = (Brush)FindResource("AppTextBrush"),
+                        FontWeight = FontWeights.SemiBold,
+                        FontSize = 11
+                    };
+                    var txtDesc = new TextBlock
+                    {
+                        Text = lang.Description,
+                        Foreground = (Brush)FindResource("AppMutedTextBrush"),
+                        FontSize = 9
+                    };
+                    stack.Children.Add(txtTitle);
+                    stack.Children.Add(txtDesc);
+                    Grid.SetColumn(stack, 0);
+
+                    var btn = new Button
+                    {
+                        Content = "Download",
+                        Style = (Style)FindResource("PixelButton"),
+                        Padding = new Thickness(8, 4, 8, 4),
+                        FontSize = 10,
+                        Tag = lang.Code
+                    };
+                    btn.Click += DownloadLanguageBtn_Click;
+                    Grid.SetColumn(btn, 1);
+
+                    grid.Children.Add(stack);
+                    grid.Children.Add(btn);
+                    border.Child = grid;
+
+                    LanguageModelsPanel.Children.Add(border);
+                }
+            }
+
+            // Fallback: if selected target language chip is not available, check the first available chip (e.g., English)
+            if (!anyChipChecked && TargetChipsPanel.Children.Count > 0 && TargetChipsPanel.Children[0] is RadioButton firstChip)
+            {
+                firstChip.IsChecked = true;
+            }
+        }
+
+        private async void DownloadLanguageBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.Tag is string langCode)
+            {
+                btn.IsEnabled = false;
+                btn.Content = "Downloading...";
+                LocalServiceProgressBar.Visibility = Visibility.Visible;
+                LocalServiceProgressBar.IsIndeterminate = true;
+
+                var progress = new Progress<TranslationSetupProgress>(p =>
+                {
+                    if (p.Percent.HasValue)
+                    {
+                        LocalServiceProgressBar.IsIndeterminate = false;
+                        LocalServiceProgressBar.Value = Math.Clamp(p.Percent.Value, 0, 100);
+                        btn.Content = $"Downloading {p.Percent.Value:F0}%";
+                    }
+                    else
+                    {
+                        btn.Content = "Downloading...";
+                    }
+
+                    LocalServiceStatusText.Text = p.Message;
+                    StatusText.Text = p.Message;
+                });
+
+                try
+                {
+                    await LocalLibreTranslateManager.DownloadLanguageModelAsync(langCode, progress, _setupCancellation.Token);
+                    LocalLibreTranslateManager.RestartServer();
+                    await RefreshLocalServiceUiAsync(_setupCancellation.Token);
+                    await RefreshDynamicLanguageListsAsync();
+                    StatusText.Text = $"{langCode.ToUpper()} model installed and added to target languages!";
+                }
+                catch (Exception ex)
+                {
+                    btn.IsEnabled = true;
+                    btn.Content = "Download";
+                    StatusText.Text = $"Failed to download model: {ex.Message}";
+                }
+                finally
+                {
+                    LocalServiceProgressBar.Visibility = Visibility.Collapsed;
+                }
+            }
         }
 
         private void UpdateEndpointModeMessage()

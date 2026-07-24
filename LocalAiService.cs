@@ -165,8 +165,45 @@ namespace KeyMapper
 
         public bool IsInstalled(string? modelId)
         {
-            LocalAiModelOption? model = FindModel(modelId);
-            return model != null && File.Exists(GetModelPath(model));
+            if (!string.IsNullOrWhiteSpace(modelId))
+            {
+                LocalAiModelOption? model = FindModel(modelId);
+                if (model != null && File.Exists(GetModelPath(model)))
+                {
+                    return true;
+                }
+            }
+
+            return GetFirstInstalledModelId() != null;
+        }
+
+        public string? GetFirstInstalledModelId()
+        {
+            foreach (LocalAiModelOption option in Models)
+            {
+                if (File.Exists(GetModelPath(option)))
+                {
+                    return option.Id;
+                }
+            }
+
+            if (Directory.Exists(ModelsFolder))
+            {
+                var files = Directory.GetFiles(ModelsFolder, "*.gguf");
+                if (files.Length > 0)
+                {
+                    foreach (var option in Models)
+                    {
+                        if (files[0].Contains(option.FileName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return option.Id;
+                        }
+                    }
+                    return Models[0].Id;
+                }
+            }
+
+            return null;
         }
 
         public string GetModelPath(LocalAiModelOption model) =>

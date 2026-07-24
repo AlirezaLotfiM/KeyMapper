@@ -641,7 +641,13 @@
                                     <TextBlock Text="Off by default. Uncheck this at any time to opt out; it affects only your Windows account." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="11" Margin="20,0,0,15"/>
 
                                     <CheckBox x:Name="PlaySoundsChk" Content="Play sounds when an action succeeds" Foreground="{DynamicResource AppTextBrush}" Checked="SettingChanged" Unchecked="SettingChanged"/>
-                                    <TextBlock Text="Plays mechanical click sounds when recording, and a chime when a shortcut triggers." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="11" Margin="20,0,0,5"/>
+                                    <TextBlock Text="Plays mechanical click sounds when recording, and a chime when a shortcut triggers." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="11" Margin="20,0,0,15"/>
+
+                                    <StackPanel Margin="0,5,0,0">
+                                        <TextBlock Text="Your Name / نام شما (Optional)" Foreground="{DynamicResource AppTextBrush}" FontWeight="SemiBold" FontSize="13" Margin="0,0,0,5"/>
+                                        <TextBox x:Name="UserNameTxt" Height="32" Padding="8,4" TextChanged="SettingChanged"/>
+                                        <TextBlock Text="The AI assistant will address you naturally by this name during chats and observations." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="11" Margin="0,3,0,0"/>
+                                    </StackPanel>
                                 </StackPanel>
                             </Border>
 

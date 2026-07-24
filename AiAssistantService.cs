@@ -34,9 +34,14 @@ namespace KeyMapper
                 return null;
             }
 
-            if (settings.LocalAiEnabled &&
-                !string.IsNullOrWhiteSpace(settings.LocalAiModelId) &&
-                LocalAiService.Instance.IsInstalled(settings.LocalAiModelId))
+            string? activeLocalModelId = settings.LocalAiModelId;
+            if (string.IsNullOrWhiteSpace(activeLocalModelId) || !LocalAiService.Instance.IsInstalled(activeLocalModelId))
+            {
+                activeLocalModelId = LocalAiService.Instance.GetFirstInstalledModelId();
+            }
+
+            // Always use local AI if any model is installed on user's system
+            if (!string.IsNullOrWhiteSpace(activeLocalModelId))
             {
                 var localPrompt = new StringBuilder();
                 foreach (ConversationTurn turn in history.TakeLast(8))
@@ -52,7 +57,7 @@ namespace KeyMapper
                 localPrompt.Append("Character:");
 
                 string? localResponse = await LocalAiService.Instance.GenerateAsync(
-                    settings.LocalAiModelId,
+                    activeLocalModelId,
                     BuildPersonalityPrompt(characterName, visibleContext, settings.UserName),
                     localPrompt.ToString(),
                     220);
@@ -163,41 +168,63 @@ namespace KeyMapper
 
             var match = System.Text.RegularExpressions.Regex.Match(
                 response,
-                @"\[ACTION:(launch_app|open_url|play_steam|media):(.*?)(?:\]|$)");
+                @"\[ACTION:(launch_app|open_url|play_steam|media|sys_info):(.*?)(?:\]|$)");
 
             if (match.Success)
             {
                 string actionType = match.Groups[1].Value;
                 string target = match.Groups[2].Value.Trim().ToLowerInvariant();
+                string appendedInfo = string.Empty;
 
-                _ = Task.Run(() =>
+                if (actionType == "sys_info")
                 {
-                    try
+                    if (target == "ip")
                     {
-                        if (actionType == "media")
-                        {
-                            if (target == "playpause" || target == "toggle" || target == "play" || target == "pause") MediaControlService.PlayPause();
-                            else if (target == "next") MediaControlService.NextTrack();
-                            else if (target == "previous" || target == "prev") MediaControlService.PreviousTrack();
-                            else if (target == "restart") MediaControlService.RestartTrack();
-                            else if (target == "volume_up" || target == "louder") MediaControlService.VolumeUp(6);
-                            else if (target == "volume_down" || target == "quieter") MediaControlService.VolumeDown(6);
-                            else if (target == "mute") MediaControlService.ToggleMute();
-                        }
-                        else if (actionType == "launch_app")
-                            _ = ToolRegistry.Instance.ExecuteCommandAsync("open " + target);
-                        else if (actionType == "open_url")
-                            _ = ToolRegistry.Instance.ExecuteCommandAsync("open " + target);
-                        else if (actionType == "play_steam")
-                            _ = ToolRegistry.Instance.ExecuteCommandAsync("play " + target);
+                        var toolRes = ToolRegistry.Instance.ExecuteCommandAsync("ip address").GetAwaiter().GetResult();
+                        appendedInfo = "\n" + toolRes.OutputMessage;
                     }
-                    catch { }
-                });
+                    else if (target == "hardware" || target == "specs")
+                    {
+                        var toolRes = ToolRegistry.Instance.ExecuteCommandAsync("system info").GetAwaiter().GetResult();
+                        appendedInfo = "\n" + toolRes.OutputMessage;
+                    }
+                    else if (target == "music")
+                    {
+                        var track = MusicPresenceService.Instance.GetCurrentTrackAsync().GetAwaiter().GetResult();
+                        appendedInfo = track == null ? "\nNo active music playing." : $"\nNow playing: {track.Title} by {track.Artist}";
+                    }
+                }
+                else
+                {
+                    _ = Task.Run(() =>
+                    {
+                        try
+                        {
+                            if (actionType == "media")
+                            {
+                                if (target == "playpause" || target == "toggle" || target == "play" || target == "pause") MediaControlService.PlayPause();
+                                else if (target == "next") MediaControlService.NextTrack();
+                                else if (target == "previous" || target == "prev") MediaControlService.PreviousTrack();
+                                else if (target == "restart") MediaControlService.RestartTrack();
+                                else if (target == "volume_up" || target == "louder") MediaControlService.VolumeUp(6);
+                                else if (target == "volume_down" || target == "quieter") MediaControlService.VolumeDown(6);
+                                else if (target == "mute") MediaControlService.ToggleMute();
+                            }
+                            else if (actionType == "launch_app")
+                                _ = ToolRegistry.Instance.ExecuteCommandAsync("open " + target);
+                            else if (actionType == "open_url")
+                                _ = ToolRegistry.Instance.ExecuteCommandAsync("open " + target);
+                            else if (actionType == "play_steam")
+                                _ = ToolRegistry.Instance.ExecuteCommandAsync("play " + target);
+                        }
+                        catch { }
+                    });
+                }
 
-                response = System.Text.RegularExpressions.Regex.Replace(response, @"\[ACTION:.*?\]", "").Trim();
+                response = System.Text.RegularExpressions.Regex.Replace(response, @"\[?ACTION:[^\]\r\n]+\]?", "").Trim() + appendedInfo;
             }
 
-            return response;
+            return System.Text.RegularExpressions.Regex.Replace(response, @"\[?ACTION:[^\]\r\n]+\]?", "").Trim();
         }
 
         internal async Task<string?> CreateAmbientCommentAsync(
@@ -207,10 +234,13 @@ namespace KeyMapper
             string? musicArtist,
             AppSettings settings)
         {
-            if (!settings.LocalAiEnabled ||
-                !settings.AiAmbientCommentsEnabled ||
-                string.IsNullOrWhiteSpace(settings.LocalAiModelId) ||
-                !LocalAiService.Instance.IsInstalled(settings.LocalAiModelId))
+            string? activeLocalModelId = settings.LocalAiModelId;
+            if (string.IsNullOrWhiteSpace(activeLocalModelId) || !LocalAiService.Instance.IsInstalled(activeLocalModelId))
+            {
+                activeLocalModelId = LocalAiService.Instance.GetFirstInstalledModelId();
+            }
+
+            if (string.IsNullOrWhiteSpace(activeLocalModelId))
             {
                 return null;
             }
@@ -227,11 +257,19 @@ namespace KeyMapper
                 "Do not repeat a greeting, introduce yourself, label the reply, or offer a menu of capabilities. " +
                 "Use the likely language of the title/context. One or two short sentences, under 38 words.";
 
-            return await LocalAiService.Instance.GenerateAsync(
-                settings.LocalAiModelId,
+            string? result = await LocalAiService.Instance.GenerateAsync(
+                activeLocalModelId,
                 BuildPersonalityPrompt(characterName, visibleContext, settings.UserName),
                 instruction,
                 80);
+
+            return CleanActionTagsOnly(result);
+        }
+
+        private static string? CleanActionTagsOnly(string? response)
+        {
+            if (string.IsNullOrWhiteSpace(response)) return response;
+            return System.Text.RegularExpressions.Regex.Replace(response, @"\[(?:ACTION|TOOL):.*?\]", "").Trim();
         }
 
         internal static string BuildPersonalityPrompt(
@@ -283,8 +321,12 @@ namespace KeyMapper
                   "Treat this as peripheral vision: mention a concrete detail only when it naturally connects to the conversation.";
 
             string systemToolsInstruction =
-                "You can execute Windows desktop and media commands if requested. " +
-                "Append exact action tag when requested: " +
+                "You are a real intelligent desktop Agent with access to Windows system tools. " +
+                "If the user asks for system info, IP address, music details, or desktop actions: " +
+                "You MUST use exact action tags in your response: " +
+                "[ACTION:sys_info:ip] if asked for IP address, " +
+                "[ACTION:sys_info:hardware] if asked for PC specs or RAM/CPU, " +
+                "[ACTION:sys_info:music] if asked what music is playing, " +
                 "[ACTION:launch_app:appName] to open Windows apps, " +
                 "[ACTION:open_url:url] to open websites, " +
                 "[ACTION:play_steam:gameName] to launch games, " +
@@ -294,7 +336,8 @@ namespace KeyMapper
                 "[ACTION:media:restart] to restart track, " +
                 "[ACTION:media:volume_up] to increase volume, " +
                 "[ACTION:media:volume_down] to decrease volume, " +
-                "[ACTION:media:mute] to mute volume. ";
+                "[ACTION:media:mute] to mute volume. " +
+                "Never say you don't have access to information or IP. Always use these action tags! ";
 
             return
                 $"{identity} {userGreetingName}{systemToolsInstruction}You share an ongoing relationship with the user. Use recent conversation history as memory: " +
