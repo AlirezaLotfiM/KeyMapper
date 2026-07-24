@@ -23,7 +23,50 @@ namespace KeyMapper
 
             string lower = prompt.ToLower();
 
-            // 1. De-gibberish: reverse accidental physical keyboard layouts.
+            // 0. Media & Volume Controls
+            if (lower.Contains("play music") || lower.Contains("pause music") || lower.Contains("toggle music") ||
+                lower.Contains("پخش موزیک") || lower.Contains("توقف موزیک") || lower.Contains("استپ موزیک") ||
+                lower.Equals("play", StringComparison.OrdinalIgnoreCase) || lower.Equals("pause", StringComparison.OrdinalIgnoreCase))
+            {
+                MediaControlService.PlayPause();
+                return new ToolExecutionResult { Success = true, OutputMessage = "Toggled playback." };
+            }
+
+            if (lower.Contains("next track") || lower.Contains("next song") || lower.Contains("برو بعدی") || lower.Contains("آهنگ بعدی"))
+            {
+                MediaControlService.NextTrack();
+                return new ToolExecutionResult { Success = true, OutputMessage = "Skipped to next track." };
+            }
+
+            if (lower.Contains("prev track") || lower.Contains("previous song") || lower.Contains("برو قبلی") || lower.Contains("آهنگ قبلی"))
+            {
+                MediaControlService.PreviousTrack();
+                return new ToolExecutionResult { Success = true, OutputMessage = "Went to previous track." };
+            }
+
+            if (lower.Contains("restart song") || lower.Contains("restart track") || lower.Contains("از اول پخش کن") || lower.Contains("از اول موزیک"))
+            {
+                MediaControlService.RestartTrack();
+                return new ToolExecutionResult { Success = true, OutputMessage = "Restarted current track." };
+            }
+
+            if (lower.Contains("volume up") || lower.Contains("louder") || lower.Contains("صدا رو بالا ببر") || lower.Contains("صدا زیاد") || lower.Contains("زیاد کن صدا"))
+            {
+                MediaControlService.VolumeUp(6);
+                return new ToolExecutionResult { Success = true, OutputMessage = "Increased volume." };
+            }
+
+            if (lower.Contains("volume down") || lower.Contains("quieter") || lower.Contains("صدا رو پایین ببر") || lower.Contains("صدا کم") || lower.Contains("کم کن صدا"))
+            {
+                MediaControlService.VolumeDown(6);
+                return new ToolExecutionResult { Success = true, OutputMessage = "Decreased volume." };
+            }
+
+            if (lower.Contains("mute") || lower.Contains("قطع صدا") || lower.Contains("صدا بی صدا"))
+            {
+                MediaControlService.ToggleMute();
+                return new ToolExecutionResult { Success = true, OutputMessage = "Toggled mute." };
+            }
             if (lower.Contains("de-gibberish") ||
                 lower.Contains("degibberish") ||
                 lower.Contains("fix layout") ||

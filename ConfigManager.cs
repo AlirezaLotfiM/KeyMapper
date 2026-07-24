@@ -46,6 +46,7 @@ namespace KeyMapper
         public string LayoutFixHotkey { get; set; } = "Ctrl+Alt+K";
         public string CurrentCharacter { get; set; } = "Pink Monster";
         public bool PetHorizontalOnlyWalking { get; set; } = false;
+        public string UserName { get; set; } = string.Empty;
     }
 
     public class OldAppSettings

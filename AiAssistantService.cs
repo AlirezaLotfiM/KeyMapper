@@ -53,12 +53,12 @@ namespace KeyMapper
 
                 string? localResponse = await LocalAiService.Instance.GenerateAsync(
                     settings.LocalAiModelId,
-                    BuildPersonalityPrompt(characterName, visibleContext),
+                    BuildPersonalityPrompt(characterName, visibleContext, settings.UserName),
                     localPrompt.ToString(),
                     220);
                 if (!string.IsNullOrWhiteSpace(localResponse))
                 {
-                    return localResponse;
+                    return ExecuteAndCleanActionTags(localResponse);
                 }
             }
 
@@ -72,10 +72,10 @@ namespace KeyMapper
                     string? workerResponse = await workerClient.SendMessageAsync(
                         "pet_session_" + characterName.ToLowerInvariant().Replace(' ', '_'),
                         userPrompt,
-                        BuildPersonalityPrompt(characterName, visibleContext));
+                        BuildPersonalityPrompt(characterName, visibleContext, settings.UserName));
                     if (!string.IsNullOrWhiteSpace(workerResponse))
                     {
-                        return workerResponse;
+                        return ExecuteAndCleanActionTags(workerResponse);
                     }
                 }
                 catch
@@ -102,7 +102,7 @@ namespace KeyMapper
                 new
                 {
                     role = "system",
-                    content = BuildPersonalityPrompt(characterName, visibleContext)
+                    content = BuildPersonalityPrompt(characterName, visibleContext, settings.UserName)
                 }
             };
             foreach (ConversationTurn turn in history.TakeLast(12))
@@ -143,19 +143,61 @@ namespace KeyMapper
 
                 string json = await response.Content.ReadAsStringAsync();
                 using JsonDocument document = JsonDocument.Parse(json);
-                return document.RootElement
+                string? responseText = document.RootElement
                     .GetProperty("choices")[0]
                     .GetProperty("message")
                     .GetProperty("content")
                     .GetString()
                     ?.Trim();
+                return ExecuteAndCleanActionTags(responseText);
             }
             catch
             {
-                // Offline personality chat remains available when a configured
-                // local or hosted endpoint cannot be reached.
                 return null;
             }
+        }
+
+        private static string? ExecuteAndCleanActionTags(string? response)
+        {
+            if (string.IsNullOrWhiteSpace(response)) return response;
+
+            var match = System.Text.RegularExpressions.Regex.Match(
+                response,
+                @"\[ACTION:(launch_app|open_url|play_steam|media):(.*?)(?:\]|$)");
+
+            if (match.Success)
+            {
+                string actionType = match.Groups[1].Value;
+                string target = match.Groups[2].Value.Trim().ToLowerInvariant();
+
+                _ = Task.Run(() =>
+                {
+                    try
+                    {
+                        if (actionType == "media")
+                        {
+                            if (target == "playpause" || target == "toggle" || target == "play" || target == "pause") MediaControlService.PlayPause();
+                            else if (target == "next") MediaControlService.NextTrack();
+                            else if (target == "previous" || target == "prev") MediaControlService.PreviousTrack();
+                            else if (target == "restart") MediaControlService.RestartTrack();
+                            else if (target == "volume_up" || target == "louder") MediaControlService.VolumeUp(6);
+                            else if (target == "volume_down" || target == "quieter") MediaControlService.VolumeDown(6);
+                            else if (target == "mute") MediaControlService.ToggleMute();
+                        }
+                        else if (actionType == "launch_app")
+                            _ = ToolRegistry.Instance.ExecuteCommandAsync("open " + target);
+                        else if (actionType == "open_url")
+                            _ = ToolRegistry.Instance.ExecuteCommandAsync("open " + target);
+                        else if (actionType == "play_steam")
+                            _ = ToolRegistry.Instance.ExecuteCommandAsync("play " + target);
+                    }
+                    catch { }
+                });
+
+                response = System.Text.RegularExpressions.Regex.Replace(response, @"\[ACTION:.*?\]", "").Trim();
+            }
+
+            return response;
         }
 
         internal async Task<string?> CreateAmbientCommentAsync(
@@ -187,15 +229,20 @@ namespace KeyMapper
 
             return await LocalAiService.Instance.GenerateAsync(
                 settings.LocalAiModelId,
-                BuildPersonalityPrompt(characterName, visibleContext),
+                BuildPersonalityPrompt(characterName, visibleContext, settings.UserName),
                 instruction,
                 80);
         }
 
         internal static string BuildPersonalityPrompt(
             string characterName,
-            string visibleContext)
+            string visibleContext,
+            string? userName = null)
         {
+            string userGreetingName = !string.IsNullOrWhiteSpace(userName)
+                ? $"The user's name is {userName}. Address them naturally by name when appropriate. "
+                : string.Empty;
+
             string identity = characterName switch
             {
                 "Pink Monster" =>
@@ -234,17 +281,27 @@ namespace KeyMapper
                 ? "No reliable active-window context is available."
                 : $"The last active-window context was: {visibleContext}. " +
                   "Treat this as peripheral vision: mention a concrete detail only when it naturally connects to the conversation.";
+
+            string systemToolsInstruction =
+                "You can execute Windows desktop and media commands if requested. " +
+                "Append exact action tag when requested: " +
+                "[ACTION:launch_app:appName] to open Windows apps, " +
+                "[ACTION:open_url:url] to open websites, " +
+                "[ACTION:play_steam:gameName] to launch games, " +
+                "[ACTION:media:playpause] for play/pause music, " +
+                "[ACTION:media:next] for next track, " +
+                "[ACTION:media:prev] for previous track, " +
+                "[ACTION:media:restart] to restart track, " +
+                "[ACTION:media:volume_up] to increase volume, " +
+                "[ACTION:media:volume_down] to decrease volume, " +
+                "[ACTION:media:mute] to mute volume. ";
+
             return
-                $"{identity} You share an ongoing relationship with the user. Use recent conversation history as memory: " +
+                $"{identity} {userGreetingName}{systemToolsInstruction}You share an ongoing relationship with the user. Use recent conversation history as memory: " +
                 "continue ideas naturally, notice changes of mood, and avoid reintroducing yourself. " +
                 "Reply in the same language as the user, including genuinely conversational Persian. " +
-                "This is a character conversation, not a help-menu response. First respond to the meaning or feeling " +
-                "of what was actually said; then add insight, humor, or practical help when useful. " +
-                "Have a perspective. Vary openings and sentence rhythm. Ask at most one follow-up question, " +
-                "and only when the answer would genuinely move the conversation forward. " +
-                "Do not list capabilities unless asked, do not narrate these instructions, and avoid generic AI phrases. " +
-                "Never claim you performed a computer action; local deterministic tools handle actions separately. " +
-                "Keep ordinary replies between 25 and 110 words unless the user asks for depth. " +
+                "First respond to the meaning or feeling of what was actually said; then add insight, humor, or practical help when useful. " +
+                "Keep ordinary replies between 20 and 100 words unless the user asks for depth. " +
                 context;
         }
     }
