@@ -401,7 +401,7 @@ namespace KeyMapper
                 MiniBackdropImage.Visibility = Visibility.Collapsed;
                 MiniArtworkGradient.Fill =
                     (Brush)FindResource("AppAccentSoftBrush");
-                MiniArtworkGradient.Opacity = 0.62;
+                MiniArtworkGradient.Opacity = 0.38;
                 return;
             }
 
@@ -465,13 +465,13 @@ namespace KeyMapper
                 gradient.Freeze();
 
                 MiniArtworkGradient.Fill = gradient;
-                MiniArtworkGradient.Opacity = 0.74;
+                MiniArtworkGradient.Opacity = 0.42;
             }
             catch
             {
                 MiniArtworkGradient.Fill =
                     (Brush)FindResource("AppAccentSoftBrush");
-                MiniArtworkGradient.Opacity = 0.62;
+                MiniArtworkGradient.Opacity = 0.38;
             }
         }
 
@@ -532,7 +532,9 @@ namespace KeyMapper
                 track.IsFavorite ? "Remove from favorites" : "Add to favorites";
             if (MiniLikeBtn != null)
             {
-                MiniLikeBtn.Foreground = brush;
+                MiniLikeBtn.Foreground = track.IsFavorite
+                    ? brush
+                    : (Brush)FindResource("MiniMutedBrush");
                 MiniLikeBtn.Opacity = track.IsFavorite ? 1 : 0.5;
                 MiniLikeBtn.ToolTip = LikeBtn.ToolTip;
             }
