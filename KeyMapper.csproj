@@ -25,6 +25,7 @@
     <Resource Include="Resources\app_icon.ico" />
     <Resource Include="Resources\app_icon.png" />
     <Resource Include="Resources\Icons\*.png" />
+    <Resource Include="Resources\Icons\*.svg" />
     <Resource Include="Resources\Characters\**\*.png" />
     <Content Include="Resources\OCR\tessdata\*.traineddata">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

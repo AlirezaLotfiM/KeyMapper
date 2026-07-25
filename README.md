@@ -59,6 +59,7 @@ The local music player is part of the companion experience, not a separate skin:
 - It inherits the active KeyMapper palette, including light themes.
 - **Cyber Groove** preserves the violet/magenta/cyan studio look as an optional dark theme.
 - Full and mini players share the same visual language as the control center, pet controls, speech bubble, and context menu.
+- The mini player blends a softly blurred cover-art backdrop with the active theme and uses a proper vector maximize control.
 - Supplied vector-style icons are used for folders, playback, shuffle, repeat, volume, and library navigation.
 - Every playing track gets a live, track-seeded groove animation.
 - Queue, favorites, history, artists, genres, playlists, sorting, and folder management are available locally.

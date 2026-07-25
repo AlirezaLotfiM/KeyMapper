@@ -8,6 +8,7 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 
 namespace KeyMapper
@@ -378,16 +379,145 @@ namespace KeyMapper
                         AlbumCoverImage.Visibility = Visibility.Visible;
                         MiniCoverImage.Source = track.AlbumArt;
                         MiniCoverImage.Visibility = Visibility.Visible;
+                        UpdateMiniArtworkBackdrop(track.AlbumArt);
                     }
                     else
                     {
                         AlbumCoverImage.Visibility = Visibility.Collapsed;
                         MiniCoverImage.Visibility = Visibility.Collapsed;
+                        UpdateMiniArtworkBackdrop(null);
                     }
 
                     UpdatePlaylistList();
                 }
             });
+        }
+
+        private void UpdateMiniArtworkBackdrop(BitmapSource? artwork)
+        {
+            if (artwork == null)
+            {
+                MiniBackdropImage.Source = null;
+                MiniBackdropImage.Visibility = Visibility.Collapsed;
+                MiniArtworkGradient.Fill =
+                    (Brush)FindResource("AppAccentSoftBrush");
+                MiniArtworkGradient.Opacity = 0.62;
+                return;
+            }
+
+            MiniBackdropImage.Source = artwork;
+            MiniBackdropImage.Visibility = Visibility.Visible;
+
+            try
+            {
+                double scale = Math.Min(
+                    24.0 / Math.Max(1, artwork.PixelWidth),
+                    24.0 / Math.Max(1, artwork.PixelHeight));
+                var sampled = new TransformedBitmap(
+                    artwork,
+                    new ScaleTransform(scale, scale));
+                var converted = new FormatConvertedBitmap(
+                    sampled,
+                    PixelFormats.Bgra32,
+                    null,
+                    0);
+
+                int stride = converted.PixelWidth * 4;
+                byte[] pixels = new byte[stride * converted.PixelHeight];
+                converted.CopyPixels(pixels, stride, 0);
+
+                Color upper = AverageArtworkColor(
+                    pixels,
+                    converted.PixelWidth,
+                    converted.PixelHeight,
+                    stride,
+                    0,
+                    Math.Max(1, converted.PixelHeight / 2));
+                Color lower = AverageArtworkColor(
+                    pixels,
+                    converted.PixelWidth,
+                    converted.PixelHeight,
+                    stride,
+                    converted.PixelHeight / 2,
+                    converted.PixelHeight);
+
+                var gradient = new LinearGradientBrush
+                {
+                    StartPoint = new Point(0, 0),
+                    EndPoint = new Point(1, 1)
+                };
+                gradient.GradientStops.Add(
+                    new GradientStop(
+                        Color.FromArgb(
+                            205,
+                            upper.R,
+                            upper.G,
+                            upper.B),
+                        0));
+                gradient.GradientStops.Add(
+                    new GradientStop(
+                        Color.FromArgb(
+                            180,
+                            lower.R,
+                            lower.G,
+                            lower.B),
+                        1));
+                gradient.Freeze();
+
+                MiniArtworkGradient.Fill = gradient;
+                MiniArtworkGradient.Opacity = 0.74;
+            }
+            catch
+            {
+                MiniArtworkGradient.Fill =
+                    (Brush)FindResource("AppAccentSoftBrush");
+                MiniArtworkGradient.Opacity = 0.62;
+            }
+        }
+
+        private static Color AverageArtworkColor(
+            byte[] pixels,
+            int width,
+            int height,
+            int stride,
+            int startRow,
+            int endRow)
+        {
+            long red = 0;
+            long green = 0;
+            long blue = 0;
+            long count = 0;
+
+            for (int y = Math.Clamp(startRow, 0, height);
+                 y < Math.Clamp(endRow, 0, height);
+                 y++)
+            {
+                int row = y * stride;
+                for (int x = 0; x < width; x++)
+                {
+                    int index = row + (x * 4);
+                    byte alpha = pixels[index + 3];
+                    if (alpha < 24)
+                    {
+                        continue;
+                    }
+
+                    blue += pixels[index];
+                    green += pixels[index + 1];
+                    red += pixels[index + 2];
+                    count++;
+                }
+            }
+
+            if (count == 0)
+            {
+                return Color.FromRgb(90, 120, 145);
+            }
+
+            return Color.FromRgb(
+                (byte)(red / count),
+                (byte)(green / count),
+                (byte)(blue / count));
         }
 
         private void UpdateLikeButtonUI(AudioTrackItem track)

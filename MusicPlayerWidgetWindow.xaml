@@ -466,8 +466,40 @@
             </Grid>
 
             <!-- Super Compact Floating Mini Player Deck -->
-            <Grid x:Name="MiniDeckView" Grid.RowSpan="3" Visibility="Collapsed">
-                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Width="150" Margin="0">
+            <Grid x:Name="MiniDeckView" Grid.RowSpan="3"
+                  Visibility="Collapsed" ClipToBounds="True">
+                <!-- The cover is enlarged and softened beneath two theme-aware
+                     washes. The art supplies the mood; the active theme keeps
+                     every label and control readable. -->
+                <Border x:Name="MiniArtworkBackdrop"
+                        CornerRadius="10" ClipToBounds="True"
+                        IsHitTestVisible="False">
+                    <Grid>
+                        <Image x:Name="MiniBackdropImage"
+                               Stretch="UniformToFill" Opacity="0.38"
+                               Visibility="Collapsed"
+                               RenderTransformOrigin="0.5,0.5">
+                            <Image.RenderTransform>
+                                <ScaleTransform ScaleX="1.2" ScaleY="1.2"/>
+                            </Image.RenderTransform>
+                            <Image.Effect>
+                                <BlurEffect Radius="18"/>
+                            </Image.Effect>
+                        </Image>
+                        <Rectangle x:Name="MiniArtworkGradient"
+                                   Fill="{DynamicResource AppAccentSoftBrush}"
+                                   Opacity="0.62"/>
+                        <Rectangle Fill="{DynamicResource AppBackgroundBrush}"
+                                   Opacity="0.68"/>
+                        <Rectangle Fill="{DynamicResource AppAccentSoftBrush}"
+                                   Opacity="0.18"/>
+                    </Grid>
+                </Border>
+
+                <StackPanel Panel.ZIndex="1"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Center"
+                            Width="150" Margin="0">
                     <!-- Top Bar: Title, Expand, Close -->
                     <Grid Margin="0,0,0,6">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -478,7 +510,21 @@
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
                             <Button x:Name="MiniLikeBtn" Content="♥" Foreground="{DynamicResource AppMutedTextBrush}" Style="{StaticResource CleanIconButton}" FontSize="15" Click="LikeBtn_Click" Margin="0,0,6,0" ToolTip="Add to Favorites"/>
-                            <Button Content="↗" Foreground="{DynamicResource AppAccentBrush}" Style="{StaticResource CleanIconButton}" FontSize="12" FontWeight="Bold" Click="ExpandMiniPlayer_Click" Margin="0,0,6,0" ToolTip="Expand Full Player"/>
+                            <Button Foreground="{DynamicResource AppAccentBrush}"
+                                    Style="{StaticResource CleanIconButton}"
+                                    Click="ExpandMiniPlayer_Click"
+                                    Margin="0,0,6,0"
+                                    ToolTip="Expand full player">
+                                <Viewbox Width="13" Height="13">
+                                    <Path Width="24" Height="24"
+                                          Data="M2,9 L2,6.5 C2,4.01 4.01,2 6.5,2 L9,2 M15,2 L17.5,2 C19.99,2 22,4.01 22,6.5 L22,9 M22,16 L22,17.5 C22,19.99 19.99,22 17.5,22 L16,22 M9,22 L6.5,22 C4.01,22 2,19.99 2,17.5 L2,15"
+                                          Stroke="{DynamicResource AppAccentBrush}"
+                                          StrokeThickness="1.5"
+                                          StrokeStartLineCap="Round"
+                                          StrokeEndLineCap="Round"
+                                          StrokeLineJoin="Round"/>
+                                </Viewbox>
+                            </Button>
                             <Button Content="✕" Foreground="#EF4444" Style="{StaticResource CleanIconButton}" FontSize="11" FontWeight="Bold" Click="CloseBtn_Click" ToolTip="Close Player"/>
                         </StackPanel>
                     </Grid>
