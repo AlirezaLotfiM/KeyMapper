@@ -665,8 +665,8 @@
                     <!-- Album Cover Art (Rounded Square) -->
                     <Border Width="85" Height="85" CornerRadius="10"
                             Background="#3A000000"
-                            BorderBrush="{StaticResource MiniGlassBorderBrush}"
-                            BorderThickness="1.2"
+                            BorderBrush="Transparent"
+                            BorderThickness="0"
                             HorizontalAlignment="Center"
                             Margin="0,0,0,6">
                         <Grid>
