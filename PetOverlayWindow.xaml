@@ -33,7 +33,7 @@
         </Storyboard>
     </Window.Resources>
 
-    <Grid Margin="10" ClipToBounds="True">
+    <Grid x:Name="OverlayRoot" Margin="10" ClipToBounds="True">
 
         <!-- Speech Bubble Container -->
         <Border x:Name="SpeechBubble"
@@ -89,7 +89,9 @@
         </Border>
 
         <!-- Pet Character Canvas -->
-        <Grid Height="140" HorizontalAlignment="Center" VerticalAlignment="Bottom">
+        <Grid x:Name="PetCharacterContainer"
+              Width="140" Height="140"
+              HorizontalAlignment="Center" VerticalAlignment="Bottom">
             <!-- Main Sprite Graphic Group -->
             <Canvas Width="140" Height="140" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <Canvas.RenderTransform>
@@ -198,7 +200,15 @@
                     <Setter Property="SnapsToDevicePixels" Value="True"/>
                 </Style>
             </ContextMenu.Resources>
-            <MenuItem Header="Music Player  🎵" Click="MenuMusicPlayer_Click"/>
+            <MenuItem Header="Music Player" Click="MenuMusicPlayer_Click">
+                <MenuItem.Icon>
+                    <Rectangle Style="{StaticResource PetMenuIcon}">
+                        <Rectangle.OpacityMask>
+                            <ImageBrush ImageSource="/Resources/Icons/music-music-note-2-svgrepo-com.png"/>
+                        </Rectangle.OpacityMask>
+                    </Rectangle>
+                </MenuItem.Icon>
+            </MenuItem>
             <MenuItem Header="Talk with Character" Click="MenuAsk_Click">
                 <MenuItem.Icon>
                     <Rectangle Style="{StaticResource PetMenuIcon}">

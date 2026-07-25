@@ -50,7 +50,7 @@ actions, reminders, and keyboard-layout repair in one friendly Windows experienc
 
 Characters can walk around the desktop, remain in one place, react to active applications and music, and speak at a Quiet, Normal, or Chatty frequency. Walking speed and idle-animation speed are independent controls.
 
-Movement can be disabled, roam freely, or be locked to a strict horizontal line. A pet placed on the taskbar edge keeps its ground position when walking begins instead of snapping to a hidden movement boundary.
+Movement can be disabled, roam freely, or be locked to a strict horizontal line. A pet placed on the taskbar edge keeps its ground position when walking begins instead of snapping to a hidden movement boundary. Speech and hover music controls stay inside the working area when the pet is placed near a screen edge.
 
 ### Theme-aware music studio
 

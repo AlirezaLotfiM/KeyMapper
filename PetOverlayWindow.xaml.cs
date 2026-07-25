@@ -324,6 +324,7 @@ namespace KeyMapper
         {
             Dispatcher.Invoke(() =>
             {
+                KeepPetSurfacesInsideWorkArea();
                 SetAutoFlowDirection(message);
                 SpeechBubbleTitle.Text = title;
                 SpeechBubbleText.Text = message;
@@ -360,6 +361,7 @@ namespace KeyMapper
                 {
                     _isDragging = false;
                     _wanderTarget = null;
+                    KeepPetSurfacesInsideWorkArea();
                     _horizontalWalkTop = Top;
                     _nextWanderAt = DateTime.Now.AddSeconds(3);
                 }
@@ -735,6 +737,7 @@ namespace KeyMapper
             if (!_isClickThrough)
             {
                 _musicOverlayHideTimer.Stop();
+                KeepPetSurfacesInsideWorkArea();
                 UpdatePetMusicControlsUI();
                 PetMusicControlsOverlay.Visibility = Visibility.Visible;
             }
@@ -749,7 +752,56 @@ namespace KeyMapper
         private void PetMusicControlsOverlay_MouseEnter(object sender, MouseEventArgs e)
         {
             _musicOverlayHideTimer.Stop();
+            KeepPetSurfacesInsideWorkArea();
             PetMusicControlsOverlay.Visibility = Visibility.Visible;
+        }
+
+        private void KeepPetSurfacesInsideWorkArea()
+        {
+            if (!IsLoaded || OverlayRoot == null ||
+                PetCharacterContainer == null)
+            {
+                return;
+            }
+
+            Rect workArea = SystemParameters.WorkArea;
+            double windowWidth = ActualWidth > 0 ? ActualWidth : Width;
+            double windowHeight = ActualHeight > 0 ? ActualHeight : Height;
+
+            Point petCenterInWindow = PetCharacterContainer.TranslatePoint(
+                new Point(
+                    PetCharacterContainer.ActualWidth / 2,
+                    PetCharacterContainer.ActualHeight / 2),
+                this);
+            double petCenterOnScreen = Left + petCenterInWindow.X;
+
+            double maximumLeft = Math.Max(
+                workArea.Left,
+                workArea.Right - windowWidth);
+            double maximumTop = Math.Max(
+                workArea.Top,
+                workArea.Bottom - windowHeight);
+            Left = Math.Clamp(Left, workArea.Left, maximumLeft);
+            Top = Math.Clamp(Top, workArea.Top, maximumTop);
+
+            double rootWidth = OverlayRoot.ActualWidth > 0
+                ? OverlayRoot.ActualWidth
+                : Math.Max(140, windowWidth - 20);
+            double petWidth = PetCharacterContainer.ActualWidth > 0
+                ? PetCharacterContainer.ActualWidth
+                : 140;
+            double desiredLeftInRoot =
+                petCenterOnScreen - Left - OverlayRoot.Margin.Left -
+                (petWidth / 2);
+            double maximumPetLeft = Math.Max(0, rootWidth - petWidth);
+
+            PetCharacterContainer.HorizontalAlignment =
+                HorizontalAlignment.Left;
+            PetCharacterContainer.Margin = new Thickness(
+                Math.Clamp(desiredLeftInRoot, 0, maximumPetLeft),
+                0,
+                0,
+                0);
         }
 
         private void PetMusicControlsOverlay_MouseLeave(object sender, MouseEventArgs e)
@@ -1144,6 +1196,7 @@ namespace KeyMapper
         private void ShowPersistentReminderBubble(string note)
         {
             _activeReminderNote = note;
+            KeepPetSurfacesInsideWorkArea();
             SetAutoFlowDirection(note);
             SpeechBubbleTitle.Text = "⏰ Reminder Alert";
             SpeechBubbleText.Text = note;
