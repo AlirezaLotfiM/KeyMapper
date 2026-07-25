@@ -64,6 +64,22 @@
                              From="0" To="360" Duration="0:0:12"/>
         </Storyboard>
 
+        <Storyboard x:Key="MiniBackdropDriftStoryboard"
+                    RepeatBehavior="Forever" AutoReverse="True">
+            <DoubleAnimation Storyboard.TargetName="MiniBackdropTranslate"
+                             Storyboard.TargetProperty="X"
+                             From="-6" To="6" Duration="0:0:9"/>
+            <DoubleAnimation Storyboard.TargetName="MiniBackdropTranslate"
+                             Storyboard.TargetProperty="Y"
+                             From="-3" To="4" Duration="0:0:12"/>
+            <DoubleAnimation Storyboard.TargetName="MiniBackdropScale"
+                             Storyboard.TargetProperty="ScaleX"
+                             From="1.28" To="1.38" Duration="0:0:14"/>
+            <DoubleAnimation Storyboard.TargetName="MiniBackdropScale"
+                             Storyboard.TargetProperty="ScaleY"
+                             From="1.28" To="1.38" Duration="0:0:14"/>
+        </Storyboard>
+
         <!-- Custom Cyber Neon Scrollbar Style -->
         <Style TargetType="{x:Type ScrollBar}">
             <Setter Property="Width" Value="6"/>
@@ -232,15 +248,91 @@
         <SolidColorBrush x:Key="MiniGlassBrush" Color="#4DFFFFFF"/>
         <SolidColorBrush x:Key="MiniGlassBorderBrush" Color="#A6FFFFFF"/>
 
+        <Style x:Key="MiniHeaderIconButton"
+               TargetType="{x:Type Button}">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="3"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border Background="Transparent"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Opacity" Value="0.68"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Opacity" Value="0.45"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <Style x:Key="MiniGlassCircleButton"
-               TargetType="{x:Type Button}"
-               BasedOn="{StaticResource CyberCircleButton}">
+               TargetType="{x:Type Button}">
             <Setter Property="Background"
                     Value="{StaticResource MiniGlassBrush}"/>
             <Setter Property="Foreground"
                     Value="{StaticResource MiniForegroundBrush}"/>
             <Setter Property="BorderBrush"
                     Value="{StaticResource MiniGlassBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="20">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Opacity" Value="0.76"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Opacity" Value="0.55"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="MiniGlassPlayButton"
+               TargetType="{x:Type Button}">
+            <Setter Property="Background"
+                    Value="{DynamicResource AppAccentFillBrush}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="24">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Opacity" Value="0.78"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Opacity" Value="0.58"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <!-- Rounded Cyber Tab Button Style -->
@@ -498,7 +590,12 @@
                                Visibility="Collapsed"
                                RenderTransformOrigin="0.5,0.5">
                             <Image.RenderTransform>
-                                <ScaleTransform ScaleX="1.28" ScaleY="1.28"/>
+                                <TransformGroup>
+                                    <ScaleTransform x:Name="MiniBackdropScale"
+                                                    ScaleX="1.28"
+                                                    ScaleY="1.28"/>
+                                    <TranslateTransform x:Name="MiniBackdropTranslate"/>
+                                </TransformGroup>
                             </Image.RenderTransform>
                             <Image.Effect>
                                 <BlurEffect Radius="15"/>
@@ -523,6 +620,8 @@
                         </Rectangle>
                         <Rectangle Fill="{DynamicResource AppAccentSoftBrush}"
                                    Opacity="0.08"/>
+                        <Rectangle x:Name="MiniGrainOverlay"
+                                   IsHitTestVisible="False" Opacity="0.30"/>
                     </Grid>
                 </Border>
 
@@ -539,9 +638,9 @@
                             <TextBlock Text="Mini" Foreground="{StaticResource MiniForegroundBrush}" FontSize="11" FontWeight="Bold" VerticalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                            <Button x:Name="MiniLikeBtn" Content="♥" Foreground="{StaticResource MiniMutedBrush}" Style="{StaticResource CleanIconButton}" FontSize="15" Click="LikeBtn_Click" Margin="0,0,6,0" ToolTip="Add to Favorites"/>
+                            <Button x:Name="MiniLikeBtn" Content="♥" Foreground="{StaticResource MiniMutedBrush}" Style="{StaticResource MiniHeaderIconButton}" FontSize="15" Click="LikeBtn_Click" Margin="0,0,6,0" ToolTip="Add to Favorites"/>
                             <Button Foreground="{StaticResource MiniForegroundBrush}"
-                                    Style="{StaticResource CleanIconButton}"
+                                    Style="{StaticResource MiniHeaderIconButton}"
                                     Click="ExpandMiniPlayer_Click"
                                     Margin="0,0,6,0"
                                     ToolTip="Expand full player">
@@ -555,7 +654,7 @@
                                           StrokeLineJoin="Round"/>
                                 </Viewbox>
                             </Button>
-                            <Button Content="✕" Foreground="#EF4444" Style="{StaticResource CleanIconButton}" FontSize="11" FontWeight="Bold" Click="CloseBtn_Click" ToolTip="Close Player"/>
+                            <Button Content="✕" Foreground="#EF4444" Style="{StaticResource MiniHeaderIconButton}" FontSize="11" FontWeight="Bold" Click="CloseBtn_Click" ToolTip="Close Player"/>
                         </StackPanel>
                     </Grid>
 
@@ -585,7 +684,7 @@
                         <Button Width="30" Height="30" Style="{StaticResource MiniGlassCircleButton}" Click="PrevBtn_Click" Margin="0,0,8,0">
                             <Rectangle Width="14" Height="14" Fill="{StaticResource MiniForegroundBrush}"><Rectangle.OpacityMask><ImageBrush ImageSource="/Resources/Icons/music-skip-previous-svgrepo-com.png"/></Rectangle.OpacityMask></Rectangle>
                         </Button>
-                        <Button x:Name="MiniPlayPauseBtn" Width="34" Height="34" Style="{StaticResource CyberPlayButton}" Click="PlayPauseBtn_Click">
+                        <Button x:Name="MiniPlayPauseBtn" Width="34" Height="34" Style="{StaticResource MiniGlassPlayButton}" Click="PlayPauseBtn_Click">
                             <Grid Width="16" Height="16">
                                 <Rectangle x:Name="MiniPlayIcon" Fill="White"><Rectangle.OpacityMask><ImageBrush ImageSource="/Resources/Icons/music-play-svgrepo-com.png"/></Rectangle.OpacityMask></Rectangle>
                                 <TextBlock x:Name="MiniPauseGlyph" Text="Ⅱ" Foreground="White" FontSize="13" FontWeight="Bold" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center"/>

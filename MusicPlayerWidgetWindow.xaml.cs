@@ -20,6 +20,7 @@ namespace KeyMapper
         private string _activeTab = "QUEUE"; // QUEUE, PLAYLISTS, ALL, GENRES, ARTISTS, FAVS, HISTORY
         private CustomPlaylist? _selectedCustomPlaylist;
         private Storyboard? _spinStoryboard;
+        private Storyboard? _miniBackdropStoryboard;
         private readonly DispatcherTimer _grooveTimer;
         private int _grooveSeed;
         private double _groovePhase;
@@ -30,6 +31,9 @@ namespace KeyMapper
             Topmost = false;
 
             _spinStoryboard = (Storyboard)FindResource("SpinDiscStoryboard");
+            _miniBackdropStoryboard =
+                (Storyboard)FindResource("MiniBackdropDriftStoryboard");
+            MiniGrainOverlay.Fill = CreateMiniGrainBrush();
             _grooveTimer = new DispatcherTimer
             {
                 Interval = TimeSpan.FromMilliseconds(85)
@@ -197,13 +201,15 @@ namespace KeyMapper
                 MiniDeckView.Visibility = Visibility.Visible;
 
                 OuterWindowBorder.CornerRadius = new CornerRadius(14);
-                OuterWindowBorder.Margin = new Thickness(4);
-                OuterWindowBorder.BorderThickness = new Thickness(1);
-                MainRootGrid.Margin = new Thickness(6);
+                OuterWindowBorder.Margin = new Thickness(2);
+                OuterWindowBorder.BorderThickness = new Thickness(0);
+                OuterWindowBorder.Background = Brushes.Transparent;
+                MainRootGrid.Margin = new Thickness(0);
 
                 Width = 180;
                 Height = 270;
                 Topmost = true;
+                _miniBackdropStoryboard?.Begin(this, true);
 
                 Left = workArea.Right - Width - 20;
                 Top = workArea.Top + 20;
@@ -218,11 +224,15 @@ namespace KeyMapper
                 OuterWindowBorder.CornerRadius = new CornerRadius(24);
                 OuterWindowBorder.Margin = new Thickness(10);
                 OuterWindowBorder.BorderThickness = new Thickness(1.8);
+                OuterWindowBorder.SetResourceReference(
+                    Border.BackgroundProperty,
+                    "AppBackgroundBrush");
                 MainRootGrid.Margin = new Thickness(16);
 
                 Width = 500;
                 Height = 650;
                 Topmost = false;
+                _miniBackdropStoryboard?.Remove(this);
 
                 Left = Math.Max(0, (workArea.Width - Width) / 2 + workArea.Left);
                 Top = Math.Max(0, (workArea.Height - Height) / 2 + workArea.Top);
@@ -473,6 +483,48 @@ namespace KeyMapper
                     (Brush)FindResource("AppAccentSoftBrush");
                 MiniArtworkGradient.Opacity = 0.38;
             }
+        }
+
+        private static ImageBrush CreateMiniGrainBrush()
+        {
+            const int size = 48;
+            const int bytesPerPixel = 4;
+            int stride = size * bytesPerPixel;
+            byte[] pixels = new byte[stride * size];
+            var random = new Random(271828);
+
+            for (int index = 0; index < pixels.Length;
+                 index += bytesPerPixel)
+            {
+                bool lightGrain = random.NextDouble() > 0.48;
+                byte shade = lightGrain ? (byte)255 : (byte)0;
+                byte alpha = (byte)random.Next(6, 24);
+                pixels[index] = shade;
+                pixels[index + 1] = shade;
+                pixels[index + 2] = shade;
+                pixels[index + 3] = alpha;
+            }
+
+            BitmapSource grain = BitmapSource.Create(
+                size,
+                size,
+                96,
+                96,
+                PixelFormats.Bgra32,
+                null,
+                pixels,
+                stride);
+            grain.Freeze();
+
+            var brush = new ImageBrush(grain)
+            {
+                TileMode = TileMode.Tile,
+                Viewport = new Rect(0, 0, size, size),
+                ViewportUnits = BrushMappingMode.Absolute,
+                Stretch = Stretch.None
+            };
+            brush.Freeze();
+            return brush;
         }
 
         private static Color AverageArtworkColor(
