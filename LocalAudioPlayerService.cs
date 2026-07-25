@@ -39,11 +39,6 @@ namespace KeyMapper
         public string DisplayTitle => string.IsNullOrWhiteSpace(Title) ? Path.GetFileNameWithoutExtension(FilePath) : Title;
         public string DisplayArtist => string.IsNullOrWhiteSpace(Artist) ? "Unknown Artist" : Artist;
         public string DurationText => Duration.TotalSeconds > 0 ? $"{Duration:mm\\:ss}" : "--:--";
-        public string FavoriteIcon => IsFavorite ? "❤️" : "🤍";
-        public string PlayCountText => PlayCount > 0 ? $"🔥 {PlayCount} plays" : string.Empty;
-        public Brush FavoriteColor => IsFavorite ? new SolidColorBrush(Color.FromRgb(239, 68, 68)) : new SolidColorBrush(Color.FromRgb(148, 163, 184));
-        public Brush TitleBrush => IsCurrentlyPlaying ? new SolidColorBrush(Color.FromRgb(6, 182, 212)) : new SolidColorBrush(Color.FromRgb(248, 250, 252));
-        public Brush CardBackground => IsCurrentlyPlaying ? new SolidColorBrush(Color.FromArgb(50, 6, 182, 212)) : new SolidColorBrush(Colors.Transparent);
     }
 
     public class ArtistGroupItem
@@ -497,6 +492,27 @@ namespace KeyMapper
 
         public async Task ScanLibraryAsync()
         {
+            AudioTrackItem? activeTrackBeforeScan = CurrentTrack;
+            string activePath = CurrentTrack?.FilePath ?? string.Empty;
+            bool isInitialLibraryLoad = Playlist.Count == 0;
+            List<string> queuedPaths = UserQueue
+                .Select(track => track.FilePath)
+                .Concat(
+                    isInitialLibraryLoad
+                        ? _savedSession?.UserQueuePaths ??
+                          Enumerable.Empty<string>()
+                        : Enumerable.Empty<string>())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+            bool preserveActiveStream =
+                !string.IsNullOrWhiteSpace(activePath) &&
+                _mediaPlayer.Source != null;
+            bool wasPlaying = IsPlaying;
+            TimeSpan activePosition =
+                preserveActiveStream ? _mediaPlayer.Position : TimeSpan.Zero;
+            TimeSpan activeDuration =
+                CurrentTrack?.Duration ?? TimeSpan.Zero;
+
             await Task.Run(() =>
             {
                 List<string> files = new();
@@ -516,7 +532,19 @@ namespace KeyMapper
                     catch { }
                 }
 
+                files = files
+                    .Select(Path.GetFullPath)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .OrderByDescending(path =>
+                        string.Equals(
+                            path,
+                            activePath,
+                            StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
                 List<AudioTrackItem> items = new();
+                var seenTracks = new HashSet<string>(
+                    StringComparer.OrdinalIgnoreCase);
 
                 foreach (var file in files)
                 {
@@ -527,6 +555,10 @@ namespace KeyMapper
                         if (_playCounts.TryGetValue(file, out int count))
                         {
                             item.PlayCount = count;
+                        }
+                        if (!seenTracks.Add(GetTrackIdentity(item)))
+                        {
+                            continue;
                         }
                         item.AlbumArt = ExtractEmbeddedCoverArt(file);
                         items.Add(item);
@@ -622,24 +654,57 @@ namespace KeyMapper
                     PlaybackHistory.Clear();
                     foreach (var hIt in historyItems) PlaybackHistory.Add(hIt);
 
-                    if (ContextQueue.Count == 0)
+                    _unshuffledContextQueue = Playlist.ToList();
+                    ContextQueue = Playlist.ToList();
+
+                    UserQueue.Clear();
+                    foreach (string path in queuedPaths)
                     {
-                        _unshuffledContextQueue = Playlist.ToList();
-                        ContextQueue = Playlist.ToList();
+                        var queuedTrack = items.FirstOrDefault(item =>
+                            string.Equals(
+                                item.FilePath,
+                                path,
+                                StringComparison.OrdinalIgnoreCase));
+                        if (queuedTrack != null)
+                        {
+                            UserQueue.Add(queuedTrack);
+                        }
                     }
 
-                    // Restore Saved Session State
-                    if (_savedSession != null)
+                    if (preserveActiveStream)
                     {
-                        if (_savedSession.UserQueuePaths != null)
+                        var activeTrack = items.FirstOrDefault(x =>
+                            string.Equals(
+                                x.FilePath,
+                                activePath,
+                                StringComparison.OrdinalIgnoreCase));
+                        if (activeTrack != null)
                         {
-                            foreach (var path in _savedSession.UserQueuePaths)
-                            {
-                                var match = items.FirstOrDefault(x => string.Equals(x.FilePath, path, StringComparison.OrdinalIgnoreCase));
-                                if (match != null && !UserQueue.Contains(match)) UserQueue.Add(match);
-                            }
+                            CurrentTrack = activeTrack;
+                            CurrentTrack.IsCurrentlyPlaying = true;
+                            CurrentTrack.Duration = activeDuration;
+                            _contextIndex = ContextQueue.IndexOf(CurrentTrack);
+                            OnTrackChanged?.Invoke(CurrentTrack);
+                            OnPositionChanged?.Invoke(
+                                activePosition,
+                                activeDuration);
+                            OnPlaybackStateChanged?.Invoke(wasPlaying);
                         }
-
+                        else if (activeTrackBeforeScan != null)
+                        {
+                            CurrentTrack = activeTrackBeforeScan;
+                            CurrentTrack.IsCurrentlyPlaying = true;
+                            _contextIndex = -1;
+                            OnTrackChanged?.Invoke(CurrentTrack);
+                            OnPositionChanged?.Invoke(
+                                activePosition,
+                                activeDuration);
+                            OnPlaybackStateChanged?.Invoke(wasPlaying);
+                        }
+                    }
+                    // Restore the saved session only on the initial library load.
+                    else if (_savedSession != null)
+                    {
                         if (!string.IsNullOrWhiteSpace(_savedSession.LastTrackFilePath))
                         {
                             var lastTrack = items.FirstOrDefault(x => string.Equals(x.FilePath, _savedSession.LastTrackFilePath, StringComparison.OrdinalIgnoreCase));
@@ -1032,6 +1097,19 @@ namespace KeyMapper
                 @"^(?:\(\s*\d+\s*\)|\d+\s*[\)\].:-])\s*",
                 string.Empty);
             return string.IsNullOrWhiteSpace(cleaned) ? "General Music" : cleaned.Trim();
+        }
+
+        private static string GetTrackIdentity(AudioTrackItem track)
+        {
+            static string NormalizePart(string value) =>
+                Regex.Replace(
+                    value.Trim().ToLowerInvariant(),
+                    @"[^\p{L}\p{N}]+",
+                    string.Empty);
+
+            string title = NormalizePart(track.DisplayTitle);
+            string artist = NormalizePart(track.DisplayArtist);
+            return $"{artist}|{title}";
         }
 
         private string DecodeId3Text(byte[] buffer, int start, int length)

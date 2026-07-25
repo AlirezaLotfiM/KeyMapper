@@ -763,13 +763,17 @@ namespace KeyMapper
             var track = LocalAudioPlayerService.Instance.CurrentTrack;
             if (track != null)
             {
-                PetTrackTitleTxt.Text = $"🎵 {track.DisplayTitle}";
+                PetTrackTitleTxt.Text = track.DisplayTitle;
             }
             else
             {
-                PetTrackTitleTxt.Text = "🎵 Music Player";
+                PetTrackTitleTxt.Text = "Music Player";
             }
-            PetPlayPauseBtn.Content = LocalAudioPlayerService.Instance.IsPlaying ? "⏸" : "▶";
+            bool isPlaying = LocalAudioPlayerService.Instance.IsPlaying;
+            PetPlayIcon.Visibility =
+                isPlaying ? Visibility.Collapsed : Visibility.Visible;
+            PetPauseGlyph.Visibility =
+                isPlaying ? Visibility.Visible : Visibility.Collapsed;
             PetVolumeSlider.Value = LocalAudioPlayerService.Instance.CurrentVolume * 100.0;
         }
 

@@ -74,14 +74,10 @@
                         <Grid x:Name="Bg" SnapsToDevicePixels="true">
                             <Track x:Name="PART_Track" IsDirectionReversed="true">
                                 <Track.Thumb>
-                                    <Thumb Background="#06B6D4" BorderBrush="Transparent">
+                                    <Thumb Background="{DynamicResource AppAccentBrush}" BorderBrush="Transparent">
                                         <Thumb.Template>
                                             <ControlTemplate TargetType="{x:Type Thumb}">
-                                                <Border CornerRadius="3" Background="#06B6D4">
-                                                    <Border.Effect>
-                                                        <DropShadowEffect BlurRadius="6" Color="#06B6D4" Opacity="0.8" ShadowDepth="0"/>
-                                                    </Border.Effect>
-                                                </Border>
+                                                <Border CornerRadius="3" Background="{DynamicResource AppAccentBrush}"/>
                                             </ControlTemplate>
                                         </Thumb.Template>
                                     </Thumb>
@@ -96,23 +92,19 @@
         <!-- Custom Spotify-style Cyber Slider Template -->
         <Style x:Key="SpotifySliderStyle" TargetType="{x:Type Slider}">
             <Setter Property="Stylus.IsPressAndHoldEnabled" Value="False"/>
-            <Setter Property="Background" Value="#1E293B"/>
+            <Setter Property="Background" Value="{DynamicResource AppSurfaceAltBrush}"/>
             <Setter Property="BorderBrush" Value="Transparent"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type Slider}">
                         <Grid Grid.Row="1">
-                            <Border x:Name="TrackBackground" Height="5" CornerRadius="2.5" Background="#1E293B" VerticalAlignment="Center"/>
+                            <Border x:Name="TrackBackground" Height="5" CornerRadius="2.5" Background="{DynamicResource AppSurfaceAltBrush}" VerticalAlignment="Center"/>
                             <Track x:Name="PART_Track">
                                 <Track.DecreaseRepeatButton>
                                     <RepeatButton Command="{x:Static Slider.DecreaseLarge}">
                                         <RepeatButton.Template>
                                             <ControlTemplate TargetType="{x:Type RepeatButton}">
-                                                <Border Height="5" CornerRadius="2.5" Background="#06B6D4">
-                                                    <Border.Effect>
-                                                        <DropShadowEffect BlurRadius="8" Color="#06B6D4" Opacity="0.8" ShadowDepth="0"/>
-                                                    </Border.Effect>
-                                                </Border>
+                                                <Border Height="5" CornerRadius="2.5" Background="{DynamicResource AppAccentBrush}"/>
                                             </ControlTemplate>
                                         </RepeatButton.Template>
                                     </RepeatButton>
@@ -121,16 +113,12 @@
                                     <Thumb x:Name="Thumb">
                                         <Thumb.Template>
                                             <ControlTemplate TargetType="{x:Type Thumb}">
-                                                <Ellipse x:Name="ThumbEllipse" Width="12" Height="12" Fill="#F8FAFC" Stroke="#06B6D4" StrokeThickness="2">
-                                                    <Ellipse.Effect>
-                                                        <DropShadowEffect BlurRadius="10" Color="#06B6D4" Opacity="0.9" ShadowDepth="0"/>
-                                                    </Ellipse.Effect>
-                                                </Ellipse>
+                                                <Ellipse x:Name="ThumbEllipse" Width="12" Height="12" Fill="{DynamicResource AppSurfaceBrush}" Stroke="{DynamicResource AppAccentBrush}" StrokeThickness="2"/>
                                                 <ControlTemplate.Triggers>
                                                     <Trigger Property="IsMouseOver" Value="True">
                                                         <Setter TargetName="ThumbEllipse" Property="Width" Value="15"/>
                                                         <Setter TargetName="ThumbEllipse" Property="Height" Value="15"/>
-                                                        <Setter TargetName="ThumbEllipse" Property="Fill" Value="#06B6D4"/>
+                                                        <Setter TargetName="ThumbEllipse" Property="Fill" Value="{DynamicResource AppAccentBrush}"/>
                                                     </Trigger>
                                                 </ControlTemplate.Triggers>
                                             </ControlTemplate>
@@ -146,15 +134,15 @@
 
         <!-- Cyber Context Menu Style -->
         <Style x:Key="CyberContextMenu" TargetType="ContextMenu">
-            <Setter Property="Background" Value="#0B0F19"/>
-            <Setter Property="BorderBrush" Value="#06B6D4"/>
+            <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Foreground" Value="#F8FAFC"/>
+            <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}"/>
             <Setter Property="HasDropShadow" Value="True"/>
         </Style>
 
         <Style x:Key="CyberMenuItem" TargetType="MenuItem">
-            <Setter Property="Foreground" Value="#F8FAFC"/>
+            <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}"/>
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Padding" Value="8,6"/>
             <Setter Property="FontSize" Value="11.5"/>
@@ -483,12 +471,14 @@
                     <!-- Top Bar: Title, Expand, Close -->
                     <Grid Margin="0,0,0,6">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock Text="🎵" FontSize="10" Margin="0,0,3,0" VerticalAlignment="Center"/>
+                            <Rectangle Width="12" Height="12" Fill="{DynamicResource AppAccentBrush}" Margin="0,0,4,0">
+                                <Rectangle.OpacityMask><ImageBrush ImageSource="/Resources/Icons/music-music-note-2-svgrepo-com.png"/></Rectangle.OpacityMask>
+                            </Rectangle>
                             <TextBlock Text="Mini" Foreground="{DynamicResource AppAccentBrush}" FontSize="11" FontWeight="Bold" VerticalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                            <Button x:Name="MiniLikeBtn" Content="🤍" Foreground="#EF4444" Style="{StaticResource CleanIconButton}" FontSize="12" Click="LikeBtn_Click" Margin="0,0,6,0" ToolTip="Add to Favorites"/>
-                            <Button Content="↗" Foreground="#38BDF8" Style="{StaticResource CleanIconButton}" FontSize="12" FontWeight="Bold" Click="ExpandMiniPlayer_Click" Margin="0,0,6,0" ToolTip="Expand Full Player"/>
+                            <Button x:Name="MiniLikeBtn" Content="♥" Foreground="{DynamicResource AppMutedTextBrush}" Style="{StaticResource CleanIconButton}" FontSize="15" Click="LikeBtn_Click" Margin="0,0,6,0" ToolTip="Add to Favorites"/>
+                            <Button Content="↗" Foreground="{DynamicResource AppAccentBrush}" Style="{StaticResource CleanIconButton}" FontSize="12" FontWeight="Bold" Click="ExpandMiniPlayer_Click" Margin="0,0,6,0" ToolTip="Expand Full Player"/>
                             <Button Content="✕" Foreground="#EF4444" Style="{StaticResource CleanIconButton}" FontSize="11" FontWeight="Bold" Click="CloseBtn_Click" ToolTip="Close Player"/>
                         </StackPanel>
                     </Grid>
@@ -511,9 +501,18 @@
 
                     <!-- Compact Controls -->
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,6">
-                        <Button Content="⏮" Width="30" Height="30" FontSize="12" Style="{StaticResource CyberCircleButton}" Click="PrevBtn_Click" Margin="0,0,8,0"/>
-                        <Button x:Name="MiniPlayPauseBtn" Content="▶" Width="34" Height="34" FontSize="14" FontWeight="Bold" Style="{StaticResource CyberPlayButton}" Click="PlayPauseBtn_Click"/>
-                        <Button Content="⏭" Width="30" Height="30" FontSize="12" Style="{StaticResource CyberCircleButton}" Click="NextBtn_Click" Margin="8,0,0,0"/>
+                        <Button Width="30" Height="30" Style="{StaticResource CyberCircleButton}" Click="PrevBtn_Click" Margin="0,0,8,0">
+                            <Rectangle Width="14" Height="14" Fill="{DynamicResource AppTextBrush}"><Rectangle.OpacityMask><ImageBrush ImageSource="/Resources/Icons/music-skip-previous-svgrepo-com.png"/></Rectangle.OpacityMask></Rectangle>
+                        </Button>
+                        <Button x:Name="MiniPlayPauseBtn" Width="34" Height="34" Style="{StaticResource CyberPlayButton}" Click="PlayPauseBtn_Click">
+                            <Grid Width="16" Height="16">
+                                <Rectangle x:Name="MiniPlayIcon" Fill="White"><Rectangle.OpacityMask><ImageBrush ImageSource="/Resources/Icons/music-play-svgrepo-com.png"/></Rectangle.OpacityMask></Rectangle>
+                                <TextBlock x:Name="MiniPauseGlyph" Text="Ⅱ" Foreground="White" FontSize="13" FontWeight="Bold" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Grid>
+                        </Button>
+                        <Button Width="30" Height="30" Style="{StaticResource CyberCircleButton}" Click="NextBtn_Click" Margin="8,0,0,0">
+                            <Rectangle Width="14" Height="14" Fill="{DynamicResource AppTextBrush}"><Rectangle.OpacityMask><ImageBrush ImageSource="/Resources/Icons/music-skip-next-svgrepo-com.png"/></Rectangle.OpacityMask></Rectangle>
+                        </Button>
                     </StackPanel>
 
                     <!-- Neon Mini Seekbar Progress -->
@@ -535,7 +534,7 @@
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <Image Grid.Column="0" Source="/Resources/Icons/music-volume-loud-svgrepo-com.png" Width="13" Height="13" Margin="0,0,4,0"/>
+                        <Rectangle Grid.Column="0" Width="13" Height="13" Fill="{DynamicResource AppAccentBrush}" Margin="0,0,4,0"><Rectangle.OpacityMask><ImageBrush ImageSource="/Resources/Icons/music-volume-loud-svgrepo-com.png"/></Rectangle.OpacityMask></Rectangle>
                         <Slider Grid.Column="1" x:Name="MiniVolumeSlider" Style="{StaticResource CyberNeonSlider}" Minimum="0" Maximum="100" Value="80" ValueChanged="VolumeSlider_ValueChanged" VerticalAlignment="Center" Cursor="Hand"/>
                     </Grid>
                 </StackPanel>
@@ -597,7 +596,7 @@
                         </StackPanel>
 
                         <!-- Favorite Heart Toggle -->
-                        <Button Grid.Column="2" x:Name="LikeBtn" Content="🤍" Foreground="#EF4444" FontSize="20" Style="{StaticResource CleanIconButton}" Click="LikeBtn_Click" VerticalAlignment="Center" ToolTip="Add to Favorites"/>
+                        <Button Grid.Column="2" x:Name="LikeBtn" Content="♥" Foreground="{DynamicResource AppMutedTextBrush}" FontSize="22" Style="{StaticResource CleanIconButton}" Click="LikeBtn_Click" VerticalAlignment="Center" ToolTip="Add to Favorites"/>
                     </Grid>
 
                     <!-- Cyber Seekbar -->
@@ -711,20 +710,27 @@
                         <ComboBoxItem Content="Duration"/>
                     </ComboBox>
 
-                    <Button Grid.Column="2" x:Name="NewPlaylistBtn" Content="➕ New List" Background="#06B6D4" Foreground="#0F172A" BorderThickness="0" FontSize="10" FontWeight="Bold" Padding="8,4" Click="NewPlaylistBtn_Click" Margin="6,0,0,0" Visibility="Collapsed" Cursor="Hand"/>
+                    <Button Grid.Column="2" x:Name="NewPlaylistBtn" Content="＋ New List" Background="{DynamicResource AppAccentFillBrush}" Foreground="White" BorderThickness="0" FontSize="10" FontWeight="Bold" Padding="8,4" Click="NewPlaylistBtn_Click" Margin="6,0,0,0" Visibility="Collapsed" Cursor="Hand"/>
                     <Button Grid.Column="2" x:Name="ClearQueueBtn" Content="🗑 Clear Queue" Background="#EF4444" Foreground="#FFFFFF" BorderThickness="0" FontSize="10" FontWeight="Bold" Padding="8,4" Click="ClearQueueBtn_Click" Margin="6,0,0,0" Visibility="Collapsed" Cursor="Hand"/>
                 </Grid>
 
                 <!-- Main Track ListBox with Right-Click Context Menu -->
-                <ListBox Grid.Row="2" x:Name="PlaylistListBox" Background="{DynamicResource AppInputBrush}" Foreground="{DynamicResource AppTextBrush}" BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="1" SelectionChanged="PlaylistListBox_SelectionChanged">
+                <ListBox Grid.Row="2" x:Name="PlaylistListBox"
+                         Background="{DynamicResource AppInputBrush}"
+                         Foreground="{DynamicResource AppTextBrush}"
+                         BorderBrush="{DynamicResource AppBorderBrush}"
+                         BorderThickness="1"
+                         Padding="0,0,14,0"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                         SelectionChanged="PlaylistListBox_SelectionChanged">
                     <ListBox.Resources>
                         <ContextMenu x:Key="TrackContextMenu" Style="{StaticResource CyberContextMenu}">
                             <MenuItem Header="⏭ Play Next (Up Next)" Click="ContextPlayNext_Click" Style="{StaticResource CyberMenuItem}"/>
                             <MenuItem Header="➕ Add to Queue" Click="ContextAddToQueue_Click" Style="{StaticResource CyberMenuItem}"/>
-                            <Separator Background="#1E293B"/>
+                            <Separator Background="{DynamicResource AppBorderBrush}"/>
                             <MenuItem x:Name="AddToPlaylistSubMenu" Header="📂 Add to Custom Playlist..." Style="{StaticResource CyberMenuItem}"/>
                             <MenuItem Header="❤️ Toggle Favorite" Click="ContextToggleFavorite_Click" Style="{StaticResource CyberMenuItem}"/>
-                            <Separator Background="#1E293B"/>
+                            <Separator Background="{DynamicResource AppBorderBrush}"/>
                             <MenuItem Header="👤 Filter by Artist" Click="ContextFilterArtist_Click" Style="{StaticResource CyberMenuItem}"/>
                             <MenuItem Header="❌ Remove from List" Click="ContextRemoveTrack_Click" Style="{StaticResource CyberMenuItem}"/>
                         </ContextMenu>
@@ -736,12 +742,21 @@
                     </ListBox.ItemContainerStyle>
                     <ListBox.ItemTemplate>
                         <DataTemplate>
-                            <Border CornerRadius="8" Padding="8,6" Margin="2,1" Background="{Binding CardBackground}" HorizontalAlignment="Stretch">
+                            <Border x:Name="TrackCard" CornerRadius="8" Padding="8,6" Margin="2,1,4,1" HorizontalAlignment="Stretch">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Background" Value="Transparent"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsCurrentlyPlaying}" Value="True">
+                                                <Setter Property="Background" Value="{DynamicResource AppAccentSoftBrush}"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
                                 <Grid HorizontalAlignment="Stretch">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
@@ -763,10 +778,23 @@
                                         <TextBlock Text="{Binding DisplayArtist}" Foreground="{DynamicResource AppAccentBrush}" FontSize="10.5" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
                                     </StackPanel>
 
-                                    <!-- Play Count Badge -->
-                                    <TextBlock Grid.Column="2" Text="{Binding PlayCountText}" Foreground="{DynamicResource AppAccentBrush}" FontSize="10" FontWeight="Bold" Margin="6,0,6,0" VerticalAlignment="Center"/>
-                                    <Button Grid.Column="3" Content="{Binding FavoriteIcon}" Foreground="{Binding FavoriteColor}" Style="{StaticResource CleanIconButton}" FontSize="13" Click="ItemFavorite_Click" Tag="{Binding}" Margin="6,0,6,0"/>
-                                    <TextBlock Grid.Column="4" Text="{Binding DurationText}" Foreground="{DynamicResource AppMutedTextBrush}" FontSize="11" VerticalAlignment="Center"/>
+                                    <Button Grid.Column="2" Style="{StaticResource CleanIconButton}" FontSize="15" Click="ItemFavorite_Click" Tag="{Binding}" Margin="8,0,8,0" ToolTip="Toggle favorite">
+                                        <TextBlock Text="♥">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Foreground" Value="{DynamicResource AppMutedTextBrush}"/>
+                                                    <Setter Property="Opacity" Value="0.45"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsFavorite}" Value="True">
+                                                            <Setter Property="Foreground" Value="{DynamicResource AppAccentFillBrush}"/>
+                                                            <Setter Property="Opacity" Value="1"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </Button>
+                                    <TextBlock Grid.Column="3" Text="{Binding DurationText}" Foreground="{DynamicResource AppMutedTextBrush}" FontSize="11" MinWidth="38" TextAlignment="Right" Margin="0,0,4,0" VerticalAlignment="Center"/>
                                 </Grid>
                             </Border>
                         </DataTemplate>
@@ -790,7 +818,7 @@
                                         <TextBlock Text="{Binding Name}" Foreground="{DynamicResource AppAccentBrush}" FontSize="12.5" FontWeight="Bold"/>
                                         <TextBlock Text="{Binding TrackCount, StringFormat='{}{0} tracks'}" Foreground="{DynamicResource AppMutedTextBrush}" FontSize="10.5"/>
                                     </StackPanel>
-                                    <Button Grid.Column="2" Content="✏️" Foreground="#38BDF8" Style="{StaticResource CleanIconButton}" FontSize="12" Click="RenamePlaylist_Click" Tag="{Binding}" Margin="0,0,6,0" ToolTip="Rename Playlist"/>
+                                    <Button Grid.Column="2" Content="✎" Foreground="{DynamicResource AppAccentBrush}" Style="{StaticResource CleanIconButton}" FontSize="14" Click="RenamePlaylist_Click" Tag="{Binding}" Margin="0,0,6,0" ToolTip="Rename Playlist"/>
                                     <Button Grid.Column="3" Content="🗑" Foreground="#EF4444" Style="{StaticResource CleanIconButton}" FontSize="12" Click="DeletePlaylist_Click" Tag="{Binding}" ToolTip="Delete Playlist"/>
                                 </Grid>
                             </Border>
@@ -824,7 +852,7 @@
                                         <TextBlock Text="{Binding ArtistName}" Foreground="{DynamicResource AppAccentBrush}" FontSize="12.5" FontWeight="Bold"/>
                                         <TextBlock Text="{Binding TrackCount, StringFormat='{}{0} tracks'}" Foreground="{DynamicResource AppMutedTextBrush}" FontSize="10.5"/>
                                     </StackPanel>
-                                    <TextBlock Grid.Column="2" Text="›" Foreground="#06B6D4" FontSize="18" FontWeight="Bold" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="2" Text="›" Foreground="{DynamicResource AppAccentBrush}" FontSize="18" FontWeight="Bold" VerticalAlignment="Center"/>
                                 </Grid>
                             </Border>
                         </DataTemplate>
@@ -857,7 +885,7 @@
                                         <TextBlock Text="{Binding GenreName}" Foreground="{DynamicResource AppAccentBrush}" FontSize="12.5" FontWeight="Bold"/>
                                         <TextBlock Text="{Binding TrackCount, StringFormat='{}{0} tracks'}" Foreground="{DynamicResource AppMutedTextBrush}" FontSize="10.5"/>
                                     </StackPanel>
-                                    <TextBlock Grid.Column="2" Text="›" Foreground="#C084FC" FontSize="18" FontWeight="Bold" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="2" Text="›" Foreground="{DynamicResource AppAccentBrush}" FontSize="18" FontWeight="Bold" VerticalAlignment="Center"/>
                                 </Grid>
                             </Border>
                         </DataTemplate>

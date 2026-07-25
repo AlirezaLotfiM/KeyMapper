@@ -233,6 +233,11 @@ namespace KeyMapper
             var win = new ManageMusicFoldersWindow { Owner = this };
             win.ShowDialog();
 
+            if (!win.LibraryChanged)
+            {
+                return;
+            }
+
             if (LoadingOverlay != null) LoadingOverlay.Visibility = Visibility.Visible;
             try
             {
@@ -269,7 +274,12 @@ namespace KeyMapper
 
         private void UpdateShuffleButtonUI()
         {
-            ShuffleBtn.Foreground = LocalAudioPlayerService.Instance.IsShuffle ? new SolidColorBrush(Color.FromRgb(6, 182, 212)) : new SolidColorBrush(Color.FromRgb(148, 163, 184));
+            ShuffleBtn.Foreground = (Brush)FindResource(
+                LocalAudioPlayerService.Instance.IsShuffle
+                    ? "AppAccentFillBrush"
+                    : "AppMutedTextBrush");
+            ShuffleBtn.Opacity =
+                LocalAudioPlayerService.Instance.IsShuffle ? 1 : 0.6;
         }
 
         private void RepeatBtn_Click(object sender, RoutedEventArgs e)
@@ -382,14 +392,19 @@ namespace KeyMapper
 
         private void UpdateLikeButtonUI(AudioTrackItem track)
         {
-            string icon = track.IsFavorite ? "❤️" : "🤍";
-            Brush brush = track.IsFavorite ? new SolidColorBrush(Color.FromRgb(239, 68, 68)) : new SolidColorBrush(Color.FromRgb(148, 163, 184));
-            LikeBtn.Content = icon;
+            Brush brush = (Brush)FindResource(
+                track.IsFavorite
+                    ? "AppAccentFillBrush"
+                    : "AppMutedTextBrush");
             LikeBtn.Foreground = brush;
+            LikeBtn.Opacity = track.IsFavorite ? 1 : 0.5;
+            LikeBtn.ToolTip =
+                track.IsFavorite ? "Remove from favorites" : "Add to favorites";
             if (MiniLikeBtn != null)
             {
-                MiniLikeBtn.Content = icon;
                 MiniLikeBtn.Foreground = brush;
+                MiniLikeBtn.Opacity = track.IsFavorite ? 1 : 0.5;
+                MiniLikeBtn.ToolTip = LikeBtn.ToolTip;
             }
         }
 
@@ -399,7 +414,10 @@ namespace KeyMapper
             {
                 PlayPauseIcon.Visibility = isPlaying ? Visibility.Collapsed : Visibility.Visible;
                 PauseGlyph.Visibility = isPlaying ? Visibility.Visible : Visibility.Collapsed;
-                MiniPlayPauseBtn.Content = isPlaying ? "⏸" : "▶";
+                MiniPlayIcon.Visibility =
+                    isPlaying ? Visibility.Collapsed : Visibility.Visible;
+                MiniPauseGlyph.Visibility =
+                    isPlaying ? Visibility.Visible : Visibility.Collapsed;
                 EqualizerPanel.Visibility = isPlaying ? Visibility.Visible : Visibility.Collapsed;
 
                 if (TaskbarPlayPauseBtn != null)

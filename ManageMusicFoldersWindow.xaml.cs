@@ -6,6 +6,8 @@ namespace KeyMapper
 {
     public partial class ManageMusicFoldersWindow : Window
     {
+        public bool LibraryChanged { get; private set; }
+
         public ManageMusicFoldersWindow()
         {
             InitializeComponent();
@@ -30,7 +32,7 @@ namespace KeyMapper
             Close();
         }
 
-        private async void AddFolderBtn_Click(object sender, RoutedEventArgs e)
+        private void AddFolderBtn_Click(object sender, RoutedEventArgs e)
         {
             using var dialog = new System.Windows.Forms.FolderBrowserDialog
             {
@@ -40,18 +42,18 @@ namespace KeyMapper
             if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 LocalAudioPlayerService.Instance.AddFolder(dialog.SelectedPath);
+                LibraryChanged = true;
                 RefreshList();
-                await LocalAudioPlayerService.Instance.ScanLibraryAsync();
             }
         }
 
-        private async void RemoveFolder_Click(object sender, RoutedEventArgs e)
+        private void RemoveFolder_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button btn && btn.Tag is string path)
             {
                 LocalAudioPlayerService.Instance.RemoveFolder(path);
+                LibraryChanged = true;
                 RefreshList();
-                await LocalAudioPlayerService.Instance.ScanLibraryAsync();
             }
         }
     }

@@ -1,21 +1,38 @@
-# KeyMapper Desktop Pet
+<p align="center">
+  <img src="Resources/app_icon.png" alt="KeyMapper Desktop Pet" width="112">
+</p>
 
-[![Windows](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D4?logo=windows)](https://www.microsoft.com/windows)
-[![.NET](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
-[![License](https://img.shields.io/badge/free-desktop%20companion-55CAD3)](#support-the-project)
-[![Privacy](https://img.shields.io/badge/AI-local%20and%20optional-69B98E)](#optional-local-ai)
+<h1 align="center">KeyMapper Desktop Pet</h1>
 
-**A pixel-art companion that lives on your Windows desktop—and is actually useful.**
+<p align="center">
+  <strong>A lively pixel-art companion for Windows that can talk, translate, see, help, and groove.</strong>
+</p>
 
-KeyMapper brings a character-driven assistant, a local music library, bilingual conversation, multilingual OCR, live translation, text expansion, application actions, reminders, and keyboard-layout repair into one friendly Windows experience.
+<p align="center">
+  <a href="https://www.microsoft.com/windows"><img alt="Windows 10 and 11" src="https://img.shields.io/badge/Windows-10%20%7C%2011-0078D4?logo=windows"></a>
+  <a href="https://dotnet.microsoft.com/"><img alt=".NET 10" src="https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet"></a>
+  <a href="#support-the-project"><img alt="Free desktop companion" src="https://img.shields.io/badge/free-desktop%20companion-55CAD3"></a>
+  <a href="#optional-local-ai"><img alt="Local optional AI" src="https://img.shields.io/badge/AI-local%20and%20optional-69B98E"></a>
+</p>
 
-The pet is designed to feel like a character rather than a floating toolbar. Each character has its own speaking style, movement rhythm, reactions, suggestions, and music comments.
+<p align="center">
+  <a href="#highlights">Highlights</a> ·
+  <a href="#build">Build</a> ·
+  <a href="#color-themes">Themes</a> ·
+  <a href="#support-the-project">Support</a>
+</p>
 
-```text
-Talk naturally ──► understand intent ──► offer a safe action
-      │                    │                       │
- Persian / English   local AI optional      you stay in control
-```
+> [!NOTE]
+> KeyMapper is not a floating chatbot skin. Its companions have distinct voices,
+> movement, reactions, music behavior, and a set of practical Windows tools.
+
+KeyMapper combines a character-driven assistant, local music library, bilingual
+conversation, multilingual OCR, live translation, text expansion, application
+actions, reminders, and keyboard-layout repair in one friendly Windows experience.
+
+| Talk naturally | Understand intent | Stay in control |
+| :---: | :---: | :---: |
+| Persian or English | Local AI is optional | Consequential actions ask first |
 
 ## Why KeyMapper feels different
 
@@ -45,6 +62,10 @@ The local music player is part of the companion experience, not a separate skin:
 - Supplied vector-style icons are used for folders, playback, shuffle, repeat, volume, and library navigation.
 - Every playing track gets a live, track-seeded groove animation.
 - Queue, favorites, history, artists, genres, playlists, sorting, and folder management are available locally.
+- Overlapping music folders and repeated metadata no longer create duplicate library rows.
+- Refreshing music folders preserves the current stream, position, play/pause state, and groove animation.
+- Library rows show a clean duration column without play counters or scrollbar clipping.
+- Favorites use a solid heart whose fill follows the selected theme.
 - Song titles use the active theme's text color, so the library remains readable in both light and dark palettes.
 - Repeat clearly cycles through three supplied icons: Off, Repeat all, and Repeat one.
 - Numeric ID3 genre codes such as `(13)Pop` are normalized to readable names; the separate line below each genre is the real track count.
