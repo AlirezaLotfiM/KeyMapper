@@ -169,6 +169,13 @@
                     <Setter Property="SnapsToDevicePixels" Value="True"/>
                 </Style>
             </ContextMenu.Resources>
+            <MenuItem Header="Music Player 🎵" Click="MenuMusicPlayer_Click">
+                <MenuItem.Icon>
+                    <Rectangle Style="{StaticResource PetMenuIcon}">
+                        <Rectangle.OpacityMask><ImageBrush ImageSource="Resources/Icons/chat.png"/></Rectangle.OpacityMask>
+                    </Rectangle>
+                </MenuItem.Icon>
+            </MenuItem>
             <MenuItem Header="Talk with Character" Click="MenuAsk_Click">
                 <MenuItem.Icon>
                     <Rectangle Style="{StaticResource PetMenuIcon}">

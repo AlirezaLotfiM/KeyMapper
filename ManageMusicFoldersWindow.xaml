@@ -1,0 +1,48 @@
+<Window x:Class="KeyMapper.ManageMusicFoldersWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Music Folders Manager" Height="320" Width="450"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        Topmost="True" WindowStartupLocation="CenterOwner"
+        MouseLeftButtonDown="Window_MouseLeftButtonDown">
+
+    <Border Background="#0F172A" BorderBrush="#06B6D4" BorderThickness="1.5" CornerRadius="14" Margin="10">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="20" Color="#000000" Opacity="0.7" ShadowDepth="4"/>
+        </Border.Effect>
+        <Grid Margin="16">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Grid Grid.Row="0" Margin="0,0,0,12">
+                <TextBlock Text="📁 Manage Music Folders" Foreground="#38BDF8" FontSize="13" FontWeight="Bold"/>
+                <Button Content="✕" Foreground="#94A3B8" Background="Transparent" BorderThickness="0" FontSize="14" FontWeight="Bold" HorizontalAlignment="Right" Click="CloseBtn_Click" Cursor="Hand"/>
+            </Grid>
+
+            <!-- Folders List -->
+            <ListBox Grid.Row="1" x:Name="FoldersListBox" Background="#0B0F19" BorderBrush="#334155" BorderThickness="1" Margin="0,0,0,12">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Margin="4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="{Binding}" Foreground="#F8FAFC" FontSize="11" VerticalAlignment="Center"/>
+                            <Button Grid.Column="1" Content="Remove 🗑️" Tag="{Binding}" Click="RemoveFolder_Click" Background="#EF4444" Foreground="#FFFFFF" BorderThickness="0" FontSize="9" Padding="6,2" Cursor="Hand" Margin="8,0,0,0"/>
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <!-- Bottom Actions -->
+            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button x:Name="AddFolderBtn" Content="+ Add Folder" Background="#06B6D4" Foreground="#0F172A" BorderThickness="0" FontSize="11" FontWeight="Bold" Padding="12,5" Click="AddFolderBtn_Click" Cursor="Hand"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>

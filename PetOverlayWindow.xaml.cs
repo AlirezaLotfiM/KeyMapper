@@ -585,8 +585,16 @@ namespace KeyMapper
                 return;
             }
 
-            PlayingTrack? track =
-                await MusicPresenceService.Instance.GetCurrentTrackAsync();
+            PlayingTrack? track = null;
+            if (LocalAudioPlayerService.Instance.IsPlaying && LocalAudioPlayerService.Instance.CurrentTrack != null)
+            {
+                var cur = LocalAudioPlayerService.Instance.CurrentTrack;
+                track = new PlayingTrack(cur.DisplayTitle, cur.DisplayArtist, $"{cur.DisplayTitle}-{cur.DisplayArtist}");
+            }
+            else
+            {
+                track = await MusicPresenceService.Instance.GetCurrentTrackAsync();
+            }
             if (track == null) return;
 
             DateTime now = DateTime.Now;
@@ -977,6 +985,18 @@ namespace KeyMapper
                 _personality.ActionLine(
                     _walkingEnabled ? PetAction.WalkingOn : PetAction.WalkingOff,
                     _random));
+        }
+
+        private MusicPlayerWidgetWindow? _musicPlayerWidget;
+
+        private void MenuMusicPlayer_Click(object sender, RoutedEventArgs e)
+        {
+            if (_musicPlayerWidget == null || !_musicPlayerWidget.IsLoaded)
+            {
+                _musicPlayerWidget = new MusicPlayerWidgetWindow();
+            }
+            _musicPlayerWidget.Show();
+            _musicPlayerWidget.Activate();
         }
 
         private void MenuSettings_Click(object sender, RoutedEventArgs e)
