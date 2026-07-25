@@ -33,7 +33,7 @@
         </Storyboard>
     </Window.Resources>
 
-    <Grid Margin="10">
+    <Grid Margin="10" ClipToBounds="True">
 
         <!-- Speech Bubble Container -->
         <Border x:Name="SpeechBubble"
@@ -41,9 +41,6 @@
                 Margin="10,0,10,10" BorderBrush="{DynamicResource AppAccentBrush}" BorderThickness="2"
                 Visibility="Collapsed" HorizontalAlignment="Center"
                 VerticalAlignment="Top" MaxWidth="320" Panel.ZIndex="2">
-            <Border.Effect>
-                <DropShadowEffect BlurRadius="12" Color="#6B5A3A" Opacity="0.3" ShadowDepth="4"/>
-            </Border.Effect>
             <StackPanel>
                 <TextBlock x:Name="SpeechBubbleTitle" Text="Chubby Android Pet"
                            Foreground="{DynamicResource AppAccentBrush}" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,4"/>
@@ -61,21 +58,20 @@
 
         <!-- Pet Hover Mini Music Control Overlay -->
         <Border x:Name="PetMusicControlsOverlay"
-                Background="#F20F172A" CornerRadius="14" Padding="10,6"
-                BorderBrush="#06B6D4" BorderThickness="1.5"
+                Background="{DynamicResource AppSurfaceBrush}" CornerRadius="10" Padding="10,7"
+                BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="1.5"
                 Visibility="Collapsed" HorizontalAlignment="Center"
                 VerticalAlignment="Bottom" Margin="0,0,0,138" Panel.ZIndex="3"
                 MouseEnter="PetMusicControlsOverlay_MouseEnter"
                 MouseLeave="PetMusicControlsOverlay_MouseLeave">
-            <Border.Effect>
-                <DropShadowEffect BlurRadius="16" Color="#06B6D4" Opacity="0.8" ShadowDepth="0"/>
-            </Border.Effect>
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                <TextBlock x:Name="PetTrackTitleTxt" Text="🎵 Music Player" Foreground="#F8FAFC" FontSize="11" FontWeight="Bold" MaxWidth="135" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Margin="2,0,8,0"/>
-                <Button Content="⏮" Foreground="#F8FAFC" Background="Transparent" BorderThickness="0" FontSize="12" Click="PetPrevBtn_Click" Cursor="Hand" Margin="0,0,4,0"/>
-                <Button x:Name="PetPlayPauseBtn" Content="▶" Foreground="#06B6D4" Background="Transparent" BorderThickness="0" FontSize="14" FontWeight="Bold" Click="PetPlayPauseBtn_Click" Cursor="Hand" Margin="0,0,4,0"/>
-                <Button Content="⏭" Foreground="#F8FAFC" Background="Transparent" BorderThickness="0" FontSize="12" Click="PetNextBtn_Click" Cursor="Hand" Margin="0,0,6,0"/>
-                <TextBlock Text="🔊" Foreground="#94A3B8" FontSize="10" VerticalAlignment="Center" Margin="0,0,2,0"/>
+                <TextBlock x:Name="PetTrackTitleTxt" Text="🎵 Music Player" Foreground="{DynamicResource AppTextBrush}" FontSize="11" FontWeight="SemiBold" MaxWidth="135" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Margin="2,0,8,0"/>
+                <Button Content="⏮" Foreground="{DynamicResource AppTextBrush}" Background="Transparent" BorderThickness="0" FontSize="12" Click="PetPrevBtn_Click" Cursor="Hand" Margin="0,0,4,0"/>
+                <Button x:Name="PetPlayPauseBtn" Content="▶" Foreground="{DynamicResource AppAccentBrush}" Background="Transparent" BorderThickness="0" FontSize="14" FontWeight="Bold" Click="PetPlayPauseBtn_Click" Cursor="Hand" Margin="0,0,4,0"/>
+                <Button Content="⏭" Foreground="{DynamicResource AppTextBrush}" Background="Transparent" BorderThickness="0" FontSize="12" Click="PetNextBtn_Click" Cursor="Hand" Margin="0,0,6,0"/>
+                <Rectangle Width="13" Height="13" Fill="{DynamicResource AppAccentBrush}" Margin="0,0,3,0">
+                    <Rectangle.OpacityMask><ImageBrush ImageSource="/Resources/Icons/music-volume-loud-svgrepo-com.png"/></Rectangle.OpacityMask>
+                </Rectangle>
                 <Slider x:Name="PetVolumeSlider" Width="44" Minimum="0" Maximum="100" Value="80" ValueChanged="PetVolumeSlider_ValueChanged" VerticalAlignment="Center" Cursor="Hand"/>
             </StackPanel>
         </Border>
@@ -248,7 +244,13 @@
                     </Rectangle>
                 </MenuItem.Icon>
             </MenuItem>
-            <MenuItem x:Name="HorizontalWalkingToggleMenuItem" Header="Horizontal Only: Off" Click="MenuToggleHorizontalWalking_Click"/>
+            <MenuItem x:Name="HorizontalWalkingToggleMenuItem" Header="Horizontal Only: Off" Click="MenuToggleHorizontalWalking_Click">
+                <MenuItem.Icon>
+                    <Rectangle Style="{StaticResource PetMenuIcon}">
+                        <Rectangle.OpacityMask><ImageBrush ImageSource="Resources/Icons/walk-horizontal.png"/></Rectangle.OpacityMask>
+                    </Rectangle>
+                </MenuItem.Icon>
+            </MenuItem>
             <MenuItem Header="Movement Speed">
                 <MenuItem.Icon>
                     <Rectangle Style="{StaticResource PetMenuIcon}">

@@ -8,6 +8,7 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Windows.Threading;
 
 namespace KeyMapper
 {
@@ -18,6 +19,9 @@ namespace KeyMapper
         private string _activeTab = "QUEUE"; // QUEUE, PLAYLISTS, ALL, GENRES, ARTISTS, FAVS, HISTORY
         private CustomPlaylist? _selectedCustomPlaylist;
         private Storyboard? _spinStoryboard;
+        private readonly DispatcherTimer _grooveTimer;
+        private int _grooveSeed;
+        private double _groovePhase;
 
         public MusicPlayerWidgetWindow()
         {
@@ -25,6 +29,11 @@ namespace KeyMapper
             Topmost = false;
 
             _spinStoryboard = (Storyboard)FindResource("SpinDiscStoryboard");
+            _grooveTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(85)
+            };
+            _grooveTimer.Tick += GrooveTimer_Tick;
 
             LocalAudioPlayerService.Instance.OnTrackChanged += Instance_OnTrackChanged;
             LocalAudioPlayerService.Instance.OnPlaybackStateChanged += Instance_OnPlaybackStateChanged;
@@ -37,6 +46,25 @@ namespace KeyMapper
             LocalAudioPlayerService.Instance.OnPlayCountsUpdated += Instance_OnPlayCountsUpdated;
 
             _ = InitializeLibraryAsync();
+        }
+
+        private void GrooveTimer_Tick(object? sender, EventArgs e)
+        {
+            var bars = new[]
+            {
+                GrooveBar1, GrooveBar2, GrooveBar3, GrooveBar4,
+                GrooveBar5, GrooveBar6, GrooveBar7
+            };
+            double trackPace = 0.72 + Math.Abs(_grooveSeed % 37) / 48.0;
+            _groovePhase += trackPace;
+
+            for (int i = 0; i < bars.Length; i++)
+            {
+                double phase = _groovePhase + i * (0.62 + Math.Abs(_grooveSeed % 11) / 30.0);
+                double primary = Math.Abs(Math.Sin(phase));
+                double secondary = Math.Abs(Math.Sin(phase * 0.43 + (_grooveSeed & 15)));
+                bars[i].Height = 4 + (primary * 9) + (secondary * 5);
+            }
         }
 
         protected override void OnSourceInitialized(EventArgs e)
@@ -191,7 +219,7 @@ namespace KeyMapper
                 OuterWindowBorder.BorderThickness = new Thickness(1.8);
                 MainRootGrid.Margin = new Thickness(16);
 
-                Width = 470;
+                Width = 500;
                 Height = 650;
                 Topmost = false;
 
@@ -256,17 +284,14 @@ namespace KeyMapper
             switch (mode)
             {
                 case RepeatMode.Off:
-                    RepeatBtn.Content = "🔁";
                     RepeatBtn.Foreground = new SolidColorBrush(Color.FromRgb(148, 163, 184));
                     RepeatBtn.ToolTip = "Repeat: Off";
                     break;
                 case RepeatMode.RepeatAll:
-                    RepeatBtn.Content = "🔁";
                     RepeatBtn.Foreground = new SolidColorBrush(Color.FromRgb(6, 182, 212));
                     RepeatBtn.ToolTip = "Repeat: All Tracks";
                     break;
                 case RepeatMode.RepeatOne:
-                    RepeatBtn.Content = "🔂";
                     RepeatBtn.Foreground = new SolidColorBrush(Color.FromRgb(245, 158, 11));
                     RepeatBtn.ToolTip = "Repeat: One Track";
                     break;
@@ -318,6 +343,8 @@ namespace KeyMapper
             {
                 if (track != null)
                 {
+                    _grooveSeed = StringComparer.OrdinalIgnoreCase.GetHashCode(track.FilePath);
+                    _groovePhase = 0;
                     TrackTitleTxt.Text = track.DisplayTitle;
                     TrackArtistTxt.Text = track.DisplayArtist;
                     MiniTrackTitleTxt.Text = track.DisplayTitle;
@@ -366,7 +393,8 @@ namespace KeyMapper
         {
             Dispatcher.Invoke(() =>
             {
-                PlayPauseBtn.Content = isPlaying ? "⏸" : "▶";
+                PlayPauseIcon.Visibility = isPlaying ? Visibility.Collapsed : Visibility.Visible;
+                PauseGlyph.Visibility = isPlaying ? Visibility.Visible : Visibility.Collapsed;
                 MiniPlayPauseBtn.Content = isPlaying ? "⏸" : "▶";
                 EqualizerPanel.Visibility = isPlaying ? Visibility.Visible : Visibility.Collapsed;
 
@@ -381,10 +409,12 @@ namespace KeyMapper
                 if (isPlaying)
                 {
                     _spinStoryboard?.Begin();
+                    _grooveTimer.Start();
                 }
                 else
                 {
                     _spinStoryboard?.Pause();
+                    _grooveTimer.Stop();
                 }
             });
         }
@@ -579,10 +609,10 @@ namespace KeyMapper
         {
             if (TabQueueBtn == null || PlaylistListBox == null) return;
 
-            var cyan = new SolidColorBrush(Color.FromRgb(6, 182, 212));
-            var dark = new SolidColorBrush(Color.FromRgb(30, 41, 59));
-            var darkText = new SolidColorBrush(Color.FromRgb(15, 23, 42));
-            var whiteText = new SolidColorBrush(Color.FromRgb(248, 250, 252));
+            var cyan = (Brush)FindResource("AppAccentBrush");
+            var dark = (Brush)FindResource("AppSurfaceAltBrush");
+            var darkText = (Brush)FindResource("AppBackgroundBrush");
+            var whiteText = (Brush)FindResource("AppTextBrush");
 
             TabQueueBtn.Background = _activeTab == "QUEUE" ? cyan : dark;
             TabQueueBtn.Foreground = _activeTab == "QUEUE" ? darkText : whiteText;

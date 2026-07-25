@@ -80,6 +80,7 @@ namespace KeyMapper
         private bool _facingRight = true;
         private bool _walkingEnabled = true;
         private bool _horizontalOnlyWalking;
+        private double? _horizontalWalkTop;
         private double _walkingSpeed = 92;
         private int _idleAnimationIntervalMs = 430;
         private bool _commentsEnabled = true;
@@ -202,6 +203,7 @@ namespace KeyMapper
             _aiAmbientCommentsEnabled = settings.AiAmbientCommentsEnabled;
             _commentFrequency = NormalizeCommentFrequency(settings.PetCommentFrequency);
             _horizontalOnlyWalking = settings.PetHorizontalOnlyWalking;
+            _horizontalWalkTop = Top;
             UpdateCommentMenuState();
             SetCharacter(settings.CurrentCharacter ?? "Pink Monster");
 
@@ -358,6 +360,7 @@ namespace KeyMapper
                 {
                     _isDragging = false;
                     _wanderTarget = null;
+                    _horizontalWalkTop = Top;
                     _nextWanderAt = DateTime.Now.AddSeconds(3);
                 }
             }
@@ -451,7 +454,9 @@ namespace KeyMapper
                 Rect workArea = SystemParameters.WorkArea;
 
                 // Check if active foreground window is available to sit/walk on its top edge
-                if (_lastExternalWindow != IntPtr.Zero && GetWindowRect(_lastExternalWindow, out RECT winRect))
+                if (!_horizontalOnlyWalking &&
+                    _lastExternalWindow != IntPtr.Zero &&
+                    GetWindowRect(_lastExternalWindow, out RECT winRect))
                 {
                     int winWidth = winRect.Right - winRect.Left;
                     int winHeight = winRect.Bottom - winRect.Top;
@@ -468,7 +473,9 @@ namespace KeyMapper
                 {
                     double maxLeft = Math.Max(workArea.Left + 8, workArea.Right - ActualWidth - 8);
                     double maxTop = Math.Max(workArea.Top + 8, workArea.Bottom - ActualHeight - 8);
-                    double targetY = _horizontalOnlyWalking ? Top : (workArea.Top + 8 + _random.NextDouble() * (maxTop - workArea.Top - 8));
+                    double targetY = _horizontalOnlyWalking
+                        ? (_horizontalWalkTop ?? Top)
+                        : (workArea.Top + 8 + _random.NextDouble() * (maxTop - workArea.Top - 8));
                     _wanderTarget = new Point(
                         workArea.Left + 8 + _random.NextDouble() * (maxLeft - workArea.Left - 8),
                         targetY);
@@ -480,7 +487,9 @@ namespace KeyMapper
             {
                 Rect workArea = SystemParameters.WorkArea;
                 double clampedTargetX = Math.Clamp(target.X, workArea.Left + 10, workArea.Right - ActualWidth - 10);
-                double clampedTargetY = Math.Clamp(target.Y, workArea.Top + 10, workArea.Bottom - ActualHeight - 10);
+                double clampedTargetY = _horizontalOnlyWalking
+                    ? (_horizontalWalkTop ?? Top)
+                    : Math.Clamp(target.Y, workArea.Top + 10, workArea.Bottom - ActualHeight - 10);
 
                 double step = _walkingSpeed * _personality.MovementMultiplier * _behaviorTimer.Interval.TotalSeconds;
                 double dx = clampedTargetX - Left;
@@ -503,8 +512,13 @@ namespace KeyMapper
                 {
                     _facingRight = dx >= 0;
                     PetSpriteImage.RenderTransform = new System.Windows.Media.ScaleTransform(_facingRight ? 1 : -1, 1, 60, 60);
-                    Left = Math.Clamp(Left + (dx / distance * step), workArea.Left + 10, workArea.Right - ActualWidth - 10);
-                    Top = Math.Clamp(Top + (dy / distance * step), workArea.Top + 10, workArea.Bottom - ActualHeight - 10);
+                    // The target itself is safe. Moving toward it without per-frame
+                    // clamping prevents a manually placed pet from jumping on step one.
+                    Left += dx / distance * step;
+                    if (!_horizontalOnlyWalking)
+                    {
+                        Top += dy / distance * step;
+                    }
                 }
             }
 
@@ -934,6 +948,9 @@ namespace KeyMapper
         private void MenuToggleHorizontalWalking_Click(object sender, RoutedEventArgs e)
         {
             _horizontalOnlyWalking = !_horizontalOnlyWalking;
+            _wanderTarget = null;
+            _horizontalWalkTop = Top;
+            _nextWanderAt = DateTime.Now.AddSeconds(1);
             var settings = ConfigManager.Load();
             settings.PetHorizontalOnlyWalking = _horizontalOnlyWalking;
             ConfigManager.Save(settings);

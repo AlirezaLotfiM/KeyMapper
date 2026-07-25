@@ -59,7 +59,14 @@ namespace KeyMapper
                     "A playful purple and pink night palette.",
                     "#24172D",
                     "#442850",
-                    "#FF78B5")
+                    "#FF78B5"),
+                new ThemeOption(
+                    "Cyber Groove",
+                    "Cyber Groove",
+                    "A deep music-studio theme with violet, magenta, and cyan.",
+                    "#0B0716",
+                    "#0F172A",
+                    "#A855F7")
             };
 
         public static string Normalize(string? themeName) =>
@@ -70,6 +77,7 @@ namespace KeyMapper
                 "Midnight Pixel" => "Midnight Pixel",
                 "Graphite Gold" => "Graphite Gold",
                 "Sunset Arcade" => "Sunset Arcade",
+                "Cyber Groove" => "Cyber Groove",
                 _ => "Warm Cream"
             };
 
@@ -134,6 +142,17 @@ namespace KeyMapper
                     "#51324C",
                     "#FFF3FA",
                     "#D0B4CA"),
+                "Cyber Groove" => new ThemePalette(
+                    "#0B0716",
+                    "#10182A",
+                    "#1A1230",
+                    "#080C14",
+                    "#473064",
+                    "#A855F7",
+                    "#D946EF",
+                    "#2B1A4C",
+                    "#F8FAFC",
+                    "#A9B3C7"),
                 _ => new ThemePalette(
                     "#FFF8E7",
                     "#FFFDF7",

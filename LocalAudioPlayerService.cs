@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -560,7 +561,7 @@ namespace KeyMapper
                     }
 
                     // Genre Grouping
-                    string genreName = string.IsNullOrWhiteSpace(item.Genre) ? "General Music" : item.Genre.Trim();
+                    string genreName = NormalizeGenre(item.Genre);
                     if (!genreDict.TryGetValue(genreName, out var gList))
                     {
                         gList = new List<AudioTrackItem>();
@@ -972,7 +973,7 @@ namespace KeyMapper
                     }
 
                     if (!string.IsNullOrWhiteSpace(title)) item.Title = title;
-                    if (!string.IsNullOrWhiteSpace(genre)) item.Genre = genre;
+                    if (!string.IsNullOrWhiteSpace(genre)) item.Genre = NormalizeGenre(genre);
 
                     if (artists.Count > 0)
                     {
@@ -1007,6 +1008,19 @@ namespace KeyMapper
             }
 
             return item;
+        }
+
+        private static string NormalizeGenre(string? genre)
+        {
+            if (string.IsNullOrWhiteSpace(genre)) return "General Music";
+
+            // ID3v2 TCON may contain an ID3v1 numeric code such as "(13)Pop".
+            // That number is a genre identifier, not a track count.
+            string cleaned = Regex.Replace(
+                genre.Trim(),
+                @"^(?:\(\s*\d+\s*\)|\d+\s*[\)\].:-])\s*",
+                string.Empty);
+            return string.IsNullOrWhiteSpace(cleaned) ? "General Music" : cleaned.Trim();
         }
 
         private string DecodeId3Text(byte[] buffer, int start, int length)

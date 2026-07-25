@@ -1,8 +1,27 @@
 # KeyMapper Desktop Pet
 
-KeyMapper is a Windows productivity companion that combines a pixel-art desktop pet with text expansion, application actions, multilingual OCR, translation, keyboard-layout repair, and optional AI conversation.
+[![Windows](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D4?logo=windows)](https://www.microsoft.com/windows)
+[![.NET](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
+[![License](https://img.shields.io/badge/free-desktop%20companion-55CAD3)](#support-the-project)
+[![Privacy](https://img.shields.io/badge/AI-local%20and%20optional-69B98E)](#optional-local-ai)
+
+**A pixel-art companion that lives on your Windows desktop—and is actually useful.**
+
+KeyMapper brings a character-driven assistant, a local music library, bilingual conversation, multilingual OCR, live translation, text expansion, application actions, reminders, and keyboard-layout repair into one friendly Windows experience.
 
 The pet is designed to feel like a character rather than a floating toolbar. Each character has its own speaking style, movement rhythm, reactions, suggestions, and music comments.
+
+```text
+Talk naturally ──► understand intent ──► offer a safe action
+      │                    │                       │
+ Persian / English   local AI optional      you stay in control
+```
+
+## Why KeyMapper feels different
+
+| Character-first | Useful every day | Private by design |
+| --- | --- | --- |
+| Distinct personalities, reactions, movement, and conversation styles | OCR, translation, shortcuts, music, reminders, and app launching | Local configuration, opt-in downloads, and local background AI |
 
 ## Highlights
 
@@ -13,6 +32,21 @@ The pet is designed to feel like a character rather than a floating toolbar. Eac
 - **Dude** is direct, practical, and dryly funny.
 
 Characters can walk around the desktop, remain in one place, react to active applications and music, and speak at a Quiet, Normal, or Chatty frequency. Walking speed and idle-animation speed are independent controls.
+
+Movement can be disabled, roam freely, or be locked to a strict horizontal line. A pet placed on the taskbar edge keeps its ground position when walking begins instead of snapping to a hidden movement boundary.
+
+### Theme-aware music studio
+
+The local music player is part of the companion experience, not a separate skin:
+
+- It inherits the active KeyMapper palette, including light themes.
+- **Cyber Groove** preserves the violet/magenta/cyan studio look as an optional dark theme.
+- Full and mini players share the same visual language as the control center, pet controls, speech bubble, and context menu.
+- Supplied vector-style icons are used for folders, playback, shuffle, repeat, volume, and library navigation.
+- Every playing track gets a live, track-seeded groove animation.
+- Queue, favorites, history, artists, genres, playlists, sorting, and folder management are available locally.
+- Numeric ID3 genre codes such as `(13)Pop` are normalized to readable names; the separate line below each genre is the real track count.
+- The player keeps a clean border instead of a large neon halo.
 
 ### Conversation and computer actions
 
@@ -111,6 +145,7 @@ The interface uses Segoe UI and includes light, dark, and colorful palettes:
 - Midnight Pixel
 - Graphite Gold
 - Sunset Arcade
+- Cyber Groove
 
 Theme location:
 
@@ -118,7 +153,7 @@ Theme location:
 Settings → Appearance
 ```
 
-The selected theme is saved locally and applies immediately to the control center, conversation window, translator, OCR results, pet speech bubble, and pixel-style context menu. The Settings page uses eased mouse-wheel scrolling, equal-width palette previews, and two-column AI model cards with clear download and RAM labels.
+The selected theme is saved locally and applies immediately to the control center, conversation window, translator, OCR results, music player, pet mini-player, speech bubble, and pixel-style context menu. The Settings page uses eased mouse-wheel scrolling, equal-width palette previews, and two-column AI model cards with clear download and RAM labels.
 
 The interface uses a shared icon set for tabs, settings sections, model actions, and the pet context menu. The Windows application and tray icon use the purple desktop-pet mark rather than the old gray placeholder. The character also uses a compact two-layer contact shadow positioned directly beneath its feet. Form connectors are centered precisely between their related input fields.
 
@@ -185,6 +220,14 @@ LibreTranslate runtime data is also kept outside the repository under `%LOCALAPP
 - LibreTranslate
 - Windows global keyboard and mouse hooks
 - Windows Global System Media Transport Controls
+
+## Design principles
+
+- **Characters, not chat skins:** personality changes word choice, rhythm, reactions, and suggestions.
+- **Visible state:** the UI says what is local, hosted, offline, listening, or waiting.
+- **No surprise downloads:** AI and translation runtimes require an explicit choice.
+- **Safe actions:** consequential operations ask first and never claim success without evidence.
+- **One visual system:** themes, Segoe UI, icons, spacing, and pet surfaces belong to the same product.
 
 ## Project status
 
