@@ -59,6 +59,27 @@
             </StackPanel>
         </Border>
 
+        <!-- Pet Hover Mini Music Control Overlay -->
+        <Border x:Name="PetMusicControlsOverlay"
+                Background="#F20F172A" CornerRadius="14" Padding="10,6"
+                BorderBrush="#06B6D4" BorderThickness="1.5"
+                Visibility="Collapsed" HorizontalAlignment="Center"
+                VerticalAlignment="Bottom" Margin="0,0,0,138" Panel.ZIndex="3"
+                MouseEnter="PetMusicControlsOverlay_MouseEnter"
+                MouseLeave="PetMusicControlsOverlay_MouseLeave">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="16" Color="#06B6D4" Opacity="0.8" ShadowDepth="0"/>
+            </Border.Effect>
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock x:Name="PetTrackTitleTxt" Text="🎵 Music Player" Foreground="#F8FAFC" FontSize="11" FontWeight="Bold" MaxWidth="135" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Margin="2,0,8,0"/>
+                <Button Content="⏮" Foreground="#F8FAFC" Background="Transparent" BorderThickness="0" FontSize="12" Click="PetPrevBtn_Click" Cursor="Hand" Margin="0,0,4,0"/>
+                <Button x:Name="PetPlayPauseBtn" Content="▶" Foreground="#06B6D4" Background="Transparent" BorderThickness="0" FontSize="14" FontWeight="Bold" Click="PetPlayPauseBtn_Click" Cursor="Hand" Margin="0,0,4,0"/>
+                <Button Content="⏭" Foreground="#F8FAFC" Background="Transparent" BorderThickness="0" FontSize="12" Click="PetNextBtn_Click" Cursor="Hand" Margin="0,0,6,0"/>
+                <TextBlock Text="🔊" Foreground="#94A3B8" FontSize="10" VerticalAlignment="Center" Margin="0,0,2,0"/>
+                <Slider x:Name="PetVolumeSlider" Width="44" Minimum="0" Maximum="100" Value="80" ValueChanged="PetVolumeSlider_ValueChanged" VerticalAlignment="Center" Cursor="Hand"/>
+            </StackPanel>
+        </Border>
+
         <!-- Pet Character Canvas -->
         <Grid Height="140" HorizontalAlignment="Center" VerticalAlignment="Bottom">
             <!-- Main Sprite Graphic Group -->

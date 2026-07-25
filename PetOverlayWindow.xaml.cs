@@ -65,6 +65,7 @@ namespace KeyMapper
         private readonly DispatcherTimer _speechBubbleTimer;
         private readonly DispatcherTimer _behaviorTimer;
         private readonly DispatcherTimer _musicTimer;
+        private readonly DispatcherTimer _musicOverlayHideTimer;
         private readonly Random _random = new Random();
         private IReadOnlyList<BitmapSource> _idleFrames = Array.Empty<BitmapSource>();
         private IReadOnlyList<BitmapSource> _walkFrames = Array.Empty<BitmapSource>();
@@ -122,7 +123,27 @@ namespace KeyMapper
             };
             _musicTimer.Tick += MusicTimer_Tick;
 
+            _musicOverlayHideTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(1500)
+            };
+            _musicOverlayHideTimer.Tick += (s, e) =>
+            {
+                _musicOverlayHideTimer.Stop();
+                PetMusicControlsOverlay.Visibility = Visibility.Collapsed;
+            };
+
             Loaded += PetOverlayWindow_Loaded;
+
+            LocalAudioPlayerService.Instance.OnTrackChanged += track => Dispatcher.Invoke(UpdatePetMusicControlsUI);
+            LocalAudioPlayerService.Instance.OnPlaybackStateChanged += isPlaying => Dispatcher.Invoke(UpdatePetMusicControlsUI);
+            LocalAudioPlayerService.Instance.OnVolumeChanged += volumePercent => Dispatcher.Invoke(() =>
+            {
+                if (PetVolumeSlider != null && Math.Abs(PetVolumeSlider.Value - volumePercent) > 0.5)
+                {
+                    PetVolumeSlider.Value = volumePercent;
+                }
+            });
 
             // Connect Smart Reminders and System Health Alerts
             ReminderService.Instance.OnReminderTriggered += item =>
@@ -699,12 +720,79 @@ namespace KeyMapper
         {
             if (!_isClickThrough)
             {
-                // Subtle scale up on hover
+                _musicOverlayHideTimer.Stop();
+                UpdatePetMusicControlsUI();
+                PetMusicControlsOverlay.Visibility = Visibility.Visible;
             }
         }
 
         private void Window_MouseLeave(object sender, MouseEventArgs e)
         {
+            _musicOverlayHideTimer.Stop();
+            _musicOverlayHideTimer.Start();
+        }
+
+        private void PetMusicControlsOverlay_MouseEnter(object sender, MouseEventArgs e)
+        {
+            _musicOverlayHideTimer.Stop();
+            PetMusicControlsOverlay.Visibility = Visibility.Visible;
+        }
+
+        private void PetMusicControlsOverlay_MouseLeave(object sender, MouseEventArgs e)
+        {
+            _musicOverlayHideTimer.Stop();
+            _musicOverlayHideTimer.Start();
+        }
+
+        private void UpdatePetMusicControlsUI()
+        {
+            var track = LocalAudioPlayerService.Instance.CurrentTrack;
+            if (track != null)
+            {
+                PetTrackTitleTxt.Text = $"🎵 {track.DisplayTitle}";
+            }
+            else
+            {
+                PetTrackTitleTxt.Text = "🎵 Music Player";
+            }
+            PetPlayPauseBtn.Content = LocalAudioPlayerService.Instance.IsPlaying ? "⏸" : "▶";
+            PetVolumeSlider.Value = LocalAudioPlayerService.Instance.CurrentVolume * 100.0;
+        }
+
+        private void PetPrevBtn_Click(object sender, RoutedEventArgs e)
+        {
+            LocalAudioPlayerService.Instance.PlayPrevious();
+        }
+
+        private void PetPlayPauseBtn_Click(object sender, RoutedEventArgs e)
+        {
+            LocalAudioPlayerService.Instance.TogglePlayPause();
+        }
+
+        private void PetNextBtn_Click(object sender, RoutedEventArgs e)
+        {
+            LocalAudioPlayerService.Instance.PlayNext();
+        }
+
+        private void PetVolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            LocalAudioPlayerService.Instance.SetVolume(e.NewValue);
+        }
+
+        private void MenuMusicPlayer_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (Window window in System.Windows.Application.Current.Windows)
+            {
+                if (window is MusicPlayerWidgetWindow player)
+                {
+                    player.Show();
+                    player.WindowState = WindowState.Normal;
+                    player.Activate();
+                    return;
+                }
+            }
+            var win = new MusicPlayerWidgetWindow();
+            win.Show();
         }
 
         private void MenuAsk_Click(object sender, RoutedEventArgs e)
@@ -987,17 +1075,7 @@ namespace KeyMapper
                     _random));
         }
 
-        private MusicPlayerWidgetWindow? _musicPlayerWidget;
 
-        private void MenuMusicPlayer_Click(object sender, RoutedEventArgs e)
-        {
-            if (_musicPlayerWidget == null || !_musicPlayerWidget.IsLoaded)
-            {
-                _musicPlayerWidget = new MusicPlayerWidgetWindow();
-            }
-            _musicPlayerWidget.Show();
-            _musicPlayerWidget.Activate();
-        }
 
         private void MenuSettings_Click(object sender, RoutedEventArgs e)
         {

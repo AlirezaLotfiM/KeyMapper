@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 
@@ -13,28 +14,93 @@ namespace KeyMapper
     public partial class MusicPlayerWidgetWindow : Window
     {
         private bool _isUserSeeking;
-        private string _activeTab = "QUEUE"; // QUEUE, ALL, ARTISTS, FAVS
+        private bool _isMiniMode;
+        private string _activeTab = "QUEUE"; // QUEUE, PLAYLISTS, ALL, GENRES, ARTISTS, FAVS, HISTORY
+        private CustomPlaylist? _selectedCustomPlaylist;
         private Storyboard? _spinStoryboard;
 
         public MusicPlayerWidgetWindow()
         {
             InitializeComponent();
+            Topmost = false;
 
             _spinStoryboard = (Storyboard)FindResource("SpinDiscStoryboard");
 
             LocalAudioPlayerService.Instance.OnTrackChanged += Instance_OnTrackChanged;
             LocalAudioPlayerService.Instance.OnPlaybackStateChanged += Instance_OnPlaybackStateChanged;
             LocalAudioPlayerService.Instance.OnPositionChanged += Instance_OnPositionChanged;
+            LocalAudioPlayerService.Instance.OnVolumeChanged += Instance_OnVolumeChanged;
             LocalAudioPlayerService.Instance.OnFavoritesUpdated += Instance_OnFavoritesUpdated;
             LocalAudioPlayerService.Instance.OnQueueUpdated += Instance_OnQueueUpdated;
+            LocalAudioPlayerService.Instance.OnCustomPlaylistsUpdated += Instance_OnCustomPlaylistsUpdated;
+            LocalAudioPlayerService.Instance.OnHistoryUpdated += Instance_OnHistoryUpdated;
+            LocalAudioPlayerService.Instance.OnPlayCountsUpdated += Instance_OnPlayCountsUpdated;
 
             _ = InitializeLibraryAsync();
         }
 
+        protected override void OnSourceInitialized(EventArgs e)
+        {
+            base.OnSourceInitialized(e);
+            var hwndSource = PresentationSource.FromVisual(this) as HwndSource;
+            hwndSource?.AddHook(WndProc);
+        }
+
+        private const int WM_APPCOMMAND = 0x0319;
+        private const int APPCOMMAND_MEDIA_NEXTTRACK = 11;
+        private const int APPCOMMAND_MEDIA_PREVTRACK = 12;
+        private const int APPCOMMAND_MEDIA_STOP = 13;
+        private const int APPCOMMAND_MEDIA_PLAY_PAUSE = 14;
+        private const int APPCOMMAND_MEDIA_PAUSE = 47;
+        private const int APPCOMMAND_MEDIA_PLAY = 46;
+
+        private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+        {
+            if (msg == WM_APPCOMMAND)
+            {
+                int cmd = (int)((long)lParam >> 16) & ~0xF000;
+                switch (cmd)
+                {
+                    case APPCOMMAND_MEDIA_PLAY_PAUSE:
+                        LocalAudioPlayerService.Instance.TogglePlayPause();
+                        handled = true;
+                        break;
+                    case APPCOMMAND_MEDIA_PLAY:
+                        if (!LocalAudioPlayerService.Instance.IsPlaying) LocalAudioPlayerService.Instance.TogglePlayPause();
+                        handled = true;
+                        break;
+                    case APPCOMMAND_MEDIA_PAUSE:
+                    case APPCOMMAND_MEDIA_STOP:
+                        if (LocalAudioPlayerService.Instance.IsPlaying) LocalAudioPlayerService.Instance.TogglePlayPause();
+                        handled = true;
+                        break;
+                    case APPCOMMAND_MEDIA_NEXTTRACK:
+                        LocalAudioPlayerService.Instance.PlayNext();
+                        handled = true;
+                        break;
+                    case APPCOMMAND_MEDIA_PREVTRACK:
+                        LocalAudioPlayerService.Instance.PlayPrevious();
+                        handled = true;
+                        break;
+                }
+            }
+            return IntPtr.Zero;
+        }
+
         private async System.Threading.Tasks.Task InitializeLibraryAsync()
         {
-            await LocalAudioPlayerService.Instance.ScanLibraryAsync();
-            UpdatePlaylistList();
+            if (LoadingOverlay != null) LoadingOverlay.Visibility = Visibility.Visible;
+            try
+            {
+                await LocalAudioPlayerService.Instance.ScanLibraryAsync();
+                UpdateRepeatButtonUI();
+                UpdateShuffleButtonUI();
+                UpdatePlaylistList();
+            }
+            finally
+            {
+                if (LoadingOverlay != null) LoadingOverlay.Visibility = Visibility.Collapsed;
+            }
         }
 
         private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -45,6 +111,21 @@ namespace KeyMapper
             }
         }
 
+        private void TaskbarPrev_Click(object sender, EventArgs e)
+        {
+            LocalAudioPlayerService.Instance.PlayPrevious();
+        }
+
+        private void TaskbarPlayPause_Click(object sender, EventArgs e)
+        {
+            LocalAudioPlayerService.Instance.TogglePlayPause();
+        }
+
+        private void TaskbarNext_Click(object sender, EventArgs e)
+        {
+            LocalAudioPlayerService.Instance.PlayNext();
+        }
+
         private void CloseBtn_Click(object sender, RoutedEventArgs e)
         {
             Hide();
@@ -52,7 +133,12 @@ namespace KeyMapper
 
         private void MinimizeBtn_Click(object sender, RoutedEventArgs e)
         {
-            WindowState = WindowState.Minimized;
+            ToggleMiniPlayerMode();
+        }
+
+        private void ExpandMiniPlayer_Click(object sender, RoutedEventArgs e)
+        {
+            ToggleMiniPlayerMode();
         }
 
         private void TogglePlaylistBtn_Click(object sender, RoutedEventArgs e)
@@ -60,20 +146,75 @@ namespace KeyMapper
             if (PlaylistView.Visibility == Visibility.Visible)
             {
                 PlaylistView.Visibility = Visibility.Collapsed;
-                Height = 320; // Expanded safety height so controls are never clipped!
+                Height = 260;
             }
             else
             {
                 PlaylistView.Visibility = Visibility.Visible;
-                Height = 620;
+                Height = 650;
             }
         }
 
-        private void ManageFoldersBtn_Click(object sender, RoutedEventArgs e)
+        private void ToggleMiniPlayerMode()
+        {
+            _isMiniMode = !_isMiniMode;
+            Rect workArea = SystemParameters.WorkArea;
+
+            if (_isMiniMode)
+            {
+                HeaderGrid.Visibility = Visibility.Collapsed;
+                PlayerMainView.Visibility = Visibility.Collapsed;
+                PlaylistView.Visibility = Visibility.Collapsed;
+                MiniDeckView.Visibility = Visibility.Visible;
+
+                OuterWindowBorder.CornerRadius = new CornerRadius(14);
+                OuterWindowBorder.Margin = new Thickness(4);
+                OuterWindowBorder.BorderThickness = new Thickness(1);
+                MainRootGrid.Margin = new Thickness(6);
+
+                Width = 180;
+                Height = 270;
+                Topmost = true;
+
+                Left = workArea.Right - Width - 20;
+                Top = workArea.Top + 20;
+            }
+            else
+            {
+                MiniDeckView.Visibility = Visibility.Collapsed;
+                HeaderGrid.Visibility = Visibility.Visible;
+                PlayerMainView.Visibility = Visibility.Visible;
+                PlaylistView.Visibility = Visibility.Visible;
+
+                OuterWindowBorder.CornerRadius = new CornerRadius(24);
+                OuterWindowBorder.Margin = new Thickness(10);
+                OuterWindowBorder.BorderThickness = new Thickness(1.8);
+                MainRootGrid.Margin = new Thickness(16);
+
+                Width = 470;
+                Height = 650;
+                Topmost = false;
+
+                Left = Math.Max(0, (workArea.Width - Width) / 2 + workArea.Left);
+                Top = Math.Max(0, (workArea.Height - Height) / 2 + workArea.Top);
+            }
+        }
+
+        private async void ManageFoldersBtn_Click(object sender, RoutedEventArgs e)
         {
             var win = new ManageMusicFoldersWindow { Owner = this };
             win.ShowDialog();
-            UpdatePlaylistList();
+
+            if (LoadingOverlay != null) LoadingOverlay.Visibility = Visibility.Visible;
+            try
+            {
+                await LocalAudioPlayerService.Instance.ScanLibraryAsync();
+                UpdatePlaylistList();
+            }
+            finally
+            {
+                if (LoadingOverlay != null) LoadingOverlay.Visibility = Visibility.Collapsed;
+            }
         }
 
         private void PlayPauseBtn_Click(object sender, RoutedEventArgs e)
@@ -94,14 +235,42 @@ namespace KeyMapper
         private void ShuffleBtn_Click(object sender, RoutedEventArgs e)
         {
             LocalAudioPlayerService.Instance.ToggleShuffle();
-            ShuffleBtn.Foreground = LocalAudioPlayerService.Instance.IsShuffle ? new SolidColorBrush(Color.FromRgb(6, 182, 212)) : new SolidColorBrush(Color.FromRgb(148, 163, 184));
+            UpdateShuffleButtonUI();
             UpdatePlaylistList();
+        }
+
+        private void UpdateShuffleButtonUI()
+        {
+            ShuffleBtn.Foreground = LocalAudioPlayerService.Instance.IsShuffle ? new SolidColorBrush(Color.FromRgb(6, 182, 212)) : new SolidColorBrush(Color.FromRgb(148, 163, 184));
         }
 
         private void RepeatBtn_Click(object sender, RoutedEventArgs e)
         {
-            LocalAudioPlayerService.Instance.IsRepeat = !LocalAudioPlayerService.Instance.IsRepeat;
-            RepeatBtn.Foreground = LocalAudioPlayerService.Instance.IsRepeat ? new SolidColorBrush(Color.FromRgb(6, 182, 212)) : new SolidColorBrush(Color.FromRgb(148, 163, 184));
+            LocalAudioPlayerService.Instance.CycleRepeatMode();
+            UpdateRepeatButtonUI();
+        }
+
+        private void UpdateRepeatButtonUI()
+        {
+            var mode = LocalAudioPlayerService.Instance.RepeatMode;
+            switch (mode)
+            {
+                case RepeatMode.Off:
+                    RepeatBtn.Content = "🔁";
+                    RepeatBtn.Foreground = new SolidColorBrush(Color.FromRgb(148, 163, 184));
+                    RepeatBtn.ToolTip = "Repeat: Off";
+                    break;
+                case RepeatMode.RepeatAll:
+                    RepeatBtn.Content = "🔁";
+                    RepeatBtn.Foreground = new SolidColorBrush(Color.FromRgb(6, 182, 212));
+                    RepeatBtn.ToolTip = "Repeat: All Tracks";
+                    break;
+                case RepeatMode.RepeatOne:
+                    RepeatBtn.Content = "🔂";
+                    RepeatBtn.Foreground = new SolidColorBrush(Color.FromRgb(245, 158, 11));
+                    RepeatBtn.ToolTip = "Repeat: One Track";
+                    break;
+            }
         }
 
         private void LikeBtn_Click(object sender, RoutedEventArgs e)
@@ -128,6 +297,21 @@ namespace KeyMapper
             LocalAudioPlayerService.Instance.SetVolume(e.NewValue);
         }
 
+        private void Instance_OnVolumeChanged(double volumePercent)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (VolumeSlider != null && Math.Abs(VolumeSlider.Value - volumePercent) > 0.5)
+                {
+                    VolumeSlider.Value = volumePercent;
+                }
+                if (MiniVolumeSlider != null && Math.Abs(MiniVolumeSlider.Value - volumePercent) > 0.5)
+                {
+                    MiniVolumeSlider.Value = volumePercent;
+                }
+            });
+        }
+
         private void Instance_OnTrackChanged(AudioTrackItem? track)
         {
             Dispatcher.Invoke(() =>
@@ -136,7 +320,10 @@ namespace KeyMapper
                 {
                     TrackTitleTxt.Text = track.DisplayTitle;
                     TrackArtistTxt.Text = track.DisplayArtist;
+                    MiniTrackTitleTxt.Text = track.DisplayTitle;
+                    MiniTrackArtistTxt.Text = track.DisplayArtist;
                     TotalTimeTxt.Text = track.DurationText;
+                    MiniTotalTimeTxt.Text = track.DurationText;
                     UpdateLikeButtonUI(track);
 
                     if (track.AlbumArt == null)
@@ -148,10 +335,13 @@ namespace KeyMapper
                     {
                         AlbumCoverImage.Source = track.AlbumArt;
                         AlbumCoverImage.Visibility = Visibility.Visible;
+                        MiniCoverImage.Source = track.AlbumArt;
+                        MiniCoverImage.Visibility = Visibility.Visible;
                     }
                     else
                     {
                         AlbumCoverImage.Visibility = Visibility.Collapsed;
+                        MiniCoverImage.Visibility = Visibility.Collapsed;
                     }
 
                     UpdatePlaylistList();
@@ -161,8 +351,15 @@ namespace KeyMapper
 
         private void UpdateLikeButtonUI(AudioTrackItem track)
         {
-            LikeBtn.Content = track.IsFavorite ? "❤️" : "🤍";
-            LikeBtn.Foreground = track.IsFavorite ? new SolidColorBrush(Color.FromRgb(239, 68, 68)) : new SolidColorBrush(Color.FromRgb(148, 163, 184));
+            string icon = track.IsFavorite ? "❤️" : "🤍";
+            Brush brush = track.IsFavorite ? new SolidColorBrush(Color.FromRgb(239, 68, 68)) : new SolidColorBrush(Color.FromRgb(148, 163, 184));
+            LikeBtn.Content = icon;
+            LikeBtn.Foreground = brush;
+            if (MiniLikeBtn != null)
+            {
+                MiniLikeBtn.Content = icon;
+                MiniLikeBtn.Foreground = brush;
+            }
         }
 
         private void Instance_OnPlaybackStateChanged(bool isPlaying)
@@ -170,7 +367,16 @@ namespace KeyMapper
             Dispatcher.Invoke(() =>
             {
                 PlayPauseBtn.Content = isPlaying ? "⏸" : "▶";
+                MiniPlayPauseBtn.Content = isPlaying ? "⏸" : "▶";
                 EqualizerPanel.Visibility = isPlaying ? Visibility.Visible : Visibility.Collapsed;
+
+                if (TaskbarPlayPauseBtn != null)
+                {
+                    TaskbarPlayPauseBtn.ImageSource = isPlaying
+                        ? (ImageSource)FindResource("TaskbarPauseIcon")
+                        : (ImageSource)FindResource("TaskbarPlayIcon");
+                    TaskbarPlayPauseBtn.Description = isPlaying ? "Pause" : "Play";
+                }
 
                 if (isPlaying)
                 {
@@ -189,12 +395,35 @@ namespace KeyMapper
             {
                 if (!_isUserSeeking)
                 {
-                    CurrentTimeTxt.Text = $"{pos:mm\\:ss}";
-                    TotalTimeTxt.Text = $"{total:mm\\:ss}";
-                    PositionSlider.Maximum = total.TotalSeconds > 0 ? total.TotalSeconds : 100;
+                    string curText = $"{pos:mm\\:ss}";
+                    string totText = $"{total:mm\\:ss}";
+                    CurrentTimeTxt.Text = curText;
+                    TotalTimeTxt.Text = totText;
+                    MiniCurrentTimeTxt.Text = curText;
+                    MiniTotalTimeTxt.Text = totText;
+
+                    double maxSec = total.TotalSeconds > 0 ? total.TotalSeconds : 100;
+                    PositionSlider.Maximum = maxSec;
+                    MiniPositionSlider.Maximum = maxSec;
+
                     PositionSlider.Value = pos.TotalSeconds;
+                    MiniPositionSlider.Value = pos.TotalSeconds;
                 }
             });
+        }
+
+        private void PositionSlider_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            _isUserSeeking = true;
+        }
+
+        private void PositionSlider_PreviewMouseUp(object sender, MouseButtonEventArgs e)
+        {
+            _isUserSeeking = false;
+            if (sender is Slider slider)
+            {
+                LocalAudioPlayerService.Instance.Seek(slider.Value);
+            }
         }
 
         private void PositionSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -207,9 +436,23 @@ namespace KeyMapper
 
         private void PlaylistListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            if (Mouse.RightButton == MouseButtonState.Pressed) return;
+
             if (PlaylistListBox.SelectedItem is AudioTrackItem item && PlaylistListBox.ItemsSource is IEnumerable<AudioTrackItem> activeList)
             {
                 LocalAudioPlayerService.Instance.PlayTrackItem(item, activeList);
+            }
+        }
+
+        private void CustomPlaylistsListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (CustomPlaylistsListBox.SelectedItem is CustomPlaylist playlist)
+            {
+                _selectedCustomPlaylist = playlist;
+                var tracks = LocalAudioPlayerService.Instance.GetCustomPlaylistTracks(playlist);
+                PlaylistListBox.ItemsSource = tracks;
+                PlaylistListBox.Visibility = Visibility.Visible;
+                CustomPlaylistsListBox.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -222,14 +465,66 @@ namespace KeyMapper
             }
         }
 
+        private void GenresListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (GenresListBox.SelectedItem is GenreGroupItem genreGroup)
+            {
+                PlaylistListBox.ItemsSource = genreGroup.Tracks;
+                PlaylistListBox.Visibility = Visibility.Visible;
+                GenresListBox.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void TabScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (sender is ScrollViewer scrollViewer)
+            {
+                scrollViewer.ScrollToHorizontalOffset(scrollViewer.HorizontalOffset - e.Delta);
+                e.Handled = true;
+            }
+        }
+
+        private void ScrollTabLeft_Click(object sender, RoutedEventArgs e)
+        {
+            TabScrollViewer.ScrollToHorizontalOffset(TabScrollViewer.HorizontalOffset - 120);
+        }
+
+        private void ScrollTabRight_Click(object sender, RoutedEventArgs e)
+        {
+            TabScrollViewer.ScrollToHorizontalOffset(TabScrollViewer.HorizontalOffset + 120);
+        }
+
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             UpdatePlaylistList();
         }
 
+        private void SortComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            UpdatePlaylistList();
+        }
+
+        // Navigation Tabs
         private void TabQueue_Click(object sender, RoutedEventArgs e)
         {
             _activeTab = "QUEUE";
+            _selectedCustomPlaylist = null;
+            UpdateTabStyles();
+            UpdatePlaylistList();
+        }
+
+        private void TabTopPlayed_Click(object sender, RoutedEventArgs e)
+        {
+            _activeTab = "TOP_PLAYED";
+            _selectedCustomPlaylist = null;
+            UpdateTabStyles();
+            UpdatePlaylistList();
+        }
+
+        private void TabPlaylists_Click(object sender, RoutedEventArgs e)
+        {
+            _activeTab = "PLAYLISTS";
+            _selectedCustomPlaylist = null;
             UpdateTabStyles();
             UpdatePlaylistList();
         }
@@ -237,6 +532,15 @@ namespace KeyMapper
         private void TabAll_Click(object sender, RoutedEventArgs e)
         {
             _activeTab = "ALL";
+            _selectedCustomPlaylist = null;
+            UpdateTabStyles();
+            UpdatePlaylistList();
+        }
+
+        private void TabGenres_Click(object sender, RoutedEventArgs e)
+        {
+            _activeTab = "GENRES";
+            _selectedCustomPlaylist = null;
             UpdateTabStyles();
             UpdatePlaylistList();
         }
@@ -244,6 +548,7 @@ namespace KeyMapper
         private void TabArtists_Click(object sender, RoutedEventArgs e)
         {
             _activeTab = "ARTISTS";
+            _selectedCustomPlaylist = null;
             UpdateTabStyles();
             UpdatePlaylistList();
         }
@@ -251,22 +556,29 @@ namespace KeyMapper
         private void TabFavs_Click(object sender, RoutedEventArgs e)
         {
             _activeTab = "FAVS";
+            _selectedCustomPlaylist = null;
             UpdateTabStyles();
             UpdatePlaylistList();
         }
 
-        private void Instance_OnFavoritesUpdated()
+        private void TabHistory_Click(object sender, RoutedEventArgs e)
         {
-            Dispatcher.Invoke(() => UpdatePlaylistList());
+            _activeTab = "HISTORY";
+            _selectedCustomPlaylist = null;
+            UpdateTabStyles();
+            UpdatePlaylistList();
         }
 
-        private void Instance_OnQueueUpdated()
-        {
-            Dispatcher.Invoke(() => UpdatePlaylistList());
-        }
+        private void Instance_OnFavoritesUpdated() => Dispatcher.Invoke(() => UpdatePlaylistList());
+        private void Instance_OnQueueUpdated() => Dispatcher.Invoke(() => UpdatePlaylistList());
+        private void Instance_OnCustomPlaylistsUpdated() => Dispatcher.Invoke(() => UpdatePlaylistList());
+        private void Instance_OnHistoryUpdated() => Dispatcher.Invoke(() => UpdatePlaylistList());
+        private void Instance_OnPlayCountsUpdated() => Dispatcher.Invoke(() => UpdatePlaylistList());
 
         private void UpdateTabStyles()
         {
+            if (TabQueueBtn == null || PlaylistListBox == null) return;
+
             var cyan = new SolidColorBrush(Color.FromRgb(6, 182, 212));
             var dark = new SolidColorBrush(Color.FromRgb(30, 41, 59));
             var darkText = new SolidColorBrush(Color.FromRgb(15, 23, 42));
@@ -275,8 +587,17 @@ namespace KeyMapper
             TabQueueBtn.Background = _activeTab == "QUEUE" ? cyan : dark;
             TabQueueBtn.Foreground = _activeTab == "QUEUE" ? darkText : whiteText;
 
+            TabTopPlayedBtn.Background = _activeTab == "TOP_PLAYED" ? cyan : dark;
+            TabTopPlayedBtn.Foreground = _activeTab == "TOP_PLAYED" ? darkText : whiteText;
+
+            TabPlaylistsBtn.Background = _activeTab == "PLAYLISTS" ? cyan : dark;
+            TabPlaylistsBtn.Foreground = _activeTab == "PLAYLISTS" ? darkText : whiteText;
+
             TabAllBtn.Background = _activeTab == "ALL" ? cyan : dark;
             TabAllBtn.Foreground = _activeTab == "ALL" ? darkText : whiteText;
+
+            TabGenresBtn.Background = _activeTab == "GENRES" ? cyan : dark;
+            TabGenresBtn.Foreground = _activeTab == "GENRES" ? darkText : whiteText;
 
             TabArtistsBtn.Background = _activeTab == "ARTISTS" ? cyan : dark;
             TabArtistsBtn.Foreground = _activeTab == "ARTISTS" ? darkText : whiteText;
@@ -284,25 +605,39 @@ namespace KeyMapper
             TabFavsBtn.Background = _activeTab == "FAVS" ? cyan : dark;
             TabFavsBtn.Foreground = _activeTab == "FAVS" ? darkText : whiteText;
 
-            PlaylistListBox.Visibility = _activeTab == "ARTISTS" ? Visibility.Collapsed : Visibility.Visible;
+            TabHistoryBtn.Background = _activeTab == "HISTORY" ? cyan : dark;
+            TabHistoryBtn.Foreground = _activeTab == "HISTORY" ? darkText : whiteText;
+
+            // Visibility Toggles
+            PlaylistListBox.Visibility = (_activeTab == "ARTISTS" || _activeTab == "GENRES" || (_activeTab == "PLAYLISTS" && _selectedCustomPlaylist == null)) ? Visibility.Collapsed : Visibility.Visible;
             ArtistsListBox.Visibility = _activeTab == "ARTISTS" ? Visibility.Visible : Visibility.Collapsed;
+            GenresListBox.Visibility = _activeTab == "GENRES" ? Visibility.Visible : Visibility.Collapsed;
+            CustomPlaylistsListBox.Visibility = (_activeTab == "PLAYLISTS" && _selectedCustomPlaylist == null) ? Visibility.Visible : Visibility.Collapsed;
+
+            NewPlaylistBtn.Visibility = _activeTab == "PLAYLISTS" ? Visibility.Visible : Visibility.Collapsed;
+            ClearQueueBtn.Visibility = (_activeTab == "QUEUE" && LocalAudioPlayerService.Instance.UserQueue.Count > 0) ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void UpdatePlaylistList()
         {
+            if (PlaylistListBox == null || SearchBox == null) return;
+
             string query = SearchBox.Text?.Trim() ?? string.Empty;
 
             if (_activeTab == "ARTISTS")
             {
                 var artists = LocalAudioPlayerService.Instance.ArtistGroups;
-                if (string.IsNullOrWhiteSpace(query))
-                {
-                    ArtistsListBox.ItemsSource = artists;
-                }
-                else
-                {
-                    ArtistsListBox.ItemsSource = artists.Where(a => a.ArtistName.Contains(query, StringComparison.OrdinalIgnoreCase)).ToList();
-                }
+                ArtistsListBox.ItemsSource = string.IsNullOrWhiteSpace(query) ? artists : artists.Where(a => a.ArtistName.Contains(query, StringComparison.OrdinalIgnoreCase)).ToList();
+            }
+            else if (_activeTab == "GENRES")
+            {
+                var genres = LocalAudioPlayerService.Instance.GenreGroups;
+                GenresListBox.ItemsSource = string.IsNullOrWhiteSpace(query) ? genres : genres.Where(g => g.GenreName.Contains(query, StringComparison.OrdinalIgnoreCase)).ToList();
+            }
+            else if (_activeTab == "PLAYLISTS" && _selectedCustomPlaylist == null)
+            {
+                var playlists = LocalAudioPlayerService.Instance.CustomPlaylists;
+                CustomPlaylistsListBox.ItemsSource = string.IsNullOrWhiteSpace(query) ? playlists : playlists.Where(p => p.Name.Contains(query, StringComparison.OrdinalIgnoreCase)).ToList();
             }
             else
             {
@@ -312,9 +647,21 @@ namespace KeyMapper
                 {
                     list = LocalAudioPlayerService.Instance.ActivePlaybackQueue.AsEnumerable();
                 }
+                else if (_activeTab == "TOP_PLAYED")
+                {
+                    list = LocalAudioPlayerService.Instance.Playlist.OrderByDescending(x => x.PlayCount).ThenByDescending(x => x.LastPlayedAt);
+                }
+                else if (_activeTab == "PLAYLISTS" && _selectedCustomPlaylist != null)
+                {
+                    list = LocalAudioPlayerService.Instance.GetCustomPlaylistTracks(_selectedCustomPlaylist);
+                }
                 else if (_activeTab == "FAVS")
                 {
                     list = LocalAudioPlayerService.Instance.Playlist.Where(x => x.IsFavorite);
+                }
+                else if (_activeTab == "HISTORY")
+                {
+                    list = LocalAudioPlayerService.Instance.PlaybackHistory.AsEnumerable();
                 }
                 else
                 {
@@ -328,8 +675,120 @@ namespace KeyMapper
                         x.DisplayArtist.Contains(query, StringComparison.OrdinalIgnoreCase));
                 }
 
-                var sortedList = list.ToList();
-                PlaylistListBox.ItemsSource = sortedList;
+                // Sorting
+                int sortIdx = SortComboBox?.SelectedIndex ?? 0;
+                list = sortIdx switch
+                {
+                    1 => list.OrderByDescending(x => x.PlayCount),
+                    2 => list.OrderBy(x => x.DisplayTitle),
+                    3 => list.OrderBy(x => x.DisplayArtist),
+                    4 => list.OrderByDescending(x => x.Duration),
+                    _ => list
+                };
+
+                PlaylistListBox.ItemsSource = list.ToList();
+                ClearQueueBtn.Visibility = (_activeTab == "QUEUE" && LocalAudioPlayerService.Instance.UserQueue.Count > 0) ? Visibility.Visible : Visibility.Collapsed;
+            }
+        }
+
+        // Custom Playlist Actions
+        private void NewPlaylistBtn_Click(object sender, RoutedEventArgs e)
+        {
+            var pl = LocalAudioPlayerService.Instance.CreateCustomPlaylist($"Playlist #{LocalAudioPlayerService.Instance.CustomPlaylists.Count + 1}");
+            UpdatePlaylistList();
+        }
+
+        private void DeletePlaylist_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.Tag is CustomPlaylist playlist)
+            {
+                LocalAudioPlayerService.Instance.DeleteCustomPlaylist(playlist.Id);
+                _selectedCustomPlaylist = null;
+                UpdateTabStyles();
+                UpdatePlaylistList();
+            }
+        }
+
+        private void RenamePlaylist_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.Tag is CustomPlaylist playlist)
+            {
+                string newName = Microsoft.VisualBasic.Interaction.InputBox("Enter new playlist name:", "Rename Playlist", playlist.Name);
+                if (!string.IsNullOrWhiteSpace(newName))
+                {
+                    LocalAudioPlayerService.Instance.RenameCustomPlaylist(playlist.Id, newName);
+                    UpdatePlaylistList();
+                }
+            }
+        }
+
+        private void ClearQueueBtn_Click(object sender, RoutedEventArgs e)
+        {
+            LocalAudioPlayerService.Instance.ClearUserQueue();
+            UpdatePlaylistList();
+        }
+
+        // Context Menu Handlers
+        private AudioTrackItem? GetSelectedContextTrack(object sender)
+        {
+            if (sender is MenuItem menuItem)
+            {
+                if (menuItem.DataContext is AudioTrackItem track) return track;
+            }
+            return PlaylistListBox.SelectedItem as AudioTrackItem;
+        }
+
+        private void ContextPlayNext_Click(object sender, RoutedEventArgs e)
+        {
+            var track = GetSelectedContextTrack(sender);
+            if (track != null)
+            {
+                LocalAudioPlayerService.Instance.PlayNextInUserQueue(track);
+            }
+        }
+
+        private void ContextAddToQueue_Click(object sender, RoutedEventArgs e)
+        {
+            var track = GetSelectedContextTrack(sender);
+            if (track != null)
+            {
+                LocalAudioPlayerService.Instance.AddToUserQueue(track);
+            }
+        }
+
+        private void ContextToggleFavorite_Click(object sender, RoutedEventArgs e)
+        {
+            var track = GetSelectedContextTrack(sender);
+            if (track != null)
+            {
+                LocalAudioPlayerService.Instance.ToggleFavorite(track);
+                UpdatePlaylistList();
+            }
+        }
+
+        private void ContextFilterArtist_Click(object sender, RoutedEventArgs e)
+        {
+            var track = GetSelectedContextTrack(sender);
+            if (track != null)
+            {
+                SearchBox.Text = track.DisplayArtist;
+            }
+        }
+
+        private void ContextRemoveTrack_Click(object sender, RoutedEventArgs e)
+        {
+            var track = GetSelectedContextTrack(sender);
+            if (track != null)
+            {
+                if (_activeTab == "QUEUE")
+                {
+                    LocalAudioPlayerService.Instance.RemoveFromUserQueue(track);
+                }
+                else if (_activeTab == "PLAYLISTS" && _selectedCustomPlaylist != null)
+                {
+                    LocalAudioPlayerService.Instance.RemoveTrackFromCustomPlaylist(_selectedCustomPlaylist.Id, track.FilePath);
+                }
+                UpdatePlaylistList();
             }
         }
     }
