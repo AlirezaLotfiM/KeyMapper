@@ -200,7 +200,7 @@ namespace KeyMapper
                 PlaylistView.Visibility = Visibility.Collapsed;
                 MiniDeckView.Visibility = Visibility.Visible;
 
-                OuterWindowBorder.CornerRadius = new CornerRadius(14);
+                OuterWindowBorder.CornerRadius = new CornerRadius(16);
                 OuterWindowBorder.Margin = new Thickness(2);
                 OuterWindowBorder.BorderThickness = new Thickness(0);
                 OuterWindowBorder.Background = Brushes.Transparent;
