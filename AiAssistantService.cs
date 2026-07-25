@@ -40,8 +40,10 @@ namespace KeyMapper
                 activeLocalModelId = LocalAiService.Instance.GetFirstInstalledModelId();
             }
 
-            // Always use local AI if any model is installed on user's system
-            if (!string.IsNullOrWhiteSpace(activeLocalModelId))
+            // Respect the user's local-AI switch. Installed weights should not be
+            // mapped into memory when local conversation AI is disabled.
+            if (settings.LocalAiEnabled &&
+                !string.IsNullOrWhiteSpace(activeLocalModelId))
             {
                 var localPrompt = new StringBuilder();
                 foreach (ConversationTurn turn in history.TakeLast(8))

@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -886,11 +887,14 @@ namespace KeyMapper
 
         public BitmapSource? ExtractEmbeddedCoverArt(string filePath)
         {
+            byte[]? buffer = null;
             try
             {
                 using var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
-                byte[] buffer = new byte[Math.Min(fs.Length, 2 * 1024 * 1024)];
-                int read = fs.Read(buffer, 0, buffer.Length);
+                int requestedLength = (int)Math.Min(fs.Length, 2 * 1024 * 1024);
+                if (requestedLength <= 0) return null;
+                buffer = ArrayPool<byte>.Shared.Rent(requestedLength);
+                int read = fs.Read(buffer, 0, requestedLength);
 
                 int imgHeader = -1;
                 for (int i = 0; i < read - 4; i++)
@@ -923,6 +927,13 @@ namespace KeyMapper
                 }
             }
             catch { }
+            finally
+            {
+                if (buffer != null)
+                {
+                    ArrayPool<byte>.Shared.Return(buffer);
+                }
+            }
 
             return null;
         }

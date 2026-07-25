@@ -154,6 +154,7 @@ namespace KeyMapper
         };
         private readonly SemaphoreSlim _downloadLock = new(1, 1);
         private readonly SemaphoreSlim _inferenceLock = new(1, 1);
+        private readonly Timer _modelIdleTimer;
         private LLamaWeights? _weights;
         private ModelParams? _modelParameters;
         private string _loadedModelId = string.Empty;
@@ -166,6 +167,11 @@ namespace KeyMapper
 
         private LocalAiService()
         {
+            _modelIdleTimer = new Timer(
+                ReleaseIdleModel,
+                null,
+                Timeout.InfiniteTimeSpan,
+                Timeout.InfiniteTimeSpan);
         }
 
         public LocalAiModelOption GetRecommendedModel()
@@ -176,7 +182,7 @@ namespace KeyMapper
                 return FindModel("qwen3-8b-q4")!;
             }
 
-            if (ramGb >= 22 && Environment.ProcessorCount >= 12)
+            if (ramGb >= 30 && Environment.ProcessorCount >= 16)
             {
                 return FindModel("qwen3-4b-q4")!;
             }
@@ -457,6 +463,51 @@ namespace KeyMapper
             finally
             {
                 executor?.Context.Dispose();
+                ScheduleIdleUnload();
+                _inferenceLock.Release();
+            }
+        }
+
+        /// <summary>
+        /// Releases native GGUF weights when the conversation UI is no longer
+        /// using them. This prevents a finished chat from keeping gigabytes of
+        /// memory mapped for the rest of the desktop session.
+        /// </summary>
+        public async Task ReleaseMemoryAsync()
+        {
+            if (_disposed) return;
+
+            await _inferenceLock.WaitAsync();
+            try
+            {
+                _modelIdleTimer.Change(
+                    Timeout.InfiniteTimeSpan,
+                    Timeout.InfiniteTimeSpan);
+                UnloadModel();
+            }
+            finally
+            {
+                _inferenceLock.Release();
+            }
+        }
+
+        private void ScheduleIdleUnload()
+        {
+            if (_disposed || _weights == null) return;
+            _modelIdleTimer.Change(
+                TimeSpan.FromSeconds(45),
+                Timeout.InfiniteTimeSpan);
+        }
+
+        private void ReleaseIdleModel(object? state)
+        {
+            if (_disposed || !_inferenceLock.Wait(0)) return;
+            try
+            {
+                UnloadModel();
+            }
+            finally
+            {
                 _inferenceLock.Release();
             }
         }
@@ -475,11 +526,11 @@ namespace KeyMapper
             UnloadModel();
             _modelParameters = new ModelParams(GetModelPath(model))
             {
-                ContextSize = 4096,
+                ContextSize = 2048,
                 GpuLayerCount = 0,
-                Threads = Math.Max(2, Math.Min(Environment.ProcessorCount - 1, 12)),
-                BatchThreads = Math.Max(2, Math.Min(Environment.ProcessorCount - 1, 12)),
-                BatchSize = 256,
+                Threads = Math.Max(2, Math.Min(Environment.ProcessorCount / 2, 6)),
+                BatchThreads = Math.Max(2, Math.Min(Environment.ProcessorCount / 2, 6)),
+                BatchSize = 128,
                 UseMemorymap = true
             };
 
@@ -541,6 +592,7 @@ namespace KeyMapper
         {
             if (_disposed) return;
             _disposed = true;
+            _modelIdleTimer.Dispose();
             UnloadModel();
             _httpClient.Dispose();
             _downloadLock.Dispose();

@@ -281,18 +281,22 @@ namespace KeyMapper
         private void UpdateRepeatButtonUI()
         {
             var mode = LocalAudioPlayerService.Instance.RepeatMode;
+            RepeatOffIcon.Visibility =
+                mode == RepeatMode.Off ? Visibility.Visible : Visibility.Collapsed;
+            RepeatAllIcon.Visibility =
+                mode == RepeatMode.RepeatAll ? Visibility.Visible : Visibility.Collapsed;
+            RepeatOneIcon.Visibility =
+                mode == RepeatMode.RepeatOne ? Visibility.Visible : Visibility.Collapsed;
+
             switch (mode)
             {
                 case RepeatMode.Off:
-                    RepeatBtn.Foreground = new SolidColorBrush(Color.FromRgb(148, 163, 184));
                     RepeatBtn.ToolTip = "Repeat: Off";
                     break;
                 case RepeatMode.RepeatAll:
-                    RepeatBtn.Foreground = new SolidColorBrush(Color.FromRgb(6, 182, 212));
                     RepeatBtn.ToolTip = "Repeat: All Tracks";
                     break;
                 case RepeatMode.RepeatOne:
-                    RepeatBtn.Foreground = new SolidColorBrush(Color.FromRgb(245, 158, 11));
                     RepeatBtn.ToolTip = "Repeat: One Track";
                     break;
             }

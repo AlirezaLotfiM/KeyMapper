@@ -69,7 +69,11 @@ namespace KeyMapper
                 PromptTextBox.Focus();
             };
 
-            Closed += (sender, args) => _typingTimer.Stop();
+            Closed += (sender, args) =>
+            {
+                _typingTimer.Stop();
+                _ = LocalAiService.Instance.ReleaseMemoryAsync();
+            };
         }
 
         private async void SendButton_Click(object sender, RoutedEventArgs e) =>

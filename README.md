@@ -45,6 +45,8 @@ The local music player is part of the companion experience, not a separate skin:
 - Supplied vector-style icons are used for folders, playback, shuffle, repeat, volume, and library navigation.
 - Every playing track gets a live, track-seeded groove animation.
 - Queue, favorites, history, artists, genres, playlists, sorting, and folder management are available locally.
+- Song titles use the active theme's text color, so the library remains readable in both light and dark palettes.
+- Repeat clearly cycles through three supplied icons: Off, Repeat all, and Repeat one.
 - Numeric ID3 genre codes such as `(13)Pop` are normalized to readable names; the separate line below each genre is the real track count.
 - The player keeps a clean border instead of a large neon halo.
 
@@ -87,6 +89,16 @@ Downloaded models are stored under:
 ```
 
 They can be removed from Settings at any time. Inference uses [LLamaSharp](https://github.com/SciSharp/LLamaSharp) with a CPU backend for broad Windows compatibility. The selected official [Qwen GGUF](https://huggingface.co/Qwen) model runs locally after download.
+
+Local AI is also memory-conscious:
+
+- Installed models are not loaded when **Use the downloaded model for conversations** is off.
+- A loaded model is released 45 seconds after the last reply.
+- Closing **Talk with character** releases its native model memory immediately.
+- CPU inference is capped at six threads with a compact 2,048-token context and smaller batch to keep the rest of Windows responsive.
+- Music cover scanning reuses pooled buffers instead of allocating a new multi-megabyte buffer for every track.
+
+The model download size is also a useful approximation of the minimum weight memory used while that model is answering. Larger models still need additional working memory during inference.
 
 ### PixelYar Cloud preview
 

@@ -624,7 +624,19 @@
                         <!-- Shuffle & Repeat -->
                         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                             <Button x:Name="ShuffleBtn" Width="34" Height="34" Style="{StaticResource CleanIconButton}" Click="ShuffleBtn_Click" Margin="0,0,5,0" ToolTip="Toggle Smart Shuffle"><Rectangle Width="18" Height="18" Fill="{DynamicResource AppMutedTextBrush}"><Rectangle.OpacityMask><ImageBrush ImageSource="/Resources/Icons/music-shuffle-svgrepo-com.png"/></Rectangle.OpacityMask></Rectangle></Button>
-                            <Button x:Name="RepeatBtn" Width="34" Height="34" Style="{StaticResource CleanIconButton}" Click="RepeatBtn_Click" ToolTip="Repeat: Off / All / One"><Rectangle Width="18" Height="18" Fill="{DynamicResource AppMutedTextBrush}"><Rectangle.OpacityMask><ImageBrush ImageSource="/Resources/Icons/music-repeat-svgrepo-com.png"/></Rectangle.OpacityMask></Rectangle></Button>
+                            <Button x:Name="RepeatBtn" Width="34" Height="34" Style="{StaticResource CleanIconButton}" Click="RepeatBtn_Click" ToolTip="Repeat: Off / All / One">
+                                <Grid Width="18" Height="18">
+                                    <Rectangle x:Name="RepeatOffIcon" Fill="{DynamicResource AppMutedTextBrush}">
+                                        <Rectangle.OpacityMask><ImageBrush ImageSource="/Resources/Icons/music-repeat-one-minimalistic-svgrepo-com.png"/></Rectangle.OpacityMask>
+                                    </Rectangle>
+                                    <Rectangle x:Name="RepeatAllIcon" Fill="{DynamicResource AppAccentBrush}" Visibility="Collapsed">
+                                        <Rectangle.OpacityMask><ImageBrush ImageSource="/Resources/Icons/music-repeat-svgrepo-com.png"/></Rectangle.OpacityMask>
+                                    </Rectangle>
+                                    <Rectangle x:Name="RepeatOneIcon" Fill="{DynamicResource AppAccentFillBrush}" Visibility="Collapsed">
+                                        <Rectangle.OpacityMask><ImageBrush ImageSource="/Resources/Icons/music-repeat-one-svgrepo-com.png"/></Rectangle.OpacityMask>
+                                    </Rectangle>
+                                </Grid>
+                            </Button>
                         </StackPanel>
 
                         <!-- Main Buttons: Prev, Play, Next -->
@@ -747,7 +759,7 @@
                                     </Border>
 
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding DisplayTitle}" Foreground="{Binding TitleBrush}" FontSize="12.5" FontWeight="Bold" TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock Text="{Binding DisplayTitle}" Foreground="{DynamicResource AppTextBrush}" FontSize="12.5" FontWeight="Bold" TextTrimming="CharacterEllipsis"/>
                                         <TextBlock Text="{Binding DisplayArtist}" Foreground="{DynamicResource AppAccentBrush}" FontSize="10.5" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
                                     </StackPanel>
 
