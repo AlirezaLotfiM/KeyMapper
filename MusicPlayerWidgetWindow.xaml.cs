@@ -24,6 +24,8 @@ namespace KeyMapper
         private readonly DispatcherTimer _grooveTimer;
         private int _grooveSeed;
         private double _groovePhase;
+        private bool _isRestoringPreferences = true;
+        private bool _playlistVisiblePreference = true;
 
         public MusicPlayerWidgetWindow()
         {
@@ -49,6 +51,26 @@ namespace KeyMapper
             LocalAudioPlayerService.Instance.OnCustomPlaylistsUpdated += Instance_OnCustomPlaylistsUpdated;
             LocalAudioPlayerService.Instance.OnHistoryUpdated += Instance_OnHistoryUpdated;
             LocalAudioPlayerService.Instance.OnPlayCountsUpdated += Instance_OnPlayCountsUpdated;
+
+            AppSettings settings = ConfigManager.Load();
+            _activeTab = NormalizeMusicTab(settings.MusicPlayerActiveTab);
+            _playlistVisiblePreference =
+                settings.MusicPlayerPlaylistVisible;
+            SortComboBox.SelectedIndex = Math.Clamp(
+                settings.MusicPlayerSortIndex,
+                0,
+                Math.Max(0, SortComboBox.Items.Count - 1));
+            if (settings.MusicPlayerMiniMode)
+            {
+                ToggleMiniPlayerMode();
+            }
+            else if (!settings.MusicPlayerPlaylistVisible)
+            {
+                PlaylistView.Visibility = Visibility.Collapsed;
+                Height = 260;
+            }
+            UpdateTabStyles();
+            _isRestoringPreferences = false;
 
             _ = InitializeLibraryAsync();
         }
@@ -180,12 +202,15 @@ namespace KeyMapper
             {
                 PlaylistView.Visibility = Visibility.Collapsed;
                 Height = 260;
+                _playlistVisiblePreference = false;
             }
             else
             {
                 PlaylistView.Visibility = Visibility.Visible;
                 Height = 650;
+                _playlistVisiblePreference = true;
             }
+            SaveMusicPlayerPreferences();
         }
 
         private void ToggleMiniPlayerMode()
@@ -219,7 +244,9 @@ namespace KeyMapper
                 MiniDeckView.Visibility = Visibility.Collapsed;
                 HeaderGrid.Visibility = Visibility.Visible;
                 PlayerMainView.Visibility = Visibility.Visible;
-                PlaylistView.Visibility = Visibility.Visible;
+                PlaylistView.Visibility = _playlistVisiblePreference
+                    ? Visibility.Visible
+                    : Visibility.Collapsed;
 
                 OuterWindowBorder.CornerRadius = new CornerRadius(24);
                 OuterWindowBorder.Margin = new Thickness(10);
@@ -230,13 +257,14 @@ namespace KeyMapper
                 MainRootGrid.Margin = new Thickness(16);
 
                 Width = 500;
-                Height = 650;
+                Height = _playlistVisiblePreference ? 650 : 260;
                 Topmost = false;
                 _miniBackdropStoryboard?.Remove(this);
 
                 Left = Math.Max(0, (workArea.Width - Width) / 2 + workArea.Left);
                 Top = Math.Max(0, (workArea.Height - Height) / 2 + workArea.Top);
             }
+            SaveMusicPlayerPreferences();
         }
 
         private async void ManageFoldersBtn_Click(object sender, RoutedEventArgs e)
@@ -738,6 +766,7 @@ namespace KeyMapper
         private void SortComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             UpdatePlaylistList();
+            SaveMusicPlayerPreferences();
         }
 
         // Navigation Tabs
@@ -747,6 +776,7 @@ namespace KeyMapper
             _selectedCustomPlaylist = null;
             UpdateTabStyles();
             UpdatePlaylistList();
+            SaveMusicPlayerPreferences();
         }
 
         private void TabTopPlayed_Click(object sender, RoutedEventArgs e)
@@ -755,6 +785,7 @@ namespace KeyMapper
             _selectedCustomPlaylist = null;
             UpdateTabStyles();
             UpdatePlaylistList();
+            SaveMusicPlayerPreferences();
         }
 
         private void TabPlaylists_Click(object sender, RoutedEventArgs e)
@@ -763,6 +794,7 @@ namespace KeyMapper
             _selectedCustomPlaylist = null;
             UpdateTabStyles();
             UpdatePlaylistList();
+            SaveMusicPlayerPreferences();
         }
 
         private void TabAll_Click(object sender, RoutedEventArgs e)
@@ -771,6 +803,7 @@ namespace KeyMapper
             _selectedCustomPlaylist = null;
             UpdateTabStyles();
             UpdatePlaylistList();
+            SaveMusicPlayerPreferences();
         }
 
         private void TabGenres_Click(object sender, RoutedEventArgs e)
@@ -779,6 +812,7 @@ namespace KeyMapper
             _selectedCustomPlaylist = null;
             UpdateTabStyles();
             UpdatePlaylistList();
+            SaveMusicPlayerPreferences();
         }
 
         private void TabArtists_Click(object sender, RoutedEventArgs e)
@@ -787,6 +821,7 @@ namespace KeyMapper
             _selectedCustomPlaylist = null;
             UpdateTabStyles();
             UpdatePlaylistList();
+            SaveMusicPlayerPreferences();
         }
 
         private void TabFavs_Click(object sender, RoutedEventArgs e)
@@ -795,6 +830,7 @@ namespace KeyMapper
             _selectedCustomPlaylist = null;
             UpdateTabStyles();
             UpdatePlaylistList();
+            SaveMusicPlayerPreferences();
         }
 
         private void TabHistory_Click(object sender, RoutedEventArgs e)
@@ -803,7 +839,34 @@ namespace KeyMapper
             _selectedCustomPlaylist = null;
             UpdateTabStyles();
             UpdatePlaylistList();
+            SaveMusicPlayerPreferences();
         }
+
+        private void SaveMusicPlayerPreferences()
+        {
+            if (_isRestoringPreferences) return;
+            AppSettings settings = ConfigManager.Load();
+            settings.MusicPlayerMiniMode = _isMiniMode;
+            settings.MusicPlayerPlaylistVisible =
+                _playlistVisiblePreference;
+            settings.MusicPlayerActiveTab = _activeTab;
+            settings.MusicPlayerSortIndex =
+                Math.Max(0, SortComboBox?.SelectedIndex ?? 0);
+            ConfigManager.Save(settings);
+        }
+
+        private static string NormalizeMusicTab(string? tab) =>
+            tab?.Trim().ToUpperInvariant() switch
+            {
+                "TOP_PLAYED" => "TOP_PLAYED",
+                "PLAYLISTS" => "PLAYLISTS",
+                "ALL" => "ALL",
+                "GENRES" => "GENRES",
+                "ARTISTS" => "ARTISTS",
+                "FAVS" => "FAVS",
+                "HISTORY" => "HISTORY",
+                _ => "QUEUE"
+            };
 
         private void Instance_OnFavoritesUpdated() => Dispatcher.Invoke(() => UpdatePlaylistList());
         private void Instance_OnQueueUpdated() => Dispatcher.Invoke(() => UpdatePlaylistList());

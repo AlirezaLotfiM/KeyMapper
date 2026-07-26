@@ -176,6 +176,12 @@ Settings → Everyday Settings → Launch the desktop pet when I sign in to Wind
 
 Uncheck it at any time to opt out. The setting affects only the current Windows user.
 
+### Preferences that survive restart
+
+Durable choices are restored the next time PixelYar starts. This includes whether KeyMapper is enabled or paused, whether the pet is visible and walking, its manually chosen desktop position, horizontal-only movement, movement and idle speeds, character, comments, AI ambience, theme, startup behavior, translator target and settings panel, and music-player layout.
+
+Music preferences are also retained: volume, shuffle, repeat mode, current track position, queue, mini-player mode, library visibility, active tab, and sorting. Preferences share one synchronized in-memory configuration and are written through an atomic file replacement, so one window cannot overwrite a newer choice saved by another window.
+
 ### Color themes
 
 The interface uses Segoe UI and includes light, dark, and colorful palettes:

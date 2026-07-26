@@ -25,11 +25,14 @@ namespace KeyMapper
         public List<string> AutoExpandShortcuts { get; set; } = new List<string>();
         public bool SuppressKeysDuringRecording { get; set; } = true;
         public bool ShowOverlay { get; set; } = true;
+        public bool KeyMapperEnabled { get; set; } = true;
+        public bool KeyMapperPaused { get; set; } = false;
         public bool RunAtStartup { get; set; } = false;
         public bool PlaySounds { get; set; } = true;
         public bool ShowPetOverlay { get; set; } = true;
         public string ThemeName { get; set; } = "Warm Cream";
         public double PetWalkingSpeed { get; set; } = 92;
+        public bool PetWalkingEnabled { get; set; } = true;
         public int PetIdleAnimationIntervalMs { get; set; } = 430;
         public bool PetCommentsEnabled { get; set; } = true;
         public bool PetMusicNotesEnabled { get; set; } = true;
@@ -47,6 +50,14 @@ namespace KeyMapper
         public string LayoutFixHotkey { get; set; } = "Ctrl+Alt+K";
         public string CurrentCharacter { get; set; } = "Pink Monster";
         public bool PetHorizontalOnlyWalking { get; set; } = false;
+        public double? PetPositionLeft { get; set; }
+        public double? PetPositionTop { get; set; }
+        public string TranslatorTargetLanguage { get; set; } = "en";
+        public bool TranslatorSettingsExpanded { get; set; } = false;
+        public bool MusicPlayerMiniMode { get; set; } = false;
+        public bool MusicPlayerPlaylistVisible { get; set; } = true;
+        public string MusicPlayerActiveTab { get; set; } = "QUEUE";
+        public int MusicPlayerSortIndex { get; set; } = 0;
         public string UserName { get; set; } = string.Empty;
     }
 
@@ -69,6 +80,8 @@ namespace KeyMapper
             "KeyMapper"
         );
         private static readonly string FilePath = Path.Combine(FolderPath, "config.json");
+        private static readonly object SyncRoot = new();
+        private static AppSettings? _cachedSettings;
 
         private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions
         {
@@ -77,119 +90,134 @@ namespace KeyMapper
 
         public static AppSettings Load()
         {
-            try
+            lock (SyncRoot)
             {
-                if (File.Exists(FilePath))
+                if (_cachedSettings != null)
+                    return _cachedSettings;
+
+                try
                 {
-                    string json = File.ReadAllText(FilePath);
-
-                    // Perform in-memory migration if old schema is detected
-                    bool isOldFormat = false;
-                    using (JsonDocument doc = JsonDocument.Parse(json))
+                    if (File.Exists(FilePath))
                     {
-                        var root = doc.RootElement;
-                        if (root.TryGetProperty("Replacements", out JsonElement repElement))
-                        {
-                            if (repElement.ValueKind == JsonValueKind.Object)
-                            {
-                                isOldFormat = true;
-                            }
-                        }
-                    }
+                        string json = File.ReadAllText(FilePath);
 
-                    if (isOldFormat)
-                    {
-                        var oldSettings = JsonSerializer.Deserialize<OldAppSettings>(json);
-                        if (oldSettings != null)
+                        // Perform in-memory migration if old schema is detected
+                        bool isOldFormat = false;
+                        using (JsonDocument doc = JsonDocument.Parse(json))
                         {
-                            var newSettings = new AppSettings
+                            var root = doc.RootElement;
+                            if (root.TryGetProperty("Replacements", out JsonElement repElement))
                             {
-                                SuppressKeysDuringRecording = oldSettings.SuppressKeysDuringRecording,
-                                ShowOverlay = oldSettings.ShowOverlay,
-                                RunAtStartup = oldSettings.RunAtStartup,
-                                PlaySounds = oldSettings.PlaySounds,
-                                ExcludedProcesses = oldSettings.ExcludedProcesses ?? new List<string>()
-                            };
-
-                            if (oldSettings.Replacements != null)
-                            {
-                                foreach (var kvp in oldSettings.Replacements)
+                                if (repElement.ValueKind == JsonValueKind.Object)
                                 {
-                                    bool isAuto = oldSettings.AutoExpandShortcuts?.Contains(kvp.Key) ?? false;
-                                    newSettings.Replacements.Add(new ShortcutConfig
-                                    {
-                                        Shortcut = kvp.Key,
-                                        Target = kvp.Value,
-                                        IsAutoExpand = isAuto
-                                    });
+                                    isOldFormat = true;
                                 }
                             }
-
-                            if (oldSettings.Actions != null)
-                            {
-                                foreach (var kvp in oldSettings.Actions)
-                                {
-                                    newSettings.Actions.Add(new ShortcutConfig
-                                    {
-                                        Shortcut = kvp.Key,
-                                        Target = kvp.Value
-                                    });
-                                }
-                            }
-
-                            // Sync list
-                            var autoList = new List<string>();
-                            foreach (var r in newSettings.Replacements)
-                            {
-                                if (r.IsAutoExpand) autoList.Add(r.Shortcut);
-                            }
-                            newSettings.AutoExpandShortcuts = autoList;
-
-                            Save(newSettings); // Convert on disk!
-                            return newSettings;
                         }
-                    }
 
-                    var settings = JsonSerializer.Deserialize<AppSettings>(json);
-                    if (settings != null)
-                    {
-                        settings.Replacements ??= new List<ShortcutConfig>();
-                        settings.Actions ??= new List<ShortcutConfig>();
-                        settings.ExcludedProcesses ??= new List<string>();
-                        settings.AutoExpandShortcuts ??= new List<string>();
-                        return settings;
+                        if (isOldFormat)
+                        {
+                            var oldSettings = JsonSerializer.Deserialize<OldAppSettings>(json);
+                            if (oldSettings != null)
+                            {
+                                var newSettings = new AppSettings
+                                {
+                                    SuppressKeysDuringRecording = oldSettings.SuppressKeysDuringRecording,
+                                    ShowOverlay = oldSettings.ShowOverlay,
+                                    RunAtStartup = oldSettings.RunAtStartup,
+                                    PlaySounds = oldSettings.PlaySounds,
+                                    ExcludedProcesses = oldSettings.ExcludedProcesses ?? new List<string>()
+                                };
+
+                                if (oldSettings.Replacements != null)
+                                {
+                                    foreach (var kvp in oldSettings.Replacements)
+                                    {
+                                        bool isAuto = oldSettings.AutoExpandShortcuts?.Contains(kvp.Key) ?? false;
+                                        newSettings.Replacements.Add(new ShortcutConfig
+                                        {
+                                            Shortcut = kvp.Key,
+                                            Target = kvp.Value,
+                                            IsAutoExpand = isAuto
+                                        });
+                                    }
+                                }
+
+                                if (oldSettings.Actions != null)
+                                {
+                                    foreach (var kvp in oldSettings.Actions)
+                                    {
+                                        newSettings.Actions.Add(new ShortcutConfig
+                                        {
+                                            Shortcut = kvp.Key,
+                                            Target = kvp.Value
+                                        });
+                                    }
+                                }
+
+                                // Sync list
+                                var autoList = new List<string>();
+                                foreach (var r in newSettings.Replacements)
+                                {
+                                    if (r.IsAutoExpand) autoList.Add(r.Shortcut);
+                                }
+                                newSettings.AutoExpandShortcuts = autoList;
+
+                                _cachedSettings = newSettings;
+                                Save(newSettings); // Convert on disk!
+                                return newSettings;
+                            }
+                        }
+
+                        var settings = JsonSerializer.Deserialize<AppSettings>(json);
+                        if (settings != null)
+                        {
+                            settings.Replacements ??= new List<ShortcutConfig>();
+                            settings.Actions ??= new List<ShortcutConfig>();
+                            settings.ExcludedProcesses ??= new List<string>();
+                            settings.AutoExpandShortcuts ??= new List<string>();
+                            _cachedSettings = settings;
+                            return settings;
+                        }
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error loading config: {ex.Message}");
-            }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error loading config: {ex.Message}");
+                }
 
-            // Return default settings if loading fails or file does not exist
-            var defaults = GetDefaultSettings();
-            Save(defaults);
-            return defaults;
+                // Return default settings if loading fails or file does not exist
+                var defaults = GetDefaultSettings();
+                _cachedSettings = defaults;
+                Save(defaults);
+                return defaults;
+            }
         }
 
         public static void Save(AppSettings settings)
         {
-            try
+            lock (SyncRoot)
             {
-                if (!Directory.Exists(FolderPath))
+                try
                 {
-                    Directory.CreateDirectory(FolderPath);
+                    if (!Directory.Exists(FolderPath))
+                    {
+                        Directory.CreateDirectory(FolderPath);
+                    }
+
+                    _cachedSettings = settings;
+                    string json = JsonSerializer.Serialize(settings, JsonOptions);
+                    string temporaryPath = FilePath + ".tmp";
+                    File.WriteAllText(temporaryPath, json);
+                    File.Move(temporaryPath, FilePath, true);
+
+                    // Update registry for startup
+                    SetStartupRegistry(settings.RunAtStartup);
                 }
-
-                string json = JsonSerializer.Serialize(settings, JsonOptions);
-                File.WriteAllText(FilePath, json);
-
-                // Update registry for startup
-                SetStartupRegistry(settings.RunAtStartup);
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error saving config: {ex.Message}");
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error saving config: {ex.Message}");
+                }
             }
         }
 

@@ -31,6 +31,7 @@ namespace KeyMapper
         private readonly TrayIconManager _trayManager;
         private AppSettings _settings;
         private string _lastClipboardText = string.Empty;
+        private bool? _hookStateBeforeTemporaryDisable;
 
         public static List<string> ClipboardHistory { get; } = new List<string>();
         public ObservableCollection<ShortcutMapping> Replacements { get; } = new ObservableCollection<ShortcutMapping>();
@@ -91,7 +92,8 @@ namespace KeyMapper
             // Setup subcomponents
             _hook = new KeyboardHook
             {
-                IsEnabled = true,
+                IsEnabled = _settings.KeyMapperEnabled,
+                IsPaused = _settings.KeyMapperPaused,
                 SuppressKeysDuringRecording = _settings.SuppressKeysDuringRecording,
                 AutoExpandShortcuts = _settings.AutoExpandShortcuts ?? new List<string>()
             };
@@ -223,6 +225,8 @@ namespace KeyMapper
             _settings.AutoExpandShortcuts = Replacements.Where(x => x.IsAutoExpand).Select(x => x.Shortcut).ToList();
             _settings.SuppressKeysDuringRecording = SuppressKeysChk.IsChecked ?? true;
             _settings.ShowOverlay = ShowOverlayChk.IsChecked ?? true;
+            _settings.KeyMapperEnabled = _hook.IsEnabled;
+            _settings.KeyMapperPaused = _hook.IsPaused;
             _settings.RunAtStartup = RunAtStartupChk.IsChecked ?? false;
             _settings.PlaySounds = PlaySoundsChk.IsChecked ?? true;
             _settings.ThemeName =
@@ -1319,9 +1323,7 @@ namespace KeyMapper
 
         private void ToggleHook_Click(object sender, RoutedEventArgs e)
         {
-            _hook.IsEnabled = !_hook.IsEnabled;
-            _trayManager.UpdateIconState(_hook.IsEnabled);
-            UpdateHookStatusUI();
+            SetKeyboardHookEnabled(!_hook.IsEnabled);
         }
 
         private void AddReplacement_Click(object sender, RoutedEventArgs e)
@@ -1764,6 +1766,8 @@ namespace KeyMapper
         {
             Dispatcher.BeginInvoke(new Action(() =>
             {
+                _settings.KeyMapperPaused = isPaused;
+                ConfigManager.Save(_settings);
                 _trayManager.UpdateIconState(_hook.IsEnabled);
                 UpdateHookStatusUI();
 
@@ -2023,6 +2027,8 @@ namespace KeyMapper
         {
             if (_petOverlayWindow != null)
             {
+                _settings.ShowPetOverlay = true;
+                ConfigManager.Save(_settings);
                 _petOverlayWindow.Show();
                 _petOverlayWindow.WindowState = WindowState.Normal;
                 _petOverlayWindow.Topmost = true;
@@ -2032,17 +2038,31 @@ namespace KeyMapper
 
         public void HidePetOverlayWindow()
         {
+            _settings.ShowPetOverlay = false;
+            ConfigManager.Save(_settings);
             _petOverlayWindow?.Hide();
+        }
+
+        public void SetKeyboardHookEnabled(bool enabled)
+        {
+            _hook.IsEnabled = enabled;
+            _settings.KeyMapperEnabled = enabled;
+            ConfigManager.Save(_settings);
+            _trayManager.UpdateIconState(enabled);
+            UpdateHookStatusUI();
         }
 
         public void DisableKeyboardHookTemporarily()
         {
+            _hookStateBeforeTemporaryDisable ??= _hook.IsEnabled;
             _hook.IsEnabled = false;
         }
 
         public void EnableKeyboardHook()
         {
-            _hook.IsEnabled = true;
+            _hook.IsEnabled = _hookStateBeforeTemporaryDisable ?? _hook.IsEnabled;
+            _hookStateBeforeTemporaryDisable = null;
+            _trayManager.UpdateIconState(_hook.IsEnabled);
             UpdateHookStatusUI();
         }
 

@@ -14,6 +14,7 @@ namespace KeyMapper
         private readonly KeyboardHook _hook;
 
         private Icon? _currentIcon;
+        private readonly ToolStripMenuItem _enableItem;
 
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         private static extern bool DestroyIcon(IntPtr handle);
@@ -44,16 +45,13 @@ namespace KeyMapper
             contextMenu.Items.Add(new ToolStripMenuItem("Show Desktop Pet", null, (s, e) => _mainWindow.ShowPetOverlayWindow()));
             contextMenu.Items.Add(new ToolStripMenuItem("Hide Desktop Pet", null, (s, e) => _mainWindow.HidePetOverlayWindow()));
 
-            var enableItem = new ToolStripMenuItem("Enabled", null, (s, e) =>
+            _enableItem = new ToolStripMenuItem("Enabled", null, (s, e) =>
             {
                 var item = (ToolStripMenuItem)s!;
-                item.Checked = !item.Checked;
-                _hook.IsEnabled = item.Checked;
-                UpdateIconState(_hook.IsEnabled);
-                _mainWindow.UpdateHookStatusUI();
+                _mainWindow.SetKeyboardHookEnabled(!item.Checked);
             });
-            enableItem.Checked = _hook.IsEnabled;
-            contextMenu.Items.Add(enableItem);
+            _enableItem.Checked = _hook.IsEnabled;
+            contextMenu.Items.Add(_enableItem);
 
             contextMenu.Items.Add(new ToolStripSeparator());
 
@@ -104,6 +102,8 @@ namespace KeyMapper
         {
             try
             {
+                if (_enableItem != null)
+                    _enableItem.Checked = isEnabled;
                 // Clean up previous icon to prevent GDI leak
                 if (_currentIcon != null)
                 {

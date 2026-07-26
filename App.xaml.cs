@@ -64,11 +64,11 @@ namespace KeyMapper
                 catch { }
             });
 
-            // Show MainWindow and Pet Overlay Window immediately at startup
+            // The control center opens normally. Pet visibility is restored by
+            // MainWindow from the user's saved preference.
             _mainWindow.Show();
             _mainWindow.WindowState = WindowState.Normal;
             _mainWindow.Activate();
-            _mainWindow.ShowPetOverlayWindow();
             _mainWindow.ShowStartupNotification();
         }
 
@@ -87,7 +87,6 @@ namespace KeyMapper
                                 _mainWindow.Show();
                                 _mainWindow.WindowState = WindowState.Normal;
                                 _mainWindow.Activate();
-                                _mainWindow.ShowPetOverlayWindow();
                             }
                         });
                     }

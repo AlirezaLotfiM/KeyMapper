@@ -42,6 +42,19 @@ namespace KeyMapper
                     ? "http://localhost:5000"
                     : settings.LibreTranslateEndpoint;
                 ApiKeyBox.Password = settings.LibreTranslateApiKey;
+                string savedTarget =
+                    settings.TranslatorTargetLanguage?
+                        .Trim()
+                        .ToLowerInvariant() ?? string.Empty;
+                _targetLanguage =
+                    savedTarget is "en" or "fa" or "ko" or
+                        "de" or "fr" or "es"
+                        ? savedTarget
+                        : "en";
+                ServerSettingsPanel.Visibility =
+                    settings.TranslatorSettingsExpanded
+                        ? Visibility.Visible
+                        : Visibility.Collapsed;
                 SourceTextBox.Text = initialText;
                 _isLoadingSettings = false;
                 _isLoaded = true;
@@ -89,6 +102,12 @@ namespace KeyMapper
             if (sender is RadioButton radio && radio.Tag is string language)
             {
                 _targetLanguage = language;
+                if (_isLoaded && !_isLoadingSettings)
+                {
+                    AppSettings settings = ConfigManager.Load();
+                    settings.TranslatorTargetLanguage = language;
+                    ConfigManager.Save(settings);
+                }
                 if (_isLoaded && !_isApplyingDetectedLanguage)
                     ScheduleLiveTranslation(true);
             }
@@ -172,7 +191,7 @@ namespace KeyMapper
                         string betterTarget = ChooseAlternateTarget(detected);
                         SelectTargetWithoutRetriggering(betterTarget);
                         UpdateLanguageChoices(detected);
-                        StatusText.Text = $"Detected {LanguageName(detected)} — switching to {LanguageName(betterTarget)}";
+                        StatusText.Text = $"Detected {LanguageName(detected)}: switching to {LanguageName(betterTarget)}";
                         await TranslateCurrentTextAsync();
                         return;
                     }
@@ -299,6 +318,9 @@ namespace KeyMapper
             ServerSettingsPanel.Visibility = showSettings
                 ? Visibility.Visible
                 : Visibility.Collapsed;
+            AppSettings settings = ConfigManager.Load();
+            settings.TranslatorSettingsExpanded = showSettings;
+            ConfigManager.Save(settings);
 
             Dispatcher.BeginInvoke(() =>
             {

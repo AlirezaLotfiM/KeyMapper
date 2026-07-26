@@ -249,12 +249,27 @@ namespace KeyMapper
             // Load saved character preference
             var settings = ConfigManager.Load();
             _walkingSpeed = Math.Clamp(settings.PetWalkingSpeed, 25, 260);
+            _walkingEnabled = settings.PetWalkingEnabled;
             _idleAnimationIntervalMs = Math.Clamp(settings.PetIdleAnimationIntervalMs, 180, 1000);
             _commentsEnabled = settings.PetCommentsEnabled;
             _musicNotesEnabled = settings.PetMusicNotesEnabled;
             _aiAmbientCommentsEnabled = settings.AiAmbientCommentsEnabled;
             _commentFrequency = NormalizeCommentFrequency(settings.PetCommentFrequency);
             _horizontalOnlyWalking = settings.PetHorizontalOnlyWalking;
+            if (settings.PetPositionLeft is double savedLeft &&
+                settings.PetPositionTop is double savedTop &&
+                double.IsFinite(savedLeft) &&
+                double.IsFinite(savedTop))
+            {
+                double maximumLeft = Math.Max(
+                    workArea.Left,
+                    workArea.Right - Width);
+                double maximumTop = Math.Max(
+                    workArea.Top,
+                    workArea.Bottom - Height);
+                Left = Math.Clamp(savedLeft, workArea.Left, maximumLeft);
+                Top = Math.Clamp(savedTop, workArea.Top, maximumTop);
+            }
             _horizontalWalkTop = Top;
             UpdateCommentMenuState();
             SetCharacter(settings.CurrentCharacter ?? "Pink Monster");
@@ -1250,6 +1265,10 @@ namespace KeyMapper
                     KeepPetSurfacesInsideWorkArea();
                     _horizontalWalkTop = Top;
                     _nextWanderAt = DateTime.Now.AddSeconds(3);
+                    AppSettings settings = ConfigManager.Load();
+                    settings.PetPositionLeft = Left;
+                    settings.PetPositionTop = Top;
+                    ConfigManager.Save(settings);
                 }
             }
         }
@@ -1930,6 +1949,11 @@ namespace KeyMapper
                 HorizontalWalkingToggleMenuItem.Header =
                     _horizontalOnlyWalking ? "Horizontal Only: On" : "Horizontal Only: Off";
             }
+            if (WalkingToggleMenuItem != null)
+            {
+                WalkingToggleMenuItem.Header =
+                    _walkingEnabled ? "Walking: On" : "Walking: Off";
+            }
         }
 
         private void MenuToggleHorizontalWalking_Click(object sender, RoutedEventArgs e)
@@ -2066,6 +2090,9 @@ namespace KeyMapper
             _walkingEnabled = !_walkingEnabled;
             _wanderTarget = null;
             _nextWanderAt = DateTime.Now.AddSeconds(2);
+            AppSettings settings = ConfigManager.Load();
+            settings.PetWalkingEnabled = _walkingEnabled;
+            ConfigManager.Save(settings);
 
             if (sender is System.Windows.Controls.MenuItem item)
             {
@@ -2114,7 +2141,17 @@ namespace KeyMapper
 
         private void MenuHide_Click(object sender, RoutedEventArgs e)
         {
-            Hide();
+            if (System.Windows.Application.Current.MainWindow is MainWindow mainWindow)
+            {
+                mainWindow.HidePetOverlayWindow();
+            }
+            else
+            {
+                AppSettings settings = ConfigManager.Load();
+                settings.ShowPetOverlay = false;
+                ConfigManager.Save(settings);
+                Hide();
+            }
         }
 
         private void MenuExit_Click(object sender, RoutedEventArgs e)

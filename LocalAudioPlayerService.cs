@@ -304,6 +304,7 @@ namespace KeyMapper
                 var session = new SavedPlaybackSession
                 {
                     LastTrackFilePath = CurrentTrack?.FilePath ?? string.Empty,
+                    PositionSeconds = CurrentPosition.TotalSeconds,
                     VolumePercent = CurrentVolume * 100.0,
                     IsShuffle = IsShuffle,
                     RepeatMode = RepeatMode,
@@ -838,6 +839,7 @@ namespace KeyMapper
                 IsPlaying = false;
                 _positionTimer.Stop();
                 OnPlaybackStateChanged?.Invoke(false);
+                SaveSession();
             }
             else
             {
@@ -858,6 +860,7 @@ namespace KeyMapper
                 IsPlaying = true;
                 _positionTimer.Start();
                 OnPlaybackStateChanged?.Invoke(true);
+                SaveSession();
             }
         }
 
@@ -916,6 +919,7 @@ namespace KeyMapper
         public void Seek(double positionSeconds)
         {
             _mediaPlayer.Position = TimeSpan.FromSeconds(positionSeconds);
+            SaveSession();
         }
 
         public void SetVolume(double volumePercent)
@@ -923,6 +927,7 @@ namespace KeyMapper
             CurrentVolume = Math.Clamp(volumePercent / 100.0, 0.0, 1.0);
             _mediaPlayer.Volume = CurrentVolume;
             OnVolumeChanged?.Invoke(volumePercent);
+            SaveSession();
         }
 
         private void MediaPlayer_MediaOpened(object? sender, EventArgs e)
