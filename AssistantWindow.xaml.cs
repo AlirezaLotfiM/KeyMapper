@@ -471,6 +471,18 @@ namespace KeyMapper
             image.CacheOption = BitmapCacheOption.OnLoad;
             image.EndInit();
             image.Freeze();
+
+            if (resourcePath.Contains(
+                    "/Luffy/",
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                IReadOnlyList<BitmapSource> frames =
+                    PetOverlayWindow.LoadSeparatedFrames(image);
+                if (frames.Count > 0)
+                {
+                    return frames[0];
+                }
+            }
             return image;
         }
 
@@ -617,7 +629,7 @@ namespace KeyMapper
                     "Monkey D. Luffy" => new ConversationPersona(
                         "CAPTAIN OF THE STRAW HATS",
                         "Goofy, fearless, super passionate, loves meat, adventure, and absolute freedom!",
-                        "Resources/Characters/Luffy/Luffy_Idle_4.png",
+                        "Resources/Characters/Luffy/Luffy_Idle_6.png",
                         "Shishishi! I'm Luffy! Are we going on an adventure on this computer?!",
                         "Welcome back! Let's party and finish your work so we can eat meat!",
                         "Clean slate! Adventure awaits!",
