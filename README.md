@@ -62,6 +62,7 @@ The local music player is part of the companion experience, not a separate skin:
 - The mini player turns the current cover into a genuinely rounded, edge-to-edge cinematic backdrop with a clean borderless cover treatment, subtle grain, slow artwork drift, glass controls, high-contrast metadata, theme accents, and a proper vector maximize control. Mini-player hover states change opacity without painting distracting blocks behind the buttons.
 - Supplied vector-style icons are used for folders, playback, shuffle, repeat, volume, and library navigation.
 - Every playing track gets a live, track-seeded groove animation.
+- While music is playing, restrained block-built pixel notes rise around the pet in stepped motion. They pause around speech, menus, and pet controls, and can be disabled from the pet context menu.
 - Queue, favorites, history, artists, genres, playlists, sorting, and folder management are available locally.
 - Overlapping music folders and repeated metadata no longer create duplicate library rows.
 - Refreshing music folders preserves the current stream, position, play/pause state, and groove animation.

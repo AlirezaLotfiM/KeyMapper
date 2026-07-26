@@ -32,6 +32,7 @@ namespace KeyMapper
         public double PetWalkingSpeed { get; set; } = 92;
         public int PetIdleAnimationIntervalMs { get; set; } = 430;
         public bool PetCommentsEnabled { get; set; } = true;
+        public bool PetMusicNotesEnabled { get; set; } = true;
         public string PetCommentFrequency { get; set; } = "Normal";
         public bool AiAmbientCommentsEnabled { get; set; } = true;
         public bool LocalAiEnabled { get; set; } = true;

@@ -123,6 +123,14 @@
                     <TextBlock x:Name="StatusBadgeText" Text="AI" Foreground="#0F172A" FontSize="9" FontWeight="Bold"/>
                 </Border>
             </Canvas>
+
+            <!-- Lightweight block-built notes appear only during active
+                 playback. Their stepped animation preserves the pixel style. -->
+            <Canvas x:Name="MusicNotesCanvas"
+                    Width="140" Height="140"
+                    Panel.ZIndex="4"
+                    IsHitTestVisible="False"
+                    ClipToBounds="False"/>
         </Grid>
     </Grid>
 
@@ -201,6 +209,17 @@
                 </Style>
             </ContextMenu.Resources>
             <MenuItem Header="Music Player" Click="MenuMusicPlayer_Click">
+                <MenuItem.Icon>
+                    <Rectangle Style="{StaticResource PetMenuIcon}">
+                        <Rectangle.OpacityMask>
+                            <ImageBrush ImageSource="/Resources/Icons/music-music-note-2-svgrepo-com.png"/>
+                        </Rectangle.OpacityMask>
+                    </Rectangle>
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem x:Name="MusicNotesToggleMenuItem"
+                      Header="Pixel Music Notes: On"
+                      Click="MenuToggleMusicNotes_Click">
                 <MenuItem.Icon>
                     <Rectangle Style="{StaticResource PetMenuIcon}">
                         <Rectangle.OpacityMask>

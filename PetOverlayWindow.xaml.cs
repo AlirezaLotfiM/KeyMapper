@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
@@ -65,6 +66,7 @@ namespace KeyMapper
         private readonly DispatcherTimer _speechBubbleTimer;
         private readonly DispatcherTimer _behaviorTimer;
         private readonly DispatcherTimer _musicTimer;
+        private readonly DispatcherTimer _musicNoteTimer;
         private readonly DispatcherTimer _musicOverlayHideTimer;
         private readonly Random _random = new Random();
         private IReadOnlyList<BitmapSource> _idleFrames = Array.Empty<BitmapSource>();
@@ -84,6 +86,7 @@ namespace KeyMapper
         private double _walkingSpeed = 92;
         private int _idleAnimationIntervalMs = 430;
         private bool _commentsEnabled = true;
+        private bool _musicNotesEnabled = true;
         private bool _aiAmbientCommentsEnabled = true;
         private string _commentFrequency = "Normal";
         private bool _isClickThrough;
@@ -123,6 +126,12 @@ namespace KeyMapper
                 Interval = TimeSpan.FromSeconds(8)
             };
             _musicTimer.Tick += MusicTimer_Tick;
+
+            _musicNoteTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(900)
+            };
+            _musicNoteTimer.Tick += MusicNoteTimer_Tick;
 
             _musicOverlayHideTimer = new DispatcherTimer
             {
@@ -178,6 +187,7 @@ namespace KeyMapper
             {
                 _behaviorTimer.Stop();
                 _musicTimer.Stop();
+                _musicNoteTimer.Stop();
             };
             ContextMenuOpening += (s, e) => _isContextMenuOpen = true;
             ContextMenuClosing += (s, e) =>
@@ -200,6 +210,7 @@ namespace KeyMapper
             _walkingSpeed = Math.Clamp(settings.PetWalkingSpeed, 25, 260);
             _idleAnimationIntervalMs = Math.Clamp(settings.PetIdleAnimationIntervalMs, 180, 1000);
             _commentsEnabled = settings.PetCommentsEnabled;
+            _musicNotesEnabled = settings.PetMusicNotesEnabled;
             _aiAmbientCommentsEnabled = settings.AiAmbientCommentsEnabled;
             _commentFrequency = NormalizeCommentFrequency(settings.PetCommentFrequency);
             _horizontalOnlyWalking = settings.PetHorizontalOnlyWalking;
@@ -218,6 +229,132 @@ namespace KeyMapper
             _nextWanderAt = DateTime.Now.AddSeconds(2);
             _behaviorTimer.Start();
             _musicTimer.Start();
+            _musicNoteTimer.Start();
+        }
+
+        private void MusicNoteTimer_Tick(object? sender, EventArgs e)
+        {
+            if (!_musicNotesEnabled ||
+                !IsVisible ||
+                !LocalAudioPlayerService.Instance.IsPlaying ||
+                LocalAudioPlayerService.Instance.CurrentTrack == null ||
+                SpeechBubble.Visibility == Visibility.Visible ||
+                PetMusicControlsOverlay.Visibility == Visibility.Visible ||
+                _isContextMenuOpen ||
+                MusicNotesCanvas.Children.Count >= 4 ||
+                _random.NextDouble() < 0.32)
+            {
+                return;
+            }
+
+            SpawnPixelMusicNote();
+        }
+
+        private void SpawnPixelMusicNote()
+        {
+            bool doubleNote = _random.NextDouble() > 0.68;
+            Canvas note = CreatePixelMusicNote(doubleNote);
+            bool spawnOnRight = _random.NextDouble() > 0.5;
+            double startLeft = spawnOnRight
+                ? _random.Next(100, 124)
+                : _random.Next(8, 34);
+            double startTop = _random.Next(73, 104);
+            double direction = spawnOnRight ? 1 : -1;
+
+            Canvas.SetLeft(note, startLeft);
+            Canvas.SetTop(note, startTop);
+            MusicNotesCanvas.Children.Add(note);
+
+            int steps = _random.Next(7, 10);
+            double durationSeconds = 2.8 + (_random.NextDouble() * 1.3);
+            var leftAnimation = new DoubleAnimationUsingKeyFrames();
+            var topAnimation = new DoubleAnimationUsingKeyFrames();
+
+            for (int step = 0; step <= steps; step++)
+            {
+                double progress = step / (double)steps;
+                TimeSpan time = TimeSpan.FromSeconds(
+                    durationSeconds * progress);
+                double sway = ((step % 2 == 0) ? -1 : 1) *
+                              (2 + (progress * 3));
+                leftAnimation.KeyFrames.Add(
+                    new DiscreteDoubleKeyFrame(
+                        startLeft + (direction * progress * 10) + sway,
+                        time));
+                topAnimation.KeyFrames.Add(
+                    new DiscreteDoubleKeyFrame(
+                        startTop - (progress * 72),
+                        time));
+            }
+
+            var opacityAnimation = new DoubleAnimationUsingKeyFrames();
+            opacityAnimation.KeyFrames.Add(
+                new LinearDoubleKeyFrame(0, TimeSpan.Zero));
+            opacityAnimation.KeyFrames.Add(
+                new LinearDoubleKeyFrame(
+                    0.92,
+                    TimeSpan.FromSeconds(durationSeconds * 0.16)));
+            opacityAnimation.KeyFrames.Add(
+                new LinearDoubleKeyFrame(
+                    0.78,
+                    TimeSpan.FromSeconds(durationSeconds * 0.72)));
+            opacityAnimation.KeyFrames.Add(
+                new LinearDoubleKeyFrame(
+                    0,
+                    TimeSpan.FromSeconds(durationSeconds)));
+            opacityAnimation.Completed += (_, _) =>
+                MusicNotesCanvas.Children.Remove(note);
+
+            note.BeginAnimation(Canvas.LeftProperty, leftAnimation);
+            note.BeginAnimation(Canvas.TopProperty, topAnimation);
+            note.BeginAnimation(OpacityProperty, opacityAnimation);
+        }
+
+        private Canvas CreatePixelMusicNote(bool doubleNote)
+        {
+            Brush noteBrush = (Brush)FindResource(
+                _random.NextDouble() > 0.18
+                    ? "AppAccentBrush"
+                    : "AppTextBrush");
+            var note = new Canvas
+            {
+                Width = doubleNote ? 18 : 14,
+                Height = 18,
+                SnapsToDevicePixels = true
+            };
+            RenderOptions.SetEdgeMode(note, EdgeMode.Aliased);
+
+            void AddPixel(double left, double top, double width, double height)
+            {
+                var pixel = new System.Windows.Shapes.Rectangle
+                {
+                    Width = width,
+                    Height = height,
+                    Fill = noteBrush,
+                    SnapsToDevicePixels = true
+                };
+                RenderOptions.SetEdgeMode(pixel, EdgeMode.Aliased);
+                Canvas.SetLeft(pixel, left);
+                Canvas.SetTop(pixel, top);
+                note.Children.Add(pixel);
+            }
+
+            if (doubleNote)
+            {
+                AddPixel(3, 2, 12, 3);
+                AddPixel(3, 4, 3, 10);
+                AddPixel(12, 4, 3, 10);
+                AddPixel(0, 12, 7, 5);
+                AddPixel(9, 12, 7, 5);
+            }
+            else
+            {
+                AddPixel(5, 2, 3, 12);
+                AddPixel(7, 2, 6, 3);
+                AddPixel(1, 12, 7, 5);
+            }
+
+            return note;
         }
 
         public void SetCharacter(string characterName)
@@ -942,6 +1079,28 @@ namespace KeyMapper
                 6);
         }
 
+        private void MenuToggleMusicNotes_Click(
+            object sender,
+            RoutedEventArgs e)
+        {
+            _musicNotesEnabled = !_musicNotesEnabled;
+            AppSettings settings = ConfigManager.Load();
+            settings.PetMusicNotesEnabled = _musicNotesEnabled;
+            ConfigManager.Save(settings);
+            if (!_musicNotesEnabled)
+            {
+                MusicNotesCanvas.Children.Clear();
+            }
+            UpdateCommentMenuState();
+
+            ShowSpeechBubble(
+                _personality.SpeakerName,
+                _musicNotesEnabled
+                    ? "Pixel music notes are on. I’ll let the song decorate the air."
+                    : "Pixel music notes are off. The music can keep its secrets.",
+                5);
+        }
+
         private void MenuSetCommentFrequency_Click(object sender, RoutedEventArgs e)
         {
             if (sender is not System.Windows.Controls.MenuItem item ||
@@ -984,6 +1143,10 @@ namespace KeyMapper
         {
             CommentsToggleMenuItem.Header =
                 _commentsEnabled ? "Comments: On" : "Comments: Off";
+            MusicNotesToggleMenuItem.Header =
+                _musicNotesEnabled
+                    ? "Pixel Music Notes: On"
+                    : "Pixel Music Notes: Off";
             AiCommentsToggleMenuItem.Header =
                 _aiAmbientCommentsEnabled
                     ? "Fresh AI Comments: On"
