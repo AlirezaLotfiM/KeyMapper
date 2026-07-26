@@ -123,6 +123,7 @@ namespace KeyMapper
         public bool IsShuffle { get; private set; }
         public RepeatMode RepeatMode { get; set; } = RepeatMode.Off;
         public double CurrentVolume { get; private set; } = 0.8;
+        public TimeSpan CurrentPosition => _mediaPlayer.Position;
 
         public event Action<AudioTrackItem?>? OnTrackChanged;
         public event Action<bool>? OnPlaybackStateChanged;

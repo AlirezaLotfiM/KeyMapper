@@ -108,6 +108,9 @@
                         RenderTransformOrigin="0.5,0.78">
                     <Canvas.RenderTransform>
                         <TransformGroup>
+                            <ScaleTransform x:Name="MusicGrooveScaleTransform"
+                                            ScaleX="1" ScaleY="1"
+                                            CenterX="70" CenterY="108"/>
                             <RotateTransform x:Name="MusicSwayTransform"/>
                             <TranslateTransform x:Name="MusicBounceTransform"/>
                         </TransformGroup>

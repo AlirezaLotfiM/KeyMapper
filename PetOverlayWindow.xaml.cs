@@ -100,6 +100,14 @@ namespace KeyMapper
         private DateTime _lastMusicCommentAt = DateTime.MinValue;
         private bool _ambientAiBusy;
         private bool _isListeningAnimationActive;
+        private MusicTrackAnalysis? _currentMusicAnalysis;
+        private string _activeMusicAnalysisPath = string.Empty;
+        private string _lastRecordedMusicPath = string.Empty;
+        private DateTime _lastRecordedMusicAt = DateTime.MinValue;
+        private DateTime _musicPausedAt = DateTime.MinValue;
+        private DateTime _lastStrongMusicReactionAt = DateTime.MinValue;
+        private int _nextMusicBeatIndex;
+        private int _musicBeatSequence;
 
         private enum PixelMusicGlyph
         {
@@ -109,7 +117,20 @@ namespace KeyMapper
             BeamedPair,
             Chord,
             BeatSpark,
-            Equalizer
+            Equalizer,
+            Wave,
+            Star,
+            Bolt,
+            Moon
+        }
+
+        private enum ListeningAction
+        {
+            Nod,
+            Bounce,
+            Sway,
+            HeadBang,
+            Jump
         }
 
         public PetStateMachine StateMachine => _stateMachine;
@@ -160,12 +181,12 @@ namespace KeyMapper
             LocalAudioPlayerService.Instance.OnTrackChanged += track => Dispatcher.Invoke(() =>
             {
                 UpdatePetMusicControlsUI();
-                UpdateMusicListeningState();
+                _ = BeginMusicExperienceAsync(track, true);
             });
             LocalAudioPlayerService.Instance.OnPlaybackStateChanged += isPlaying => Dispatcher.Invoke(() =>
             {
                 UpdatePetMusicControlsUI();
-                UpdateMusicListeningState();
+                HandleMusicPlaybackStateChanged(isPlaying);
             });
             LocalAudioPlayerService.Instance.OnVolumeChanged += volumePercent => Dispatcher.Invoke(() =>
             {
@@ -251,6 +272,10 @@ namespace KeyMapper
             _musicTimer.Start();
             _musicNoteTimer.Start();
             UpdateMusicListeningState();
+            if (LocalAudioPlayerService.Instance.CurrentTrack is AudioTrackItem track)
+            {
+                _ = BeginMusicExperienceAsync(track, false);
+            }
         }
 
         private void MusicNoteTimer_Tick(object? sender, EventArgs e)
@@ -271,16 +296,19 @@ namespace KeyMapper
             SpawnPixelMusicNote();
         }
 
-        private void SpawnPixelMusicNote()
+        private void SpawnPixelMusicNote(
+            PixelMusicGlyph? preferredGlyph = null)
         {
-            int burstSize = _random.NextDouble() < 0.24 ? 2 : 1;
+            int burstSize = preferredGlyph.HasValue
+                ? 1
+                : _random.NextDouble() < 0.24 ? 2 : 1;
             for (int burstIndex = 0;
                  burstIndex < burstSize &&
                  MusicNotesCanvas.Children.Count < 7;
                  burstIndex++)
             {
-                PixelMusicGlyph glyph = (PixelMusicGlyph)_random.Next(
-                    Enum.GetValues<PixelMusicGlyph>().Length);
+                PixelMusicGlyph glyph =
+                    preferredGlyph ?? SelectMoodMusicGlyph();
                 Canvas note = CreatePixelMusicGlyph(glyph);
                 bool spawnOnRight = _random.NextDouble() > 0.5;
                 double startLeft = spawnOnRight
@@ -410,9 +438,102 @@ namespace KeyMapper
                     AddPixel(12, 7, 3, 11);
                     AddPixel(17, 11, 3, 7);
                     break;
+                case PixelMusicGlyph.Wave:
+                    AddPixel(1, 9, 4, 3);
+                    AddPixel(5, 6, 3, 3);
+                    AddPixel(8, 3, 3, 3);
+                    AddPixel(11, 6, 3, 3);
+                    AddPixel(14, 9, 4, 3);
+                    AddPixel(8, 12, 3, 5);
+                    break;
+                case PixelMusicGlyph.Star:
+                    AddPixel(8, 1, 4, 6);
+                    AddPixel(1, 8, 18, 4);
+                    AddPixel(5, 5, 10, 10);
+                    AddPixel(7, 14, 6, 5);
+                    break;
+                case PixelMusicGlyph.Bolt:
+                    AddPixel(10, 1, 7, 4);
+                    AddPixel(7, 5, 7, 5);
+                    AddPixel(4, 10, 7, 4);
+                    AddPixel(2, 14, 6, 4);
+                    break;
+                case PixelMusicGlyph.Moon:
+                    AddPixel(6, 2, 8, 3);
+                    AddPixel(3, 5, 7, 10);
+                    AddPixel(6, 15, 8, 3);
+                    AddPixel(10, 5, 5, 3);
+                    AddPixel(10, 12, 5, 3);
+                    break;
             }
 
             return note;
+        }
+
+        private PixelMusicGlyph SelectMoodMusicGlyph()
+        {
+            string genre =
+                LocalAudioPlayerService.Instance.CurrentTrack?.Genre
+                    .ToLowerInvariant() ?? string.Empty;
+            if (genre.Contains("electro") ||
+                genre.Contains("edm") ||
+                genre.Contains("dance"))
+            {
+                return _random.NextDouble() < 0.55
+                    ? PixelMusicGlyph.Equalizer
+                    : PixelMusicGlyph.Bolt;
+            }
+            if (genre.Contains("rock") || genre.Contains("metal"))
+            {
+                return _random.NextDouble() < 0.55
+                    ? PixelMusicGlyph.Bolt
+                    : PixelMusicGlyph.SixteenthNote;
+            }
+            if (genre.Contains("classical") ||
+                genre.Contains("ambient") ||
+                genre.Contains("instrumental"))
+            {
+                return _random.NextDouble() < 0.55
+                    ? PixelMusicGlyph.Moon
+                    : PixelMusicGlyph.Chord;
+            }
+            if (genre.Contains("pop") || genre.Contains("funk"))
+            {
+                return _random.NextDouble() < 0.55
+                    ? PixelMusicGlyph.Star
+                    : PixelMusicGlyph.BeamedPair;
+            }
+
+            PixelMusicGlyph[] choices =
+                (_currentMusicAnalysis?.Mood ?? MusicMood.Focused) switch
+                {
+                    MusicMood.Peaceful =>
+                        [PixelMusicGlyph.QuarterNote,
+                         PixelMusicGlyph.Moon,
+                         PixelMusicGlyph.BeatSpark],
+                    MusicMood.Melancholic =>
+                        [PixelMusicGlyph.EighthNote,
+                         PixelMusicGlyph.Wave,
+                         PixelMusicGlyph.Moon],
+                    MusicMood.Cheerful =>
+                        [PixelMusicGlyph.BeamedPair,
+                         PixelMusicGlyph.Chord,
+                         PixelMusicGlyph.Star],
+                    MusicMood.Dramatic =>
+                        [PixelMusicGlyph.Chord,
+                         PixelMusicGlyph.Star,
+                         PixelMusicGlyph.Wave],
+                    MusicMood.Intense =>
+                        [PixelMusicGlyph.SixteenthNote,
+                         PixelMusicGlyph.Equalizer,
+                         PixelMusicGlyph.Bolt],
+                    _ =>
+                        [PixelMusicGlyph.EighthNote,
+                         PixelMusicGlyph.BeamedPair,
+                         PixelMusicGlyph.Equalizer,
+                         PixelMusicGlyph.BeatSpark]
+                };
+            return choices[_random.Next(choices.Length)];
         }
 
         private void UpdateMusicListeningState()
@@ -421,8 +542,6 @@ namespace KeyMapper
                 _musicNotesEnabled &&
                 LocalAudioPlayerService.Instance.IsPlaying &&
                 LocalAudioPlayerService.Instance.CurrentTrack != null;
-            if (shouldListen == _isListeningAnimationActive) return;
-
             _isListeningAnimationActive = shouldListen;
             if (!shouldListen)
             {
@@ -432,68 +551,557 @@ namespace KeyMapper
                 MusicSwayTransform.BeginAnimation(
                     RotateTransform.AngleProperty,
                     null);
+                MusicGrooveScaleTransform.BeginAnimation(
+                    ScaleTransform.ScaleXProperty,
+                    null);
+                MusicGrooveScaleTransform.BeginAnimation(
+                    ScaleTransform.ScaleYProperty,
+                    null);
                 MusicBounceTransform.Y = 0;
                 MusicSwayTransform.Angle = 0;
+                MusicGrooveScaleTransform.ScaleX = 1;
+                MusicGrooveScaleTransform.ScaleY = 1;
+            }
+        }
+
+        private async Task BeginMusicExperienceAsync(
+            AudioTrackItem? track,
+            bool considerStartReaction)
+        {
+            if (track == null)
+            {
+                _currentMusicAnalysis = null;
+                _activeMusicAnalysisPath = string.Empty;
                 return;
             }
 
-            (double bounce, double sway, double beatSeconds) =
-                GetCharacterGroove();
-            var bounceAnimation = new DoubleAnimationUsingKeyFrames
+            string requestedPath = track.FilePath;
+            bool isNewStart =
+                considerStartReaction &&
+                LocalAudioPlayerService.Instance.IsPlaying &&
+                LocalAudioPlayerService.Instance.CurrentPosition <=
+                    TimeSpan.FromSeconds(4) &&
+                (!string.Equals(
+                     requestedPath,
+                     _lastRecordedMusicPath,
+                     StringComparison.OrdinalIgnoreCase) ||
+                 DateTime.Now - _lastRecordedMusicAt >
+                    TimeSpan.FromSeconds(5));
+            bool isRepeat = isNewStart &&
+                            string.Equals(
+                                requestedPath,
+                                _lastRecordedMusicPath,
+                                StringComparison.OrdinalIgnoreCase);
+            PetTrackMemory? memory = null;
+            if (isNewStart)
             {
-                Duration = TimeSpan.FromSeconds(beatSeconds),
-                RepeatBehavior = RepeatBehavior.Forever
-            };
-            bounceAnimation.KeyFrames.Add(
-                new DiscreteDoubleKeyFrame(0, KeyTime.FromPercent(0)));
-            bounceAnimation.KeyFrames.Add(
-                new DiscreteDoubleKeyFrame(
-                    -bounce,
-                    KeyTime.FromPercent(0.36)));
-            bounceAnimation.KeyFrames.Add(
-                new DiscreteDoubleKeyFrame(
-                    -bounce,
-                    KeyTime.FromPercent(0.58)));
-            bounceAnimation.KeyFrames.Add(
-                new DiscreteDoubleKeyFrame(0, KeyTime.FromPercent(1)));
+                memory = MusicExperienceService.Instance.RecordTrackStart(
+                    track,
+                    _personality.CharacterName);
+                _lastRecordedMusicPath = requestedPath;
+                _lastRecordedMusicAt = DateTime.Now;
+            }
 
-            var swayAnimation = new DoubleAnimationUsingKeyFrames
+            Task<MusicTrackAnalysis> analysisTask =
+                MusicExperienceService.Instance.GetAnalysisAsync(track);
+            MusicTrackAnalysis reactionAnalysis =
+                MusicExperienceService.Instance.GetProvisionalAnalysis(track);
+            _currentMusicAnalysis = reactionAnalysis;
+            _activeMusicAnalysisPath = requestedPath;
+            ResetMusicBeatCursor(
+                LocalAudioPlayerService.Instance.CurrentPosition.TotalSeconds);
+            UpdateMusicListeningState();
+
+            if (isNewStart && _commentsEnabled)
             {
-                Duration = TimeSpan.FromSeconds(beatSeconds * 2),
-                RepeatBehavior = RepeatBehavior.Forever
-            };
-            swayAnimation.KeyFrames.Add(
-                new DiscreteDoubleKeyFrame(
-                    -sway,
-                    KeyTime.FromPercent(0)));
-            swayAnimation.KeyFrames.Add(
-                new DiscreteDoubleKeyFrame(
-                    sway,
-                    KeyTime.FromPercent(0.5)));
-            swayAnimation.KeyFrames.Add(
-                new DiscreteDoubleKeyFrame(
-                    -sway,
-                    KeyTime.FromPercent(1)));
+                await Task.Delay(900);
+                if (SpeechBubble.Visibility != Visibility.Visible &&
+                    !_isContextMenuOpen &&
+                    LocalAudioPlayerService.Instance.IsPlaying &&
+                    string.Equals(
+                        LocalAudioPlayerService.Instance.CurrentTrack?.FilePath,
+                        requestedPath,
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    string reaction =
+                        isRepeat
+                            ? BuildRepeatReaction(track)
+                            : BuildMusicStartReaction(
+                                track,
+                                reactionAnalysis,
+                                memory!);
+                    ShowSpeechBubble(
+                        _personality.SpeakerName,
+                        reaction,
+                        8);
+                    _lastCommentedTrackKey =
+                        $"{track.DisplayTitle}-{track.DisplayArtist}";
+                    _lastMusicCommentAt = DateTime.Now;
+                }
+            }
 
-            MusicBounceTransform.BeginAnimation(
-                TranslateTransform.YProperty,
-                bounceAnimation);
-            MusicSwayTransform.BeginAnimation(
-                RotateTransform.AngleProperty,
-                swayAnimation);
+            MusicTrackAnalysis analysis = await analysisTask;
+            if (LocalAudioPlayerService.Instance.CurrentTrack == null ||
+                !string.Equals(
+                    LocalAudioPlayerService.Instance.CurrentTrack.FilePath,
+                    requestedPath,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            _currentMusicAnalysis = analysis;
+            _activeMusicAnalysisPath = requestedPath;
+            ResetMusicBeatCursor(
+                LocalAudioPlayerService.Instance.CurrentPosition.TotalSeconds);
+            UpdateMusicListeningState();
         }
 
-        private (double Bounce, double Sway, double BeatSeconds)
-            GetCharacterGroove() =>
+        private void HandleMusicPlaybackStateChanged(bool isPlaying)
+        {
+            if (!isPlaying)
+            {
+                _musicPausedAt = DateTime.Now;
+                UpdateMusicListeningState();
+                return;
+            }
+
+            TimeSpan pauseDuration = _musicPausedAt == DateTime.MinValue
+                ? TimeSpan.Zero
+                : DateTime.Now - _musicPausedAt;
+            _musicPausedAt = DateTime.MinValue;
+            UpdateMusicListeningState();
+            if (_currentMusicAnalysis == null &&
+                LocalAudioPlayerService.Instance.CurrentTrack is
+                    AudioTrackItem track)
+            {
+                _ = BeginMusicExperienceAsync(track, false);
+            }
+
+            if (pauseDuration >= TimeSpan.FromSeconds(30) &&
+                _commentsEnabled &&
+                SpeechBubble.Visibility != Visibility.Visible &&
+                !_isContextMenuOpen)
+            {
+                ShowSpeechBubble(
+                    _personality.SpeakerName,
+                    BuildResumeReaction(),
+                    7);
+            }
+        }
+
+        private void UpdateMusicBeatReaction()
+        {
+            if (!_isListeningAnimationActive ||
+                _currentMusicAnalysis == null ||
+                _currentMusicAnalysis.Beats.Count == 0 ||
+                !string.Equals(
+                    _activeMusicAnalysisPath,
+                    LocalAudioPlayerService.Instance.CurrentTrack?.FilePath,
+                    StringComparison.OrdinalIgnoreCase) ||
+                _isDragging ||
+                _isContextMenuOpen ||
+                _wanderTarget.HasValue)
+            {
+                return;
+            }
+
+            double position =
+                LocalAudioPlayerService.Instance.CurrentPosition.TotalSeconds;
+            IReadOnlyList<MusicBeat> beats = _currentMusicAnalysis.Beats;
+            if (_nextMusicBeatIndex >= beats.Count ||
+                (_nextMusicBeatIndex > 0 &&
+                 beats[_nextMusicBeatIndex - 1].Seconds > position + 0.4))
+            {
+                ResetMusicBeatCursor(position);
+            }
+
+            while (_nextMusicBeatIndex < beats.Count &&
+                   beats[_nextMusicBeatIndex].Seconds < position - 0.18)
+            {
+                _nextMusicBeatIndex++;
+            }
+            if (_nextMusicBeatIndex >= beats.Count) return;
+
+            MusicBeat beat = beats[_nextMusicBeatIndex];
+            if (beat.Seconds > position + 0.09) return;
+
+            _nextMusicBeatIndex++;
+            _musicBeatSequence++;
+            bool strongBeat =
+                beat.Strength >= 0.72 ||
+                _musicBeatSequence % 4 == 1;
+            bool quietRest =
+                !strongBeat &&
+                (_currentMusicAnalysis.Mood is MusicMood.Peaceful
+                    or MusicMood.Melancholic) &&
+                _random.NextDouble() < 0.46;
+            if (!quietRest)
+            {
+                TriggerListeningAction(beat.Strength, strongBeat);
+            }
+
+            if (_musicNotesEnabled &&
+                SpeechBubble.Visibility != Visibility.Visible &&
+                PetMusicControlsOverlay.Visibility != Visibility.Visible &&
+                MusicNotesCanvas.Children.Count < 7 &&
+                (strongBeat || _random.NextDouble() < 0.2))
+            {
+                SpawnPixelMusicNote(
+                    strongBeat
+                        ? SelectStrongBeatGlyph()
+                        : SelectMoodMusicGlyph());
+            }
+
+            if (beat.Strength >= 0.86 &&
+                position >= 20 &&
+                DateTime.Now - _lastStrongMusicReactionAt >
+                    TimeSpan.FromSeconds(75) &&
+                _commentsEnabled &&
+                SpeechBubble.Visibility != Visibility.Visible &&
+                !_isContextMenuOpen)
+            {
+                _lastStrongMusicReactionAt = DateTime.Now;
+                ShowSpeechBubble(
+                    _personality.SpeakerName,
+                    BuildStrongSectionReaction(),
+                    7);
+            }
+        }
+
+        private void ResetMusicBeatCursor(double positionSeconds)
+        {
+            IReadOnlyList<MusicBeat>? beats = _currentMusicAnalysis?.Beats;
+            if (beats == null)
+            {
+                _nextMusicBeatIndex = 0;
+                return;
+            }
+
+            int low = 0;
+            int high = beats.Count;
+            while (low < high)
+            {
+                int middle = low + ((high - low) / 2);
+                if (beats[middle].Seconds < positionSeconds - 0.12)
+                    low = middle + 1;
+                else
+                    high = middle;
+            }
+            _nextMusicBeatIndex = low;
+        }
+
+        private void TriggerListeningAction(
+            double beatStrength,
+            bool strongBeat)
+        {
+            ListeningAction action = SelectListeningAction(strongBeat);
+            double intensity = 0.65 + (beatStrength * 0.55);
+            double beatDuration = Math.Clamp(
+                60 / (_currentMusicAnalysis?.BeatsPerMinute ?? 104) * 0.34,
+                0.11,
+                0.28);
+            double bounce = 0;
+            double sway = 0;
+            double scale = 0;
+
+            switch (action)
+            {
+                case ListeningAction.Nod:
+                    bounce = 1.2 * intensity;
+                    sway = 0.8 * intensity;
+                    break;
+                case ListeningAction.Bounce:
+                    bounce = 2.7 * intensity;
+                    scale = 0.012 * intensity;
+                    break;
+                case ListeningAction.Sway:
+                    bounce = 1.1 * intensity;
+                    sway = 2.5 * intensity;
+                    break;
+                case ListeningAction.HeadBang:
+                    bounce = 2.1 * intensity;
+                    sway = 3.1 * intensity;
+                    scale = 0.01 * intensity;
+                    break;
+                case ListeningAction.Jump:
+                    bounce = 4.2 * intensity;
+                    sway = 1.6 * intensity;
+                    scale = 0.025 * intensity;
+                    break;
+            }
+
+            double direction = _musicBeatSequence % 2 == 0 ? 1 : -1;
+            BeginBeatAnimation(
+                MusicBounceTransform,
+                TranslateTransform.YProperty,
+                0,
+                -bounce,
+                beatDuration);
+            BeginBeatAnimation(
+                MusicSwayTransform,
+                RotateTransform.AngleProperty,
+                0,
+                sway * direction,
+                beatDuration);
+            if (scale > 0)
+            {
+                BeginBeatAnimation(
+                    MusicGrooveScaleTransform,
+                    ScaleTransform.ScaleXProperty,
+                    1,
+                    1 + scale,
+                    beatDuration);
+                BeginBeatAnimation(
+                    MusicGrooveScaleTransform,
+                    ScaleTransform.ScaleYProperty,
+                    1,
+                    1 - (scale * 0.45),
+                    beatDuration);
+            }
+        }
+
+        private static void BeginBeatAnimation(
+            Animatable target,
+            DependencyProperty property,
+            double from,
+            double to,
+            double durationSeconds)
+        {
+            var animation = new DoubleAnimation
+            {
+                From = from,
+                To = to,
+                Duration = TimeSpan.FromSeconds(durationSeconds),
+                AutoReverse = true,
+                FillBehavior = FillBehavior.Stop,
+                EasingFunction = new QuadraticEase
+                {
+                    EasingMode = EasingMode.EaseOut
+                }
+            };
+            target.BeginAnimation(
+                property,
+                animation,
+                HandoffBehavior.SnapshotAndReplace);
+        }
+
+        private ListeningAction SelectListeningAction(bool strongBeat)
+        {
+            ListeningAction[] choices = _personality.CharacterName switch
+            {
+                "Pink Monster" => strongBeat
+                    ? [ListeningAction.Jump, ListeningAction.Bounce]
+                    : [ListeningAction.Bounce,
+                       ListeningAction.Sway,
+                       ListeningAction.Nod],
+                "Owlet Monster" => strongBeat
+                    ? [ListeningAction.Bounce, ListeningAction.Nod]
+                    : [ListeningAction.Nod,
+                       ListeningAction.Nod,
+                       ListeningAction.Sway],
+                "Dude Monster" => strongBeat
+                    ? [ListeningAction.HeadBang, ListeningAction.Sway]
+                    : [ListeningAction.Sway,
+                       ListeningAction.HeadBang,
+                       ListeningAction.Nod],
+                "Frieren" => strongBeat
+                    ? [ListeningAction.Sway, ListeningAction.Nod]
+                    : [ListeningAction.Nod,
+                       ListeningAction.Nod,
+                       ListeningAction.Sway],
+                "Yuji Itadori" => strongBeat
+                    ? [ListeningAction.Jump, ListeningAction.HeadBang]
+                    : [ListeningAction.Bounce,
+                       ListeningAction.HeadBang,
+                       ListeningAction.Sway],
+                "Monkey D. Luffy" => strongBeat
+                    ? [ListeningAction.Jump,
+                       ListeningAction.Jump,
+                       ListeningAction.Sway]
+                    : [ListeningAction.Bounce,
+                       ListeningAction.Sway,
+                       ListeningAction.Jump],
+                _ => [ListeningAction.Nod, ListeningAction.Bounce]
+            };
+            return choices[_random.Next(choices.Length)];
+        }
+
+        private PixelMusicGlyph SelectStrongBeatGlyph() =>
+            (_currentMusicAnalysis?.Mood ?? MusicMood.Focused) switch
+            {
+                MusicMood.Peaceful => PixelMusicGlyph.Moon,
+                MusicMood.Melancholic => PixelMusicGlyph.Wave,
+                MusicMood.Cheerful => PixelMusicGlyph.Star,
+                MusicMood.Dramatic => PixelMusicGlyph.Chord,
+                MusicMood.Intense => PixelMusicGlyph.Bolt,
+                _ => PixelMusicGlyph.Equalizer
+            };
+
+        private string BuildMusicStartReaction(
+            AudioTrackItem track,
+            MusicTrackAnalysis analysis,
+            PetTrackMemory memory)
+        {
+            int listens = memory.CharacterListens.TryGetValue(
+                _personality.CharacterName,
+                out int rememberedListens)
+                ? rememberedListens
+                : 1;
+            bool remembered = listens > 1;
+            int affinity = MusicExperienceService.Instance
+                .GetCharacterAffinity(
+                    _personality.CharacterName,
+                    track.Genre,
+                    analysis.Mood);
+            string mood = analysis.Mood.ToString().ToLowerInvariant();
+
+            if (track.IsFavorite)
+            {
+                return _personality.CharacterName switch
+                {
+                    "Pink Monster" =>
+                        $"A favorite is back! “{track.DisplayTitle}” already has my feet bouncing.",
+                    "Owlet Monster" =>
+                        $"A marked favorite. “{track.DisplayTitle}” deserves attentive listening.",
+                    "Dude Monster" =>
+                        $"Favorite track. Good call. “{track.DisplayTitle}” stays.",
+                    "Frieren" =>
+                        $"You kept this melody close. I understand why “{track.DisplayTitle}” returned.",
+                    "Yuji Itadori" =>
+                        $"Your favorite is on! “{track.DisplayTitle}” gets full energy!",
+                    "Monkey D. Luffy" =>
+                        $"A favorite song! Turn up “{track.DisplayTitle}” and start the feast!",
+                    _ => $"A favorite returns: “{track.DisplayTitle}”."
+                };
+            }
+
+            if (remembered)
+            {
+                return _personality.CharacterName switch
+                {
+                    "Pink Monster" =>
+                        $"I remember “{track.DisplayTitle}”! It still paints the desktop {mood}.",
+                    "Owlet Monster" =>
+                        $"We have heard “{track.DisplayTitle}” before. Its {mood} shape is familiar now.",
+                    "Dude Monster" =>
+                        $"“{track.DisplayTitle}” again. Still works. No objections.",
+                    "Frieren" =>
+                        $"This melody has returned. “{track.DisplayTitle}” feels more familiar each time.",
+                    "Yuji Itadori" =>
+                        $"I know this one! “{track.DisplayTitle}” still hits with the same energy!",
+                    "Monkey D. Luffy" =>
+                        $"This song came back! “{track.DisplayTitle}” is part of the crew now!",
+                    _ =>
+                        $"I remember “{track.DisplayTitle}”. It is good to hear it again."
+                };
+            }
+
+            if (affinity > 0)
+            {
+                return _personality.CharacterName switch
+                {
+                    "Pink Monster" =>
+                        $"New song! “{track.DisplayTitle}” feels {mood}, and my feet voted yes.",
+                    "Owlet Monster" =>
+                        $"“{track.DisplayTitle}” suits me. The {mood} arrangement has room to breathe.",
+                    "Dude Monster" =>
+                        $"Now this is my kind of pulse. “{track.DisplayTitle}” can stay.",
+                    "Frieren" =>
+                        $"“{track.DisplayTitle}” has a {mood} atmosphere. I would listen a while.",
+                    "Yuji Itadori" =>
+                        $"Yes! “{track.DisplayTitle}” has exactly the energy I wanted!",
+                    "Monkey D. Luffy" =>
+                        $"This one sounds like an adventure! “{track.DisplayTitle}” is loud-crew approved!",
+                    _ => $"“{track.DisplayTitle}” matches my mood."
+                };
+            }
+
+            if (affinity < 0)
+            {
+                return _personality.CharacterName switch
+                {
+                    "Owlet Monster" =>
+                        $"“{track.DisplayTitle}” is more forceful than my usual choice. I shall study the rhythm.",
+                    "Frieren" =>
+                        $"This is not my usual kind of music, but unfamiliar songs can still reveal something.",
+                    "Dude Monster" =>
+                        $"Very calm. Not my first pick, but I can work with it.",
+                    _ =>
+                        $"“{track.DisplayTitle}” is outside my usual taste. Let us see where it goes."
+                };
+            }
+
+            return _personality.CharacterName switch
+            {
+                "Pink Monster" =>
+                    $"First listen! “{track.DisplayTitle}” feels {mood}. I am investigating with my feet.",
+                "Owlet Monster" =>
+                    $"A new piece, “{track.DisplayTitle}”. I am listening for its structure.",
+                "Dude Monster" =>
+                    $"New track: “{track.DisplayTitle}”. Let us see if it earns the repeat.",
+                "Frieren" =>
+                    $"I have not heard “{track.DisplayTitle}” before. New melodies are small journeys.",
+                "Yuji Itadori" =>
+                    $"New track! “{track.DisplayTitle}” is getting a fair, full-energy listen!",
+                "Monkey D. Luffy" =>
+                    $"A brand-new song! “{track.DisplayTitle}” might be our next adventure anthem!",
+                _ => $"Now listening to “{track.DisplayTitle}” by {track.DisplayArtist}."
+            };
+        }
+
+        private string BuildRepeatReaction(AudioTrackItem track) =>
             _personality.CharacterName switch
             {
-                "Pink Monster" => (3.0, 2.2, 0.48),
-                "Owlet Monster" => (1.5, 1.1, 0.62),
-                "Dude Monster" => (2.2, 3.0, 0.56),
-                "Frieren" => (1.2, 0.8, 0.72),
-                "Yuji Itadori" => (3.4, 2.6, 0.42),
-                "Monkey D. Luffy" => (3.8, 3.2, 0.38),
-                _ => (2.0, 1.6, 0.55)
+                "Pink Monster" =>
+                    $"Again! “{track.DisplayTitle}” found the replay button and jumped on it.",
+                "Owlet Monster" =>
+                    $"Repeating “{track.DisplayTitle}”. A second pass often reveals quieter details.",
+                "Dude Monster" =>
+                    $"Immediate repeat. “{track.DisplayTitle}” clearly did its job.",
+                "Frieren" =>
+                    $"The melody begins again. Some moments deserve more time than one passage allows.",
+                "Yuji Itadori" =>
+                    $"Run it back! “{track.DisplayTitle}” gets another round!",
+                "Monkey D. Luffy" =>
+                    $"Again! A good song should circle the whole ship twice!",
+                _ => $"Playing “{track.DisplayTitle}” again."
+            };
+
+        private string BuildResumeReaction() =>
+            _personality.CharacterName switch
+            {
+                "Pink Monster" =>
+                    "Music is back! I kept the rhythm somewhere safe.",
+                "Owlet Monster" =>
+                    "Playback resumed. The pause made the returning details clearer.",
+                "Dude Monster" =>
+                    "Music back on. Good. The room was getting too quiet.",
+                "Frieren" =>
+                    "The melody continues after its rest. It did not lose its place.",
+                "Yuji Itadori" =>
+                    "We are back! The song still has plenty of energy!",
+                "Monkey D. Luffy" =>
+                    "The music is back! Continue the party!",
+                _ => "Music resumed."
+            };
+
+        private string BuildStrongSectionReaction() =>
+            _personality.CharacterName switch
+            {
+                "Pink Monster" =>
+                    "Oh! This part just grew bigger. My tiny dance has become official.",
+                "Owlet Monster" =>
+                    "The arrangement just opened up. That stronger layer was worth waiting for.",
+                "Dude Monster" =>
+                    "There it is. That section has some weight.",
+                "Frieren" =>
+                    "The music has reached a stronger passage. It feels like a spell completing.",
+                "Yuji Itadori" =>
+                    "This part hits hard! Now we are moving!",
+                "Monkey D. Luffy" =>
+                    "Here comes the big part! Everybody on deck!",
+                _ => "This section just became more intense."
             };
 
         public void SetCharacter(string characterName)
@@ -709,6 +1317,8 @@ namespace KeyMapper
                 AdvanceSpriteFrame(false);
                 return;
             }
+
+            UpdateMusicBeatReaction();
 
             // 1. Mouse Curiosity: track mouse cursor direction when idle
             if (!_wanderTarget.HasValue && GetCursorPos(out POINT mousePos))
@@ -950,6 +1560,22 @@ namespace KeyMapper
         {
             TrackDetails details = await MusicGenreService.Instance.FetchTrackDetailsAsync(track.Title, track.Artist);
             string genreLabel = string.IsNullOrWhiteSpace(details.Genre) ? "" : $" (Genre: {details.Genre})";
+            AudioTrackItem? localTrack =
+                LocalAudioPlayerService.Instance.CurrentTrack;
+            string experienceContext = string.Empty;
+            if (localTrack != null &&
+                _currentMusicAnalysis != null)
+            {
+                int listens = MusicExperienceService.Instance
+                    .GetCharacterListenCount(
+                        localTrack,
+                        _personality.CharacterName);
+                experienceContext =
+                    $"; detected mood: {_currentMusicAnalysis.Mood}; " +
+                    $"energy: {_currentMusicAnalysis.Energy:0.00}; " +
+                    $"familiar to this character: {listens > 1}. " +
+                    "React naturally without quoting measurements";
+            }
 
             string fallback = _personality.MusicObservation(
                 track.Title,
@@ -957,7 +1583,7 @@ namespace KeyMapper
                 _random);
             string? generated = await TryCreateAmbientCommentAsync(
                 _activeContextKey,
-                $"{track.Title}{genreLabel}",
+                $"{track.Title}{genreLabel}{experienceContext}",
                 track.Artist);
             if (SpeechBubble.Visibility != Visibility.Visible &&
                 !_isContextMenuOpen)

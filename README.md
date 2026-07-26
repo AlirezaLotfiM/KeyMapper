@@ -62,7 +62,13 @@ The local music player is part of the companion experience, not a separate skin:
 - The mini player turns the current cover into a genuinely rounded, edge-to-edge cinematic backdrop with a clean borderless cover treatment, subtle grain, slow artwork drift, glass controls, high-contrast metadata, theme accents, and a proper vector maximize control. Mini-player hover states change opacity without painting distracting blocks behind the buttons.
 - Supplied vector-style icons are used for folders, playback, shuffle, repeat, volume, and library navigation.
 - Every playing track gets a live, track-seeded groove animation.
-- While music is playing, seven block-built pixel glyphs—single notes, chords, paired notes, beat sparks, and equalizer bars—rise around the pet in varied stepped bursts. The character visibly listens too: every personality has its own subtle, foot-anchored bounce and sway, while the window and contact shadow remain stable. The ambience pauses around speech, menus, and pet controls and can be disabled from the pet context menu.
+- While music is playing, eleven block-built pixel glyphs rise around the pet in varied stepped bursts: notes, chords, beat sparks, equalizer bars, waves, stars, bolts, and moons. Genre and detected mood decide which symbols appear.
+- A lightweight streaming analyzer reads bass energy in the background and creates a compact beat map. The whole audio file is never loaded into memory, only one track is analyzed at a time, and completed analyses are kept in a small bounded cache.
+- The pet moves on detected beats instead of repeating a fixed loop. Every character has a different mixture of nods, sways, bounces, head movements, jumps, and quiet rests. The artwork stays anchored at its feet, so the window and contact shadow remain stable.
+- Tracks receive peaceful, melancholic, cheerful, dramatic, intense, or focused moods. Character tastes affect their reactions, while favorites, repeats, strong sections, and playback returning after a long pause receive special responses.
+- Each character gradually remembers previously heard tracks in a compact local file. Familiarity influences later conversation without exposing play counters in the music-player interface.
+- Local AI can use the detected mood, energy, and familiarity as private context for fresher music comments. Raw measurements are not shown in the response, and hosted services are not used for passive background analysis.
+- Music ambience pauses around speech, menus, and pet controls and can be disabled from the pet context menu.
 - Queue, favorites, history, artists, genres, playlists, sorting, and folder management are available locally.
 - Overlapping music folders and repeated metadata no longer create duplicate library rows.
 - Refreshing music folders preserves the current stream, position, play/pause state, and groove animation.
