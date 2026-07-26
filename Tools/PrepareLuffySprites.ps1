@@ -14,19 +14,19 @@ $idleOutputPath = Join-Path $outputDirectory "Luffy_Idle_4.png"
 $walkOutputPath = Join-Path $outputDirectory "Luffy_Walk_6.png"
 
 $idleFrames = @(
-    [System.Drawing.Rectangle]::new(5, 6, 33, 46),
-    [System.Drawing.Rectangle]::new(43, 6, 32, 46),
-    [System.Drawing.Rectangle]::new(83, 6, 31, 46),
-    [System.Drawing.Rectangle]::new(122, 6, 30, 46)
+    [System.Drawing.Rectangle]::new(95, 3414, 30, 49),
+    [System.Drawing.Rectangle]::new(135, 3414, 30, 49),
+    [System.Drawing.Rectangle]::new(95, 3414, 30, 49),
+    [System.Drawing.Rectangle]::new(135, 3414, 30, 49)
 )
 
 $walkFrames = @(
-    [System.Drawing.Rectangle]::new(2, 294, 31, 55),
-    [System.Drawing.Rectangle]::new(39, 294, 29, 55),
-    [System.Drawing.Rectangle]::new(75, 294, 30, 55),
-    [System.Drawing.Rectangle]::new(113, 294, 30, 55),
-    [System.Drawing.Rectangle]::new(153, 294, 30, 55),
-    [System.Drawing.Rectangle]::new(192, 294, 27, 55)
+    [System.Drawing.Rectangle]::new(7, 3698, 30, 45),
+    [System.Drawing.Rectangle]::new(47, 3698, 30, 45),
+    [System.Drawing.Rectangle]::new(87, 3698, 30, 45),
+    [System.Drawing.Rectangle]::new(129, 3698, 28, 45),
+    [System.Drawing.Rectangle]::new(160, 3698, 36, 45),
+    [System.Drawing.Rectangle]::new(205, 3698, 32, 45)
 )
 
 function Remove-ConnectedWhiteBackground {
@@ -117,8 +117,45 @@ function Export-SpriteStrip {
                     [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
                 try {
                     Remove-ConnectedWhiteBackground $frame
+
+                    $lowestOpaqueY = -1
+                    for ($scanY = $frame.Height - 1;
+                         $scanY -ge 0 -and $lowestOpaqueY -lt 0;
+                         $scanY--) {
+                        for ($scanX = 0;
+                             $scanX -lt $frame.Width;
+                             $scanX++) {
+                            if ($frame.GetPixel($scanX, $scanY).A -gt 0) {
+                                $lowestOpaqueY = $scanY
+                                break
+                            }
+                        }
+                    }
+
+                    $footLeft = $frame.Width
+                    $footRight = -1
+                    $footBandTop = [Math]::Max(0, $lowestOpaqueY - 5)
+                    for ($scanY = $footBandTop;
+                         $scanY -le $lowestOpaqueY;
+                         $scanY++) {
+                        for ($scanX = 0;
+                             $scanX -lt $frame.Width;
+                             $scanX++) {
+                            if ($frame.GetPixel($scanX, $scanY).A -gt 0) {
+                                $footLeft = [Math]::Min($footLeft, $scanX)
+                                $footRight = [Math]::Max($footRight, $scanX)
+                            }
+                        }
+                    }
+
+                    $footCenter = if ($footRight -ge $footLeft) {
+                        ($footLeft + $footRight) / 2.0
+                    }
+                    else {
+                        ($frame.Width - 1) / 2.0
+                    }
                     $x = ($index * $cellWidth) +
-                        [Math]::Floor(($cellWidth - $frame.Width) / 2)
+                        [Math]::Round(($cellWidth / 2.0) - $footCenter)
                     $y = $feetBaseline - $frame.Height + 1
                     $graphics.DrawImageUnscaled($frame, $x, $y)
                 }

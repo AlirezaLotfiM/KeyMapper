@@ -55,7 +55,7 @@ Characters can walk around the desktop, remain in one place, react to active app
 
 Movement can be disabled, roam freely, or be locked to a strict horizontal line. A pet placed on the taskbar edge keeps its ground position when walking begins instead of snapping to a hidden movement boundary. Speech and hover music controls stay inside the working area when the pet is placed near a screen edge.
 
-Luffy uses crisp frames prepared from the supplied Game Boy Advance sprite atlas. His transparent idle and walking strips share a fixed foot baseline, so animation stays sharp and grounded without white boxes, clipped feet, or frame-to-frame jumping.
+Luffy uses crisp frames prepared from the supplied Game Boy Advance sprite atlas. His relaxed idle and natural side-walk strips are anchored by their actual foot-contact pixels, so both facing directions stay sharp and grounded without white boxes, clipped feet, or frame-to-frame jumping. While he listens to music, his pixel ambience swaps notes for floating meat and takoyaki.
 
 ### Theme-aware music studio
 

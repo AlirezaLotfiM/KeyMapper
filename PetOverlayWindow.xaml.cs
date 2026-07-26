@@ -108,6 +108,31 @@ namespace KeyMapper
         private DateTime _lastStrongMusicReactionAt = DateTime.MinValue;
         private int _nextMusicBeatIndex;
         private int _musicBeatSequence;
+        private static readonly Brush FoodOutlineBrush =
+            CreateFrozenPixelBrush(91, 43, 25);
+        private static readonly Brush MeatBrush =
+            CreateFrozenPixelBrush(226, 96, 36);
+        private static readonly Brush FoodHighlightBrush =
+            CreateFrozenPixelBrush(255, 176, 61);
+        private static readonly Brush BoneBrush =
+            CreateFrozenPixelBrush(255, 239, 191);
+        private static readonly Brush TakoyakiBrush =
+            CreateFrozenPixelBrush(238, 139, 42);
+        private static readonly Brush TakoyakiSauceBrush =
+            CreateFrozenPixelBrush(128, 48, 25);
+        private static readonly Brush TakoyakiGarnishBrush =
+            CreateFrozenPixelBrush(45, 132, 72);
+
+        private static Brush CreateFrozenPixelBrush(
+            byte red,
+            byte green,
+            byte blue)
+        {
+            var brush = new SolidColorBrush(
+                Color.FromRgb(red, green, blue));
+            brush.Freeze();
+            return brush;
+        }
 
         private enum PixelMusicGlyph
         {
@@ -121,7 +146,9 @@ namespace KeyMapper
             Wave,
             Star,
             Bolt,
-            Moon
+            Moon,
+            Meat,
+            Takoyaki
         }
 
         private enum ListeningAction
@@ -396,13 +423,18 @@ namespace KeyMapper
             };
             RenderOptions.SetEdgeMode(note, EdgeMode.Aliased);
 
-            void AddPixel(double left, double top, double width, double height)
+            void AddPixel(
+                double left,
+                double top,
+                double width,
+                double height,
+                Brush? fill = null)
             {
                 var pixel = new System.Windows.Shapes.Rectangle
                 {
                     Width = width,
                     Height = height,
-                    Fill = noteBrush,
+                    Fill = fill ?? noteBrush,
                     SnapsToDevicePixels = true
                 };
                 RenderOptions.SetEdgeMode(pixel, EdgeMode.Aliased);
@@ -480,6 +512,40 @@ namespace KeyMapper
                     AddPixel(10, 5, 5, 3);
                     AddPixel(10, 12, 5, 3);
                     break;
+                case PixelMusicGlyph.Meat:
+                {
+                    AddPixel(6, 2, 9, 2, FoodOutlineBrush);
+                    AddPixel(4, 4, 13, 3, FoodOutlineBrush);
+                    AddPixel(3, 7, 14, 6, FoodOutlineBrush);
+                    AddPixel(5, 13, 10, 3, FoodOutlineBrush);
+                    AddPixel(5, 5, 10, 9, MeatBrush);
+                    AddPixel(7, 4, 7, 3, MeatBrush);
+                    AddPixel(5, 7, 4, 4, FoodHighlightBrush);
+                    AddPixel(13, 13, 3, 3, FoodOutlineBrush);
+                    AddPixel(15, 14, 3, 5, BoneBrush);
+                    AddPixel(14, 17, 3, 3, BoneBrush);
+                    AddPixel(17, 17, 3, 3, BoneBrush);
+                    AddPixel(16, 16, 3, 3, FoodOutlineBrush);
+                    break;
+                }
+                case PixelMusicGlyph.Takoyaki:
+                {
+                    AddPixel(5, 4, 10, 2, FoodOutlineBrush);
+                    AddPixel(3, 6, 14, 9, FoodOutlineBrush);
+                    AddPixel(5, 15, 10, 3, FoodOutlineBrush);
+                    AddPixel(5, 6, 10, 10, TakoyakiBrush);
+                    AddPixel(3, 9, 2, 4, TakoyakiBrush);
+                    AddPixel(15, 9, 2, 4, TakoyakiBrush);
+                    AddPixel(6, 7, 8, 3, TakoyakiSauceBrush);
+                    AddPixel(4, 10, 5, 3, TakoyakiSauceBrush);
+                    AddPixel(11, 11, 5, 3, TakoyakiSauceBrush);
+                    AddPixel(6, 6, 3, 3, FoodHighlightBrush);
+                    AddPixel(7, 11, 2, 2, TakoyakiGarnishBrush);
+                    AddPixel(12, 8, 2, 2, TakoyakiGarnishBrush);
+                    AddPixel(13, 2, 2, 5, BoneBrush);
+                    AddPixel(15, 0, 2, 4, BoneBrush);
+                    break;
+                }
             }
 
             return note;
@@ -487,6 +553,13 @@ namespace KeyMapper
 
         private PixelMusicGlyph SelectMoodMusicGlyph()
         {
+            if (_personality.CharacterName == "Monkey D. Luffy")
+            {
+                return _random.NextDouble() < 0.58
+                    ? PixelMusicGlyph.Meat
+                    : PixelMusicGlyph.Takoyaki;
+            }
+
             string genre =
                 LocalAudioPlayerService.Instance.CurrentTrack?.Genre
                     .ToLowerInvariant() ?? string.Empty;
@@ -942,8 +1015,16 @@ namespace KeyMapper
             return choices[_random.Next(choices.Length)];
         }
 
-        private PixelMusicGlyph SelectStrongBeatGlyph() =>
-            (_currentMusicAnalysis?.Mood ?? MusicMood.Focused) switch
+        private PixelMusicGlyph SelectStrongBeatGlyph()
+        {
+            if (_personality.CharacterName == "Monkey D. Luffy")
+            {
+                return _musicBeatSequence % 3 == 0
+                    ? PixelMusicGlyph.Takoyaki
+                    : PixelMusicGlyph.Meat;
+            }
+
+            return (_currentMusicAnalysis?.Mood ?? MusicMood.Focused) switch
             {
                 MusicMood.Peaceful => PixelMusicGlyph.Moon,
                 MusicMood.Melancholic => PixelMusicGlyph.Wave,
@@ -952,6 +1033,7 @@ namespace KeyMapper
                 MusicMood.Intense => PixelMusicGlyph.Bolt,
                 _ => PixelMusicGlyph.Equalizer
             };
+        }
 
         private string BuildMusicStartReaction(
             AudioTrackItem track,
