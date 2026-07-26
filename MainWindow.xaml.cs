@@ -29,6 +29,7 @@ namespace KeyMapper
         private readonly OverlayWindow _overlayWindow;
         private readonly PetOverlayWindow _petOverlayWindow;
         private readonly TrayIconManager _trayManager;
+        private readonly AudioDeviceMonitor _audioDeviceMonitor;
         private AppSettings _settings;
         private string _lastClipboardText = string.Empty;
         private bool? _hookStateBeforeTemporaryDisable;
@@ -74,6 +75,7 @@ namespace KeyMapper
 
         private bool _isShuttingDown = false;
         private bool _isInitializing = true;
+        private SystemMediaControlsManager? _smtcManager;
 
         public MainWindow()
         {
@@ -115,9 +117,30 @@ namespace KeyMapper
             _hook.OnRecordingCancelled += Hook_OnRecordingCancelled;
             _hook.OnDoubleTapLCtrl += Hook_OnDoubleTapLCtrl;
             _hook.OnDeGibberishRequested += Hook_OnDeGibberishRequested;
+            _hook.OnMusicPlayerRequested += () => ShowMusicPlayerWidget();
             _hook.OnAutoExpandTriggered += Hook_OnAutoExpandTriggered;
             _hook.IsShortcutAllowed = IsShortcutAllowedByActiveWindow;
             _hook.OnPauseToggled += Hook_OnPauseToggled;
+
+            _audioDeviceMonitor = new AudioDeviceMonitor();
+            _audioDeviceMonitor.Initialize(this);
+            _audioDeviceMonitor.OnAudioDeviceDisconnected += () =>
+            {
+                if (LocalAudioPlayerService.Instance.IsPlaying)
+                {
+                    LocalAudioPlayerService.Instance.Pause();
+                }
+            };
+
+            SourceInitialized += (s, e) =>
+            {
+                IntPtr handle = new System.Windows.Interop.WindowInteropHelper(this).Handle;
+                if (handle != IntPtr.Zero)
+                {
+                    _smtcManager = new SystemMediaControlsManager();
+                    _smtcManager.Initialize(handle);
+                }
+            };
 
             _mouseHook.OnShiftRightClick += Hook_OnShiftRightClick;
 
@@ -256,6 +279,33 @@ namespace KeyMapper
         }
 
 
+
+        public void ShowMusicPlayerWidget()
+        {
+            Dispatcher.Invoke(() =>
+            {
+                foreach (Window window in Application.Current.Windows)
+                {
+                    if (window is MusicPlayerWidgetWindow player)
+                    {
+                        if (player.Visibility == Visibility.Visible && player.IsActive)
+                        {
+                            player.Hide();
+                        }
+                        else
+                        {
+                            player.Show();
+                            player.WindowState = WindowState.Normal;
+                            player.Activate();
+                        }
+                        return;
+                    }
+                }
+                var win = new MusicPlayerWidgetWindow();
+                win.Show();
+                win.Activate();
+            });
+        }
 
         private string GetActiveProcessName()
         {

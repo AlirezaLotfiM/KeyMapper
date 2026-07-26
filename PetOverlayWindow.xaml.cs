@@ -288,14 +288,12 @@ namespace KeyMapper
                 double.IsFinite(savedLeft) &&
                 double.IsFinite(savedTop))
             {
-                double maximumLeft = Math.Max(
-                    workArea.Left,
-                    workArea.Right - Width);
-                double maximumTop = Math.Max(
-                    workArea.Top,
-                    workArea.Bottom - Height);
-                Left = Math.Clamp(savedLeft, workArea.Left, maximumLeft);
-                Top = Math.Clamp(savedTop, workArea.Top, maximumTop);
+                double screenWidth = SystemParameters.PrimaryScreenWidth;
+                double screenHeight = SystemParameters.PrimaryScreenHeight;
+                double maximumLeft = Math.Max(0, screenWidth - Width);
+                double maximumTop = Math.Max(0, screenHeight - Height);
+                Left = Math.Clamp(savedLeft, 0, maximumLeft);
+                Top = Math.Clamp(savedTop, 0, maximumTop);
             }
             _horizontalWalkTop = Top;
             UpdateCommentMenuState();
@@ -1452,6 +1450,8 @@ namespace KeyMapper
             if (!isWalking && DateTime.Now >= _nextWanderAt)
             {
                 Rect workArea = SystemParameters.WorkArea;
+                double screenWidth = SystemParameters.PrimaryScreenWidth;
+                double screenHeight = SystemParameters.PrimaryScreenHeight;
 
                 // Check if active foreground window is available to sit/walk on its top edge
                 if (!_horizontalOnlyWalking &&
@@ -1460,7 +1460,7 @@ namespace KeyMapper
                 {
                     int winWidth = winRect.Right - winRect.Left;
                     int winHeight = winRect.Bottom - winRect.Top;
-                    if (winWidth > 200 && winHeight > 150 && winRect.Top > 20 && winRect.Top < workArea.Bottom - 100)
+                    if (winWidth > 200 && winHeight > 150 && winRect.Top > 20 && winRect.Top < screenHeight - 100)
                     {
                         double targetX = winRect.Left + _random.Next(20, Math.Max(30, winWidth - 100));
                         double targetY = Math.Max(workArea.Top + 10, winRect.Top - ActualHeight + 6);
@@ -1471,13 +1471,21 @@ namespace KeyMapper
 
                 if (!isWalking)
                 {
-                    double maxLeft = Math.Max(workArea.Left + 8, workArea.Right - ActualWidth - 8);
-                    double maxTop = Math.Max(workArea.Top + 8, workArea.Bottom - ActualHeight - 8);
+                    double maxLeft = Math.Max(10, screenWidth - ActualWidth - 10);
+                    // 35% chance to wander on the taskbar surface if horizontal walking is not locked
+                    bool chooseTaskbar = !_horizontalOnlyWalking && _random.NextDouble() < 0.35;
+                    double maxTop = chooseTaskbar
+                        ? Math.Max(10, screenHeight - ActualHeight - 4)
+                        : Math.Max(workArea.Top + 8, screenHeight - ActualHeight - 8);
+
                     double targetY = _horizontalOnlyWalking
                         ? (_horizontalWalkTop ?? Top)
-                        : (workArea.Top + 8 + _random.NextDouble() * (maxTop - workArea.Top - 8));
+                        : chooseTaskbar
+                            ? Math.Max(workArea.Bottom, screenHeight - ActualHeight - 6)
+                            : (workArea.Top + 8 + _random.NextDouble() * (maxTop - workArea.Top - 8));
+
                     _wanderTarget = new Point(
-                        workArea.Left + 8 + _random.NextDouble() * (maxLeft - workArea.Left - 8),
+                        10 + _random.NextDouble() * (maxLeft - 10),
                         targetY);
                     isWalking = true;
                 }
@@ -1485,11 +1493,12 @@ namespace KeyMapper
 
             if (isWalking && _wanderTarget is Point target)
             {
-                Rect workArea = SystemParameters.WorkArea;
-                double clampedTargetX = Math.Clamp(target.X, workArea.Left + 10, workArea.Right - ActualWidth - 10);
+                double screenWidth = SystemParameters.PrimaryScreenWidth;
+                double screenHeight = SystemParameters.PrimaryScreenHeight;
+                double clampedTargetX = Math.Clamp(target.X, 10, screenWidth - ActualWidth - 10);
                 double clampedTargetY = _horizontalOnlyWalking
                     ? (_horizontalWalkTop ?? Top)
-                    : Math.Clamp(target.Y, workArea.Top + 10, workArea.Bottom - ActualHeight - 10);
+                    : Math.Clamp(target.Y, 10, screenHeight - ActualHeight - 4);
 
                 double step = _walkingSpeed * _personality.MovementMultiplier * _behaviorTimer.Interval.TotalSeconds;
                 double dx = clampedTargetX - Left;
@@ -1512,8 +1521,6 @@ namespace KeyMapper
                 {
                     _facingRight = dx >= 0;
                     PetSpriteImage.RenderTransform = new System.Windows.Media.ScaleTransform(_facingRight ? 1 : -1, 1, 60, 60);
-                    // The target itself is safe. Moving toward it without per-frame
-                    // clamping prevents a manually placed pet from jumping on step one.
                     Left += dx / distance * step;
                     if (!_horizontalOnlyWalking)
                     {
@@ -1778,7 +1785,8 @@ namespace KeyMapper
                 return;
             }
 
-            Rect workArea = SystemParameters.WorkArea;
+            double screenWidth = SystemParameters.PrimaryScreenWidth;
+            double screenHeight = SystemParameters.PrimaryScreenHeight;
             double windowWidth = ActualWidth > 0 ? ActualWidth : Width;
             double windowHeight = ActualHeight > 0 ? ActualHeight : Height;
 
@@ -1789,14 +1797,10 @@ namespace KeyMapper
                 this);
             double petCenterOnScreen = Left + petCenterInWindow.X;
 
-            double maximumLeft = Math.Max(
-                workArea.Left,
-                workArea.Right - windowWidth);
-            double maximumTop = Math.Max(
-                workArea.Top,
-                workArea.Bottom - windowHeight);
-            Left = Math.Clamp(Left, workArea.Left, maximumLeft);
-            Top = Math.Clamp(Top, workArea.Top, maximumTop);
+            double maximumLeft = Math.Max(0, screenWidth - windowWidth);
+            double maximumTop = Math.Max(0, screenHeight - windowHeight);
+            Left = Math.Clamp(Left, 0, maximumLeft);
+            Top = Math.Clamp(Top, 0, maximumTop);
 
             double rootWidth = OverlayRoot.ActualWidth > 0
                 ? OverlayRoot.ActualWidth

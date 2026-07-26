@@ -32,6 +32,7 @@ namespace KeyMapper
         private bool _lCtrlDown = false;
         private bool _lCtrlUsed = false;
         private bool _deGibberishChordDown;
+        private bool _musicPlayerChordDown;
         private bool _isRecording = false;
         private StringBuilder _buffer = new StringBuilder();
         private DateTime _lastLCtrlReleaseTime = DateTime.MinValue;
@@ -53,6 +54,7 @@ namespace KeyMapper
         public event Action? OnRecordingCancelled;
         public event Action? OnDoubleTapLCtrl;
         public event Action<IntPtr>? OnDeGibberishRequested;
+        public event Action? OnMusicPlayerRequested;
         public event Action<string, string>? OnAutoExpandTriggered;
 
         public KeyboardHook()
@@ -140,6 +142,44 @@ namespace KeyMapper
                 if (vkCode == 0x4B && (message == WM_KEYUP || message == WM_SYSKEYUP))
                 {
                     _deGibberishChordDown = false;
+                }
+
+                // Ctrl+Alt+M: Show/Toggle Music Player Widget
+                bool isMusicPlayerChord = vkCode == 0x4D && IsControlPressed() && IsAltPressed();
+                if (isMusicPlayerChord && (message == WM_KEYDOWN || message == WM_SYSKEYDOWN))
+                {
+                    if (!_musicPlayerChordDown)
+                    {
+                        _musicPlayerChordDown = true;
+                        CancelRecording();
+                        _rollingBuffer.Clear();
+                        OnMusicPlayerRequested?.Invoke();
+                    }
+                    return (IntPtr)1;
+                }
+                if (vkCode == 0x4D && (message == WM_KEYUP || message == WM_SYSKEYUP))
+                {
+                    _musicPlayerChordDown = false;
+                }
+                // Handle Global Media Keys (Galaxy Buds / Bluetooth Earbuds in-ear pause or button presses)
+                if ((vkCode == 0xB3 || vkCode == 0xB2 || vkCode == 0xB0 || vkCode == 0xB1) &&
+                    (message == WM_KEYDOWN || message == WM_SYSKEYDOWN))
+                {
+                    switch (vkCode)
+                    {
+                        case 0xB3: // VK_MEDIA_PLAY_PAUSE
+                            LocalAudioPlayerService.Instance.TogglePlayPause();
+                            break;
+                        case 0xB2: // VK_MEDIA_STOP
+                            LocalAudioPlayerService.Instance.Pause();
+                            break;
+                        case 0xB0: // VK_MEDIA_NEXT_TRACK
+                            LocalAudioPlayerService.Instance.PlayNext();
+                            break;
+                        case 0xB1: // VK_MEDIA_PREV_TRACK
+                            LocalAudioPlayerService.Instance.PlayPrevious();
+                            break;
+                    }
                 }
 
                 // Intercept Scroll Lock key (0x91) OR Ctrl+Alt+P (0x50) to toggle pause state

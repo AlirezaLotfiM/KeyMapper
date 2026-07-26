@@ -213,6 +213,68 @@ namespace KeyMapper
             SaveMusicPlayerPreferences();
         }
 
+        private bool _isMiniHorizontal = false;
+
+        private void ToggleMiniOrientation_Click(object sender, RoutedEventArgs e)
+        {
+            _isMiniHorizontal = !_isMiniHorizontal;
+            ApplyMiniOrientation();
+        }
+
+        private void ApplyMiniOrientation()
+        {
+            if (!_isMiniMode) return;
+            Rect workArea = SystemParameters.WorkArea;
+            if (_isMiniHorizontal)
+            {
+                MiniVerticalLayout.Visibility = Visibility.Collapsed;
+                MiniHorizontalLayout.Visibility = Visibility.Visible;
+                if (MiniBackdropScale != null)
+                {
+                    MiniBackdropScale.ScaleX = 2.5;
+                    MiniBackdropScale.ScaleY = 2.5;
+                }
+                if (MiniBackdropDarkOverlay != null)
+                {
+                    MiniBackdropDarkOverlay.Opacity = 0.90;
+                }
+                if (MiniArtworkBackdrop != null)
+                {
+                    MiniArtworkBackdrop.SetResourceReference(Border.BackgroundProperty, "AppSurfaceBrush");
+                    MiniArtworkBackdrop.SetResourceReference(Border.BorderBrushProperty, "AppBorderBrush");
+                    MiniArtworkBackdrop.BorderThickness = new Thickness(1);
+                }
+                Width = 380;
+                Height = 95;
+                Left = workArea.Right - Width - 20;
+                Top = workArea.Bottom - Height - 20;
+            }
+            else
+            {
+                MiniHorizontalLayout.Visibility = Visibility.Collapsed;
+                MiniVerticalLayout.Visibility = Visibility.Visible;
+                if (MiniBackdropScale != null)
+                {
+                    MiniBackdropScale.ScaleX = 1.28;
+                    MiniBackdropScale.ScaleY = 1.28;
+                }
+                if (MiniBackdropDarkOverlay != null)
+                {
+                    MiniBackdropDarkOverlay.Opacity = 0.52;
+                }
+                if (MiniArtworkBackdrop != null)
+                {
+                    MiniArtworkBackdrop.Background = null;
+                    MiniArtworkBackdrop.BorderBrush = null;
+                    MiniArtworkBackdrop.BorderThickness = new Thickness(0);
+                }
+                Width = 180;
+                Height = 270;
+                Left = workArea.Right - Width - 20;
+                Top = workArea.Top + 20;
+            }
+        }
+
         private void ToggleMiniPlayerMode()
         {
             _isMiniMode = !_isMiniMode;
@@ -231,13 +293,9 @@ namespace KeyMapper
                 OuterWindowBorder.Background = Brushes.Transparent;
                 MainRootGrid.Margin = new Thickness(0);
 
-                Width = 180;
-                Height = 270;
                 Topmost = true;
                 _miniBackdropStoryboard?.Begin(this, true);
-
-                Left = workArea.Right - Width - 20;
-                Top = workArea.Top + 20;
+                ApplyMiniOrientation();
             }
             else
             {
@@ -399,11 +457,16 @@ namespace KeyMapper
                     _grooveSeed = StringComparer.OrdinalIgnoreCase.GetHashCode(track.FilePath);
                     _groovePhase = 0;
                     TrackTitleTxt.Text = track.DisplayTitle;
-                    TrackArtistTxt.Text = track.DisplayArtist;
                     MiniTrackTitleTxt.Text = track.DisplayTitle;
-                    MiniTrackArtistTxt.Text = track.DisplayArtist;
+                    if (MiniTrackTitleTxtH != null) MiniTrackTitleTxtH.Text = track.DisplayTitle;
+
+                    SetClickableArtistText(TrackArtistTxt, track.DisplayArtist, false);
+                    SetClickableArtistText(MiniTrackArtistTxt, track.DisplayArtist, true);
+                    if (MiniTrackArtistTxtH != null) SetClickableArtistText(MiniTrackArtistTxtH, track.DisplayArtist, true);
+
                     TotalTimeTxt.Text = track.DurationText;
                     MiniTotalTimeTxt.Text = track.DurationText;
+                    if (MiniTotalTimeTxtH != null) MiniTotalTimeTxtH.Text = track.DurationText;
                     UpdateLikeButtonUI(track);
 
                     if (track.AlbumArt == null)
@@ -417,18 +480,82 @@ namespace KeyMapper
                         AlbumCoverImage.Visibility = Visibility.Visible;
                         MiniCoverImage.Source = track.AlbumArt;
                         MiniCoverImage.Visibility = Visibility.Visible;
+                        if (MiniCoverImageH != null)
+                        {
+                            MiniCoverImageH.Source = track.AlbumArt;
+                            MiniCoverImageH.Visibility = Visibility.Visible;
+                        }
                         UpdateMiniArtworkBackdrop(track.AlbumArt);
                     }
                     else
                     {
                         AlbumCoverImage.Visibility = Visibility.Collapsed;
                         MiniCoverImage.Visibility = Visibility.Collapsed;
+                        if (MiniCoverImageH != null) MiniCoverImageH.Visibility = Visibility.Collapsed;
                         UpdateMiniArtworkBackdrop(null);
                     }
 
                     UpdatePlaylistList();
                 }
             });
+        }
+
+        private void SetClickableArtistText(TextBlock textBlock, string rawArtists, bool isMini)
+        {
+            if (textBlock == null) return;
+            textBlock.Inlines.Clear();
+            if (string.IsNullOrWhiteSpace(rawArtists))
+            {
+                textBlock.Inlines.Add(new System.Windows.Documents.Run("Unknown Artist"));
+                return;
+            }
+
+            string[] delims = new[] { ";", ",", "&", "/", "\\", " ft. ", " FEAT. ", " feat. ", " WITH ", " with ", " AND ", " and " };
+            var artistNames = rawArtists.Split(delims, StringSplitOptions.RemoveEmptyEntries)
+                .Select(a => a.Trim())
+                .Where(a => !string.IsNullOrWhiteSpace(a))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            if (artistNames.Count == 0)
+            {
+                textBlock.Inlines.Add(new System.Windows.Documents.Run(rawArtists));
+                return;
+            }
+
+            for (int i = 0; i < artistNames.Count; i++)
+            {
+                string artistName = artistNames[i];
+                var link = new System.Windows.Documents.Hyperlink(new System.Windows.Documents.Run(artistName))
+                {
+                    Foreground = isMini ? (Brush)FindResource("MiniForegroundBrush") : (Brush)FindResource("AppAccentBrush"),
+                    TextDecorations = null,
+                    Cursor = Cursors.Hand
+                };
+                string targetArtist = artistName;
+                link.Click += (s, e) => FilterByArtistName(targetArtist);
+                textBlock.Inlines.Add(link);
+
+                if (i < artistNames.Count - 1)
+                {
+                    textBlock.Inlines.Add(new System.Windows.Documents.Run(", ")
+                    {
+                        Foreground = isMini ? (Brush)FindResource("MiniMutedBrush") : (Brush)FindResource("AppMutedTextBrush")
+                    });
+                }
+            }
+        }
+
+        private void FilterByArtistName(string artistName)
+        {
+            if (_isMiniMode)
+            {
+                ToggleMiniPlayerMode();
+            }
+
+            _activeTab = "ARTISTS";
+            UpdateTabStyles();
+            UpdatePlaylistList();
         }
 
         private void UpdateMiniArtworkBackdrop(BitmapSource? artwork)
@@ -665,13 +792,17 @@ namespace KeyMapper
                     TotalTimeTxt.Text = totText;
                     MiniCurrentTimeTxt.Text = curText;
                     MiniTotalTimeTxt.Text = totText;
+                    if (MiniCurrentTimeTxtH != null) MiniCurrentTimeTxtH.Text = curText;
+                    if (MiniTotalTimeTxtH != null) MiniTotalTimeTxtH.Text = totText;
 
                     double maxSec = total.TotalSeconds > 0 ? total.TotalSeconds : 100;
                     PositionSlider.Maximum = maxSec;
                     MiniPositionSlider.Maximum = maxSec;
+                    if (MiniPositionSliderH != null) MiniPositionSliderH.Maximum = maxSec;
 
                     PositionSlider.Value = pos.TotalSeconds;
                     MiniPositionSlider.Value = pos.TotalSeconds;
+                    if (MiniPositionSliderH != null) MiniPositionSliderH.Value = pos.TotalSeconds;
                 }
             });
         }

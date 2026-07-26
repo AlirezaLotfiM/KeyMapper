@@ -76,6 +76,19 @@ namespace KeyMapper
         public List<string> UserQueuePaths { get; set; } = new();
     }
 
+    public class CachedTrackItem
+    {
+        public string FilePath { get; set; } = string.Empty;
+        public DateTime LastWriteTimeUtc { get; set; }
+        public long FileSizeBytes { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string Artist { get; set; } = string.Empty;
+        public string Album { get; set; } = string.Empty;
+        public string Genre { get; set; } = string.Empty;
+        public double DurationSeconds { get; set; }
+        public string CoverArtFileName { get; set; } = string.Empty;
+    }
+
     public sealed class LocalAudioPlayerService
     {
         private static readonly Lazy<LocalAudioPlayerService> LazyInstance = new(() => new LocalAudioPlayerService());
@@ -142,6 +155,9 @@ namespace KeyMapper
         private readonly string _historyFilePath;
         private readonly string _sessionFilePath;
         private readonly string _playCountsFilePath;
+        private readonly string _cacheFilePath;
+        private readonly string _coverArtCacheDir;
+        private readonly Dictionary<string, CachedTrackItem> _trackCache = new(StringComparer.OrdinalIgnoreCase);
         private Dictionary<string, int> _playCounts = new(StringComparer.OrdinalIgnoreCase);
 
         private LocalAudioPlayerService()
@@ -164,6 +180,13 @@ namespace KeyMapper
             _historyFilePath = Path.Combine(_appDataDir, "playback_history.json");
             _sessionFilePath = Path.Combine(_appDataDir, "music_session.json");
             _playCountsFilePath = Path.Combine(_appDataDir, "play_counts.json");
+            _cacheFilePath = Path.Combine(_appDataDir, "music_cache.json");
+            _coverArtCacheDir = Path.Combine(_appDataDir, "CoverArtCache");
+            try
+            {
+                Directory.CreateDirectory(_coverArtCacheDir);
+            }
+            catch { }
 
             LoadSavedData();
         }
@@ -244,6 +267,173 @@ namespace KeyMapper
                 }
                 catch { }
             }
+
+            LoadTrackCache();
+            BuildInitialPlaylistFromCache();
+        }
+
+        private void LoadTrackCache()
+        {
+            if (File.Exists(_cacheFilePath))
+            {
+                try
+                {
+                    string json = File.ReadAllText(_cacheFilePath);
+                    var list = JsonSerializer.Deserialize<List<CachedTrackItem>>(json);
+                    if (list != null)
+                    {
+                        _trackCache.Clear();
+                        foreach (var item in list)
+                        {
+                            if (!string.IsNullOrWhiteSpace(item.FilePath))
+                            {
+                                _trackCache[item.FilePath] = item;
+                            }
+                        }
+                    }
+                }
+                catch { }
+            }
+        }
+
+        private void SaveTrackCache()
+        {
+            try
+            {
+                string json = JsonSerializer.Serialize(_trackCache.Values.ToList());
+                File.WriteAllText(_cacheFilePath, json);
+            }
+            catch { }
+        }
+
+        private void BuildInitialPlaylistFromCache()
+        {
+            if (_trackCache.Count == 0) return;
+
+            var items = new List<AudioTrackItem>();
+            foreach (var kvp in _trackCache)
+            {
+                var cached = kvp.Value;
+                if (!File.Exists(cached.FilePath)) continue;
+
+                var track = new AudioTrackItem
+                {
+                    FilePath = cached.FilePath,
+                    Title = cached.Title,
+                    Artist = cached.Artist,
+                    Album = cached.Album,
+                    Genre = string.IsNullOrWhiteSpace(cached.Genre) ? "General Music" : cached.Genre,
+                    Duration = TimeSpan.FromSeconds(cached.DurationSeconds),
+                    IsFavorite = _favoritePaths.Contains(cached.FilePath),
+                    AlbumArt = LoadCoverArtFromCache(cached.CoverArtFileName)
+                };
+                if (_playCounts.TryGetValue(cached.FilePath, out int count))
+                {
+                    track.PlayCount = count;
+                }
+                items.Add(track);
+            }
+
+            if (items.Count == 0) return;
+
+            Playlist.Clear();
+            foreach (var it in items) Playlist.Add(it);
+
+            // Group by Artist & Genre
+            PopulateGroupsAndQueues(items);
+        }
+
+        private BitmapSource? LoadCoverArtFromCache(string artFileName)
+        {
+            if (string.IsNullOrWhiteSpace(artFileName)) return null;
+            string fullPath = Path.Combine(_coverArtCacheDir, artFileName);
+            if (!File.Exists(fullPath)) return null;
+            try
+            {
+                using var fs = new FileStream(fullPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+                var bitmap = new BitmapImage();
+                bitmap.BeginInit();
+                bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                bitmap.DecodePixelWidth = 100;
+                bitmap.StreamSource = fs;
+                bitmap.EndInit();
+                bitmap.Freeze();
+                return bitmap;
+            }
+            catch { }
+            return null;
+        }
+
+        private string SaveCoverArtToCache(string filePath, BitmapSource? art)
+        {
+            if (art == null) return string.Empty;
+            try
+            {
+                byte[] hashBytes = System.Security.Cryptography.MD5.HashData(Encoding.UTF8.GetBytes(filePath.ToLowerInvariant()));
+                string artFileName = $"{Convert.ToHexString(hashBytes)}.png";
+                string artFullPath = Path.Combine(_coverArtCacheDir, artFileName);
+                if (File.Exists(artFullPath)) return artFileName;
+
+                var encoder = new PngBitmapEncoder();
+                encoder.Frames.Add(BitmapFrame.Create(art));
+                using var stream = File.Create(artFullPath);
+                encoder.Save(stream);
+                return artFileName;
+            }
+            catch { }
+            return string.Empty;
+        }
+
+        private void PopulateGroupsAndQueues(List<AudioTrackItem> items)
+        {
+            var artistDict = new Dictionary<string, List<AudioTrackItem>>(StringComparer.OrdinalIgnoreCase);
+            var genreDict = new Dictionary<string, List<AudioTrackItem>>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var item in items)
+            {
+                string rawArtists = item.DisplayArtist;
+                var splitArtists = rawArtists.Split(new[] { ';', ',', '&', '/', '\\' }, StringSplitOptions.RemoveEmptyEntries)
+                    .SelectMany(a => a.Split(new[] { " ft. ", " FEAT. ", " feat. ", " WITH ", " with ", " AND ", " and " }, StringSplitOptions.RemoveEmptyEntries))
+                    .Select(a => a.Trim())
+                    .Where(a => !string.IsNullOrWhiteSpace(a) && !a.Equals("Unknown Artist", StringComparison.OrdinalIgnoreCase))
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+
+                if (splitArtists.Count == 0) splitArtists.Add(rawArtists);
+
+                foreach (var artist in splitArtists)
+                {
+                    if (!artistDict.TryGetValue(artist, out var list))
+                    {
+                        list = new List<AudioTrackItem>();
+                        artistDict[artist] = list;
+                    }
+                    list.Add(item);
+                }
+
+                string genreName = NormalizeGenre(item.Genre);
+                if (!genreDict.TryGetValue(genreName, out var gList))
+                {
+                    gList = new List<AudioTrackItem>();
+                    genreDict[genreName] = gList;
+                }
+                gList.Add(item);
+            }
+
+            ArtistGroups.Clear();
+            foreach (var grp in artistDict.Select(kvp => new ArtistGroupItem { ArtistName = kvp.Key, TrackCount = kvp.Value.Count, Tracks = kvp.Value }).OrderBy(g => g.ArtistName))
+            {
+                ArtistGroups.Add(grp);
+            }
+
+            GenreGroups.Clear();
+            foreach (var gGrp in genreDict.Select(kvp => new GenreGroupItem { GenreName = kvp.Key, Tracks = kvp.Value }).OrderBy(g => g.GenreName))
+            {
+                GenreGroups.Add(gGrp);
+            }
+
+            _unshuffledContextQueue = Playlist.ToList();
+            ContextQueue = Playlist.ToList();
         }
 
         public void SavePlayCounts()
@@ -545,15 +735,52 @@ namespace KeyMapper
                     .ToList();
 
                 List<AudioTrackItem> items = new();
-                var seenTracks = new HashSet<string>(
-                    StringComparer.OrdinalIgnoreCase);
+                var seenTracks = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                var currentFoundFiles = new HashSet<string>(files, StringComparer.OrdinalIgnoreCase);
 
                 foreach (var file in files)
                 {
                     try
                     {
-                        var item = ParseNativeId3v2Tags(file);
-                        item.IsFavorite = _favoritePaths.Contains(file);
+                        var fi = new FileInfo(file);
+                        AudioTrackItem item;
+                        if (_trackCache.TryGetValue(file, out var cached) &&
+                            cached.LastWriteTimeUtc == fi.LastWriteTimeUtc &&
+                            cached.FileSizeBytes == fi.Length)
+                        {
+                            item = new AudioTrackItem
+                            {
+                                FilePath = cached.FilePath,
+                                Title = cached.Title,
+                                Artist = cached.Artist,
+                                Album = cached.Album,
+                                Genre = string.IsNullOrWhiteSpace(cached.Genre) ? "General Music" : cached.Genre,
+                                Duration = TimeSpan.FromSeconds(cached.DurationSeconds),
+                                IsFavorite = _favoritePaths.Contains(cached.FilePath),
+                                AlbumArt = LoadCoverArtFromCache(cached.CoverArtFileName)
+                            };
+                        }
+                        else
+                        {
+                            item = ParseNativeId3v2Tags(file);
+                            item.IsFavorite = _favoritePaths.Contains(file);
+                            item.AlbumArt = ExtractEmbeddedCoverArt(file);
+
+                            string artFileName = SaveCoverArtToCache(file, item.AlbumArt);
+                            _trackCache[file] = new CachedTrackItem
+                            {
+                                FilePath = file,
+                                LastWriteTimeUtc = fi.LastWriteTimeUtc,
+                                FileSizeBytes = fi.Length,
+                                Title = item.Title,
+                                Artist = item.Artist,
+                                Album = item.Album,
+                                Genre = item.Genre,
+                                DurationSeconds = item.Duration.TotalSeconds,
+                                CoverArtFileName = artFileName
+                            };
+                        }
+
                         if (_playCounts.TryGetValue(file, out int count))
                         {
                             item.PlayCount = count;
@@ -562,11 +789,18 @@ namespace KeyMapper
                         {
                             continue;
                         }
-                        item.AlbumArt = ExtractEmbeddedCoverArt(file);
                         items.Add(item);
                     }
                     catch { }
                 }
+
+                // Remove files from cache that no longer exist
+                var removedKeys = _trackCache.Keys.Where(k => !currentFoundFiles.Contains(k)).ToList();
+                foreach (var rk in removedKeys)
+                {
+                    _trackCache.Remove(rk);
+                }
+                SaveTrackCache();
 
                 // Group by Artist
                 var artistDict = new Dictionary<string, List<AudioTrackItem>>(StringComparer.OrdinalIgnoreCase);
@@ -811,6 +1045,18 @@ namespace KeyMapper
                 SaveSession();
             }
             catch { }
+        }
+
+        public void Pause()
+        {
+            if (IsPlaying)
+            {
+                _mediaPlayer.Pause();
+                IsPlaying = false;
+                _positionTimer.Stop();
+                OnPlaybackStateChanged?.Invoke(false);
+                SaveSession();
+            }
         }
 
         public void TogglePlayPause()

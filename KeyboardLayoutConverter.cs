@@ -22,19 +22,43 @@ namespace KeyMapper
 
         private static readonly Dictionary<char, char> PersianToEnglish = new()
         {
+            // Lowercase & standard Persian letters
             ['ض'] = 'q', ['ص'] = 'w', ['ث'] = 'e', ['ق'] = 'r', ['ف'] = 't',
             ['غ'] = 'y', ['ع'] = 'u', ['ه'] = 'i', ['خ'] = 'o', ['ح'] = 'p',
             ['ج'] = '[', ['چ'] = ']', ['ش'] = 'a', ['س'] = 's', ['ی'] = 'd',
             ['ي'] = 'd', ['ب'] = 'f', ['ل'] = 'g', ['ا'] = 'h', ['ت'] = 'j',
             ['ن'] = 'k', ['م'] = 'l', ['ک'] = ';', ['ك'] = ';', ['گ'] = '\'',
             ['ظ'] = 'z', ['ط'] = 'x', ['ز'] = 'c', ['ر'] = 'v', ['ذ'] = 'b',
-            ['د'] = 'n', ['پ'] = 'm', ['و'] = ',', ['؟'] = '/'
+            ['د'] = 'n', ['پ'] = 'm', ['و'] = ',', ['؟'] = '/',
+
+            // Shift variants & special Persian characters
+            ['آ'] = 'H', ['ژ'] = 'C', ['أ'] = 'G', ['إ'] = 'F', ['ؤ'] = 'V',
+            ['ئ'] = 'S', ['ء'] = 'M', ['ة'] = 'j', ['؛'] = '"', ['،'] = 'P',
+            ['«'] = 'K', ['»'] = 'L', ['۱'] = '1', ['۲'] = '2', ['۳'] = '3',
+            ['۴'] = '4', ['۵'] = '5', ['۶'] = '6', ['۷'] = '7', ['۸'] = '8',
+            ['۹'] = '9', ['۰'] = '0'
         };
 
-        private static readonly Dictionary<char, char> EnglishToPersian =
-            PersianToEnglish
-                .Where(pair => pair.Key is not 'ي' and not 'ك')
-                .ToDictionary(pair => pair.Value, pair => pair.Key);
+        private static readonly Dictionary<char, char> EnglishToPersian = new()
+        {
+            // Lowercase letters & standard keys
+            ['q'] = 'ض', ['w'] = 'ص', ['e'] = 'ث', ['r'] = 'ق', ['t'] = 'ف',
+            ['y'] = 'غ', ['u'] = 'ع', ['i'] = 'ه', ['o'] = 'خ', ['p'] = 'ح',
+            ['['] = 'ج', [']'] = 'چ', ['a'] = 'ش', ['s'] = 'س', ['d'] = 'ی',
+            ['f'] = 'ب', ['g'] = 'ل', ['h'] = 'ا', ['j'] = 'ت', ['k'] = 'ن',
+            ['l'] = 'م', [';'] = 'ک', ['\''] = 'گ', ['z'] = 'ظ', ['x'] = 'ط',
+            ['c'] = 'ز', ['v'] = 'ر', ['b'] = 'ذ', ['n'] = 'د', ['m'] = 'پ',
+            [','] = 'و', ['.'] = '.', ['/'] = '؟',
+
+            // Uppercase letters & Shift keys
+            ['Q'] = 'ً', ['W'] = 'ٌ', ['E'] = 'ٍ', ['R'] = 'ق', ['T'] = 'ف',
+            ['Y'] = 'غ', ['U'] = 'ع', ['I'] = 'ه', ['O'] = 'خ', ['P'] = 'ح',
+            ['{'] = '}', ['}'] = '{', ['A'] = 'ش', ['S'] = 'س', ['D'] = 'ی',
+            ['F'] = 'ب', ['G'] = 'أ', ['H'] = 'آ', ['J'] = 'ت', ['K'] = '«',
+            ['L'] = '»', [':'] = ':', ['"'] = '؛', ['Z'] = 'ظ', ['X'] = 'ط',
+            ['C'] = 'ژ', ['V'] = 'ؤ', ['B'] = 'إ', ['N'] = 'أ', ['M'] = 'ء',
+            ['<'] = '>', ['>'] = '<', ['?'] = '؟'
+        };
 
         // Physical Keyboard Key Indices to Characters for EN (QWERTY), DE (QWERTZ), FA (ISIRI)
         private static readonly string EnQwerty = "`1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:\"ZXCVBNM<>?";
@@ -105,10 +129,18 @@ namespace KeyMapper
             char[] output = input.ToCharArray();
             for (int i = 0; i < output.Length; i++)
             {
-                char lookup = char.ToLowerInvariant(output[i]);
-                if (map.TryGetValue(lookup, out char mapped))
+                char ch = output[i];
+                if (map.TryGetValue(ch, out char mappedExact))
                 {
-                    output[i] = char.IsUpper(output[i]) ? char.ToUpperInvariant(mapped) : mapped;
+                    output[i] = mappedExact;
+                }
+                else
+                {
+                    char lookupLower = char.ToLowerInvariant(ch);
+                    if (map.TryGetValue(lookupLower, out char mappedLower))
+                    {
+                        output[i] = char.IsUpper(ch) ? char.ToUpperInvariant(mappedLower) : mappedLower;
+                    }
                 }
             }
             return new string(output);

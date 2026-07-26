@@ -44,6 +44,7 @@ namespace KeyMapper
 
             contextMenu.Items.Add(new ToolStripMenuItem("Show Desktop Pet", null, (s, e) => _mainWindow.ShowPetOverlayWindow()));
             contextMenu.Items.Add(new ToolStripMenuItem("Hide Desktop Pet", null, (s, e) => _mainWindow.HidePetOverlayWindow()));
+            contextMenu.Items.Add(new ToolStripMenuItem("Music Player (موزیک پلیر)", null, (s, e) => _mainWindow.ShowMusicPlayerWidget()));
 
             _enableItem = new ToolStripMenuItem("Enabled", null, (s, e) =>
             {

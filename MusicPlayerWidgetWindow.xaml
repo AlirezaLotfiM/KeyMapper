@@ -573,31 +573,14 @@
                     <Button Content="➖" Foreground="{DynamicResource AppAccentBrush}" Background="Transparent" BorderThickness="0" FontSize="14" FontWeight="Bold" Click="MinimizeBtn_Click" Margin="0,0,6,0" Cursor="Hand" ToolTip="Minimize to Mini Player"/>
                     <Button Content="✕" Foreground="#EF4444" Background="Transparent" BorderThickness="0" FontSize="15" FontWeight="Bold" Click="CloseBtn_Click" Cursor="Hand"/>
                 </StackPanel>
-            </Grid>
-
-            <!-- Super Compact Floating Mini Player Deck -->
-            <Grid x:Name="MiniDeckView" Grid.RowSpan="3"
-                  Visibility="Collapsed">
-                <Grid.Clip>
-                    <RectangleGeometry Rect="0,0,176,266"
-                                       RadiusX="16" RadiusY="16"/>
-                </Grid.Clip>
-                <!-- The cover is enlarged and softened beneath two theme-aware
-                     washes. The art supplies the mood; the active theme keeps
-                     every label and control readable. -->
-                <Border x:Name="MiniArtworkBackdrop"
-                        CornerRadius="16" ClipToBounds="True"
-                        IsHitTestVisible="False">
+            </Grid>            <!-- Super Compact Floating Mini Player Deck (Supports Vertical & Horizontal Mode) -->
+            <Grid x:Name="MiniDeckView" Grid.RowSpan="3" Visibility="Collapsed">
+                <Border x:Name="MiniArtworkBackdrop" CornerRadius="16" ClipToBounds="True" IsHitTestVisible="False">
                     <Grid>
-                        <Image x:Name="MiniBackdropImage"
-                               Stretch="UniformToFill" Opacity="0.82"
-                               Visibility="Collapsed"
-                               RenderTransformOrigin="0.5,0.5">
+                        <Image x:Name="MiniBackdropImage" Stretch="UniformToFill" Opacity="0.82" Visibility="Collapsed" RenderTransformOrigin="0.5,0.5">
                             <Image.RenderTransform>
                                 <TransformGroup>
-                                    <ScaleTransform x:Name="MiniBackdropScale"
-                                                    ScaleX="1.28"
-                                                    ScaleY="1.28"/>
+                                    <ScaleTransform x:Name="MiniBackdropScale" ScaleX="1.28" ScaleY="1.28"/>
                                     <TranslateTransform x:Name="MiniBackdropTranslate"/>
                                 </TransformGroup>
                             </Image.RenderTransform>
@@ -605,35 +588,16 @@
                                 <BlurEffect Radius="15"/>
                             </Image.Effect>
                         </Image>
-                        <Rectangle x:Name="MiniArtworkGradient"
-                                   Fill="{DynamicResource AppAccentSoftBrush}"
-                                   Opacity="0.38"/>
-                        <Rectangle Fill="#B20A1320" Opacity="0.52"/>
-                        <Rectangle>
-                            <Rectangle.Fill>
-                                <LinearGradientBrush StartPoint="0,0"
-                                                     EndPoint="0,1">
-                                    <GradientStop Color="#18000000"
-                                                  Offset="0"/>
-                                    <GradientStop Color="#46000000"
-                                                  Offset="0.58"/>
-                                    <GradientStop Color="#88000000"
-                                                  Offset="1"/>
-                                </LinearGradientBrush>
-                            </Rectangle.Fill>
-                        </Rectangle>
-                        <Rectangle Fill="{DynamicResource AppAccentSoftBrush}"
-                                   Opacity="0.08"/>
-                        <Rectangle x:Name="MiniGrainOverlay"
-                                   IsHitTestVisible="False" Opacity="0.30"/>
+                        <Rectangle x:Name="MiniArtworkGradient" Fill="{DynamicResource AppAccentSoftBrush}" Opacity="0.38"/>
+                        <Rectangle x:Name="MiniBackdropDarkOverlay" Fill="#B20A1320" Opacity="0.52"/>
+                        <Rectangle Fill="{DynamicResource AppAccentSoftBrush}" Opacity="0.08"/>
+                        <Rectangle x:Name="MiniGrainOverlay" IsHitTestVisible="False" Opacity="0.30"/>
                     </Grid>
                 </Border>
 
-                <StackPanel Panel.ZIndex="1"
-                            VerticalAlignment="Center"
-                            HorizontalAlignment="Center"
-                            Width="150" Margin="0">
-                    <!-- Top Bar: Title, Expand, Close -->
+                <!-- Vertical Mini Deck Layout -->
+                <StackPanel x:Name="MiniVerticalLayout" Panel.ZIndex="1" VerticalAlignment="Center" HorizontalAlignment="Center" Width="150" Visibility="Visible">
+                    <!-- Top Bar: Title, Like, Orientation, Expand, Close -->
                     <Grid Margin="0,0,0,6">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <Rectangle Width="12" Height="12" Fill="{StaticResource MiniForegroundBrush}" Margin="0,0,4,0">
@@ -642,33 +606,19 @@
                             <TextBlock Text="Mini" Foreground="{StaticResource MiniForegroundBrush}" FontSize="11" FontWeight="Bold" VerticalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                            <Button x:Name="MiniLikeBtn" Content="♥" Foreground="{StaticResource MiniMutedBrush}" Style="{StaticResource MiniHeaderIconButton}" FontSize="15" Click="LikeBtn_Click" Margin="0,0,6,0" ToolTip="Add to Favorites"/>
-                            <Button Foreground="{StaticResource MiniForegroundBrush}"
-                                    Style="{StaticResource MiniHeaderIconButton}"
-                                    Click="ExpandMiniPlayer_Click"
-                                    Margin="0,0,6,0"
-                                    ToolTip="Expand full player">
-                                <Viewbox Width="13" Height="13">
-                                    <Path Width="24" Height="24"
-                                          Data="M2,9 L2,6.5 C2,4.01 4.01,2 6.5,2 L9,2 M15,2 L17.5,2 C19.99,2 22,4.01 22,6.5 L22,9 M22,16 L22,17.5 C22,19.99 19.99,22 17.5,22 L16,22 M9,22 L6.5,22 C4.01,22 2,19.99 2,17.5 L2,15"
-                                          Stroke="{StaticResource MiniForegroundBrush}"
-                                          StrokeThickness="1.5"
-                                          StrokeStartLineCap="Round"
-                                          StrokeEndLineCap="Round"
-                                          StrokeLineJoin="Round"/>
+                            <Button x:Name="MiniLikeBtn" Content="♥" Foreground="{StaticResource MiniMutedBrush}" Style="{StaticResource MiniHeaderIconButton}" FontSize="14" Click="LikeBtn_Click" Margin="0,0,4,0" ToolTip="Add to Favorites"/>
+                            <Button Content="⬌" Foreground="{StaticResource MiniForegroundBrush}" Style="{StaticResource MiniHeaderIconButton}" FontSize="12" Click="ToggleMiniOrientation_Click" Margin="0,0,4,0" ToolTip="Toggle Horizontal / Vertical Mini Mode"/>
+                            <Button Foreground="{StaticResource MiniForegroundBrush}" Style="{StaticResource MiniHeaderIconButton}" Click="ExpandMiniPlayer_Click" Margin="0,0,4,0" ToolTip="Expand full player">
+                                <Viewbox Width="12" Height="12">
+                                    <Path Width="24" Height="24" Data="M2,9 L2,6.5 C2,4.01 4.01,2 6.5,2 L9,2 M15,2 L17.5,2 C19.99,2 22,4.01 22,6.5 L22,9 M22,16 L22,17.5 C22,19.99 19.99,22 17.5,22 L16,22 M9,22 L6.5,22 C4.01,22 2,19.99 2,17.5 L2,15" Stroke="{StaticResource MiniForegroundBrush}" StrokeThickness="1.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"/>
                                 </Viewbox>
                             </Button>
                             <Button Content="✕" Foreground="#EF4444" Style="{StaticResource MiniHeaderIconButton}" FontSize="11" FontWeight="Bold" Click="CloseBtn_Click" ToolTip="Close Player"/>
                         </StackPanel>
                     </Grid>
 
-                    <!-- Album Cover Art (Rounded Square) -->
-                    <Border Width="85" Height="85" CornerRadius="10"
-                            Background="#3A000000"
-                            BorderBrush="Transparent"
-                            BorderThickness="0"
-                            HorizontalAlignment="Center"
-                            Margin="0,0,0,6">
+                    <!-- Album Cover Art (85x85) -->
+                    <Border Width="85" Height="85" CornerRadius="10" Background="#3A000000" HorizontalAlignment="Center" Margin="0,0,0,6">
                         <Grid>
                             <TextBlock Text="🎵" FontSize="26" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             <Image x:Name="MiniCoverImage" Width="85" Height="85" Stretch="UniformToFill" Visibility="Collapsed">
@@ -679,17 +629,11 @@
                         </Grid>
                     </Border>
 
-                    <!-- Marquee Track Details -->
+                    <!-- Track Details -->
                     <TextBlock x:Name="MiniTrackTitleTxt" Text="No Track Playing" Foreground="{StaticResource MiniForegroundBrush}" FontSize="11" FontWeight="Bold" TextAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,0,0,1"/>
-                    <TextBlock x:Name="MiniTrackArtistTxt"
-                               Text="Select a song"
-                               Foreground="{StaticResource MiniMutedBrush}"
-                               FontSize="9.5" FontWeight="Bold"
-                               TextAlignment="Center"
-                               TextTrimming="CharacterEllipsis"
-                               Margin="0,0,0,6"/>
+                    <TextBlock x:Name="MiniTrackArtistTxt" Text="Select a song" Foreground="{StaticResource MiniMutedBrush}" FontSize="9.5" FontWeight="Bold" TextAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,0,0,6"/>
 
-                    <!-- Compact Controls -->
+                    <!-- Controls -->
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,6">
                         <Button Width="30" Height="30" Style="{StaticResource MiniGlassCircleButton}" Click="PrevBtn_Click" Margin="0,0,8,0">
                             <Rectangle Width="14" Height="14" Fill="{StaticResource MiniForegroundBrush}"><Rectangle.OpacityMask><ImageBrush ImageSource="/Resources/Icons/music-skip-previous-svgrepo-com.png"/></Rectangle.OpacityMask></Rectangle>
@@ -705,7 +649,7 @@
                         </Button>
                     </StackPanel>
 
-                    <!-- Neon Mini Seekbar Progress -->
+                    <!-- Seekbar -->
                     <Grid Width="135" Margin="0,0,0,6" HorizontalAlignment="Center">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -718,7 +662,7 @@
                         </Grid>
                     </Grid>
 
-                    <!-- Neon Volume Slider -->
+                    <!-- Volume Slider -->
                     <Grid HorizontalAlignment="Center" Width="135" Margin="0,0,0,4">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
@@ -728,9 +672,96 @@
                         <Slider Grid.Column="1" x:Name="MiniVolumeSlider" Style="{StaticResource CyberNeonSlider}" Minimum="0" Maximum="100" Value="80" ValueChanged="VolumeSlider_ValueChanged" VerticalAlignment="Center" Cursor="Hand"/>
                     </Grid>
                 </StackPanel>
+
+                <!-- Horizontal Mini Deck Layout -->
+                <Grid x:Name="MiniHorizontalLayout" Panel.ZIndex="1" Margin="10,7,10,7" Visibility="Collapsed">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="74"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Width="72" Height="72" CornerRadius="10" Background="#3A000000" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Grid>
+                            <TextBlock Text="🎵" FontSize="24" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <Image x:Name="MiniCoverImageH" Width="72" Height="72" Stretch="UniformToFill" Visibility="Collapsed">
+                                <Image.Clip>
+                                    <RectangleGeometry Rect="0,0,72,72" RadiusX="10" RadiusY="10"/>
+                                </Image.Clip>
+                            </Image>
+                        </Grid>
+                    </Border>
+
+                    <Grid Grid.Column="1" Margin="10,0,0,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <Grid Grid.Row="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock x:Name="MiniTrackTitleTxtH" Text="No Track Playing" Foreground="{StaticResource MiniForegroundBrush}" FontSize="11.5" FontWeight="Bold" TextTrimming="CharacterEllipsis"/>
+                                <TextBlock x:Name="MiniTrackArtistTxtH" Text="Select a song" Foreground="{StaticResource MiniMutedBrush}" FontSize="9.5" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Button Content="♥" Foreground="{StaticResource MiniMutedBrush}" Style="{StaticResource MiniHeaderIconButton}" FontSize="14" Click="LikeBtn_Click" Margin="0,0,4,0"/>
+                                <Button Content="⬍" Foreground="{StaticResource MiniForegroundBrush}" Style="{StaticResource MiniHeaderIconButton}" FontSize="12" Click="ToggleMiniOrientation_Click" Margin="0,0,4,0" ToolTip="Toggle Vertical / Horizontal Mini Mode"/>
+                                <Button Foreground="{StaticResource MiniForegroundBrush}" Style="{StaticResource MiniHeaderIconButton}" Click="ExpandMiniPlayer_Click" Margin="0,0,4,0">
+                                    <Viewbox Width="12" Height="12">
+                                        <Path Width="24" Height="24" Data="M2,9 L2,6.5 C2,4.01 4.01,2 6.5,2 L9,2 M15,2 L17.5,2 C19.99,2 22,4.01 22,6.5 L22,9 M22,16 L22,17.5 C22,19.99 19.99,22 17.5,22 L16,22 M9,22 L6.5,22 C4.01,22 2,19.99 2,17.5 L2,15" Stroke="{StaticResource MiniForegroundBrush}" StrokeThickness="1.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"/>
+                                    </Viewbox>
+                                </Button>
+                                <Button Content="✕" Foreground="#EF4444" Style="{StaticResource MiniHeaderIconButton}" FontSize="11" FontWeight="Bold" Click="CloseBtn_Click"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <Grid Grid.Row="1" Margin="0,2,0,2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" x:Name="MiniCurrentTimeTxtH" Text="00:00" Foreground="{DynamicResource AppAccentBrush}" FontSize="8.5" FontWeight="Bold" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                            <Slider Grid.Column="1" x:Name="MiniPositionSliderH" Style="{StaticResource CyberNeonSlider}" Minimum="0" Maximum="100" ValueChanged="PositionSlider_ValueChanged" PreviewMouseDown="PositionSlider_PreviewMouseDown" PreviewMouseUp="PositionSlider_PreviewMouseUp" VerticalAlignment="Center" Cursor="Hand"/>
+                            <TextBlock Grid.Column="2" x:Name="MiniTotalTimeTxtH" Text="00:00" Foreground="{StaticResource MiniMutedBrush}" FontSize="8.5" Margin="4,0,0,0" VerticalAlignment="Center"/>
+                        </Grid>
+
+                        <Grid Grid.Row="2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                <Button Width="24" Height="24" Style="{StaticResource MiniGlassCircleButton}" Click="PrevBtn_Click" Margin="0,0,5,0">
+                                    <Rectangle Width="11" Height="11" Fill="{StaticResource MiniForegroundBrush}"><Rectangle.OpacityMask><ImageBrush ImageSource="/Resources/Icons/music-skip-previous-svgrepo-com.png"/></Rectangle.OpacityMask></Rectangle>
+                                </Button>
+                                <Button Width="26" Height="26" Style="{StaticResource MiniGlassPlayButton}" Click="PlayPauseBtn_Click" Margin="0,0,5,0">
+                                    <Grid Width="13" Height="13">
+                                        <Rectangle Fill="White"><Rectangle.OpacityMask><ImageBrush ImageSource="/Resources/Icons/music-play-svgrepo-com.png"/></Rectangle.OpacityMask></Rectangle>
+                                    </Grid>
+                                </Button>
+                                <Button Width="24" Height="24" Style="{StaticResource MiniGlassCircleButton}" Click="NextBtn_Click">
+                                    <Rectangle Width="11" Height="11" Fill="{StaticResource MiniForegroundBrush}"><Rectangle.OpacityMask><ImageBrush ImageSource="/Resources/Icons/music-skip-next-svgrepo-com.png"/></Rectangle.OpacityMask></Rectangle>
+                                </Button>
+                            </StackPanel>
+                            <Grid Grid.Column="1" HorizontalAlignment="Right" Width="90" VerticalAlignment="Center">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Rectangle Grid.Column="0" Width="11" Height="11" Fill="{StaticResource MiniForegroundBrush}" Margin="0,0,3,0"><Rectangle.OpacityMask><ImageBrush ImageSource="/Resources/Icons/music-volume-loud-svgrepo-com.png"/></Rectangle.OpacityMask></Rectangle>
+                                <Slider Grid.Column="1" x:Name="MiniVolumeSliderH" Style="{StaticResource CyberNeonSlider}" Minimum="0" Maximum="100" Value="80" ValueChanged="VolumeSlider_ValueChanged" VerticalAlignment="Center" Cursor="Hand"/>
+                            </Grid>
+                        </Grid>
+                    </Grid>
+                </Grid>
             </Grid>
 
-            <!-- Main Player Content Card -->
+            <!-- Main Player Content Card (Reverted to Standard Original View) -->
             <Border Grid.Row="1" x:Name="PlayerMainView" Background="{DynamicResource AppSurfaceBrush}" BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="1" CornerRadius="14" Padding="14" Margin="0,0,0,12">
                 <Grid>
                     <Grid.RowDefinitions>
