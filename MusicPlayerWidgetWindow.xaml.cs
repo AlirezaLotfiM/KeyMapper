@@ -70,6 +70,15 @@ namespace KeyMapper
                 PlaylistView.Visibility = Visibility.Collapsed;
                 Height = 260;
             }
+            if (settings.MusicPlayerVolume >= 0 && settings.MusicPlayerVolume <= 100)
+            {
+                LocalAudioPlayerService.Instance.SetVolume(settings.MusicPlayerVolume);
+            }
+            double currentVol = LocalAudioPlayerService.Instance.CurrentVolume * 100.0;
+            if (VolumeSlider != null) VolumeSlider.Value = currentVol;
+            if (MiniVolumeSlider != null) MiniVolumeSlider.Value = currentVol;
+            if (MiniVolumeSliderH != null) MiniVolumeSliderH.Value = currentVol;
+
             UpdateTabStyles();
             _isRestoringPreferences = false;
 
@@ -159,6 +168,27 @@ namespace KeyMapper
             }
         }
 
+        private bool _isPinned = true;
+
+        private void TogglePin_Click(object sender, RoutedEventArgs e)
+        {
+            _isPinned = !_isPinned;
+            UpdatePinStateUI();
+        }
+
+        private void UpdatePinStateUI()
+        {
+            Topmost = _isMiniMode && _isPinned;
+
+            if (MiniPinIconV != null) MiniPinIconV.Visibility = _isPinned ? Visibility.Collapsed : Visibility.Visible;
+            if (MiniUnpinIconV != null) MiniUnpinIconV.Visibility = _isPinned ? Visibility.Visible : Visibility.Collapsed;
+            if (MiniPinIconH != null) MiniPinIconH.Visibility = _isPinned ? Visibility.Collapsed : Visibility.Visible;
+            if (MiniUnpinIconH != null) MiniUnpinIconH.Visibility = _isPinned ? Visibility.Visible : Visibility.Collapsed;
+
+            if (MiniPinBtnV != null) MiniPinBtnV.ToolTip = _isPinned ? "Unpin Mini Player (Un-float)" : "Pin Mini Player (Stay on top)";
+            if (MiniPinBtnH != null) MiniPinBtnH.ToolTip = _isPinned ? "Unpin Mini Player (Un-float)" : "Pin Mini Player (Stay on top)";
+        }
+
         private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ChangedButton == MouseButton.Left)
@@ -233,28 +263,28 @@ namespace KeyMapper
                 MiniHorizontalLayout.Visibility = Visibility.Visible;
                 if (MiniBackdropLayoutScale != null)
                 {
-                    MiniBackdropLayoutScale.ScaleX = 1.62;
-                    MiniBackdropLayoutScale.ScaleY = 1.62;
+                    MiniBackdropLayoutScale.ScaleX = 1.00;
+                    MiniBackdropLayoutScale.ScaleY = 1.00;
                 }
                 if (MiniBackdropImage != null)
                 {
-                    MiniBackdropImage.Opacity = 0.52;
+                    MiniBackdropImage.Opacity = 0.82;
                 }
                 if (MiniBackdropDarkOverlay != null)
                 {
-                    MiniBackdropDarkOverlay.Opacity = 0.72;
+                    MiniBackdropDarkOverlay.Opacity = 0.52;
                 }
                 if (MiniLandscapeVignette != null)
                 {
-                    MiniLandscapeVignette.Visibility = Visibility.Visible;
+                    MiniLandscapeVignette.Visibility = Visibility.Collapsed;
                 }
                 if (MiniArtworkGradient != null)
                 {
-                    MiniArtworkGradient.Opacity = 0.24;
+                    MiniArtworkGradient.Opacity = 0.42;
                 }
                 if (MiniGrainOverlay != null)
                 {
-                    MiniGrainOverlay.Opacity = 0.22;
+                    MiniGrainOverlay.Opacity = 0.30;
                 }
                 if (MiniArtworkBackdrop != null)
                 {
@@ -328,9 +358,9 @@ namespace KeyMapper
                 OuterWindowBorder.Background = Brushes.Transparent;
                 MainRootGrid.Margin = new Thickness(0);
 
-                Topmost = true;
                 _miniBackdropStoryboard?.Begin(this, true);
                 ApplyMiniOrientation();
+                UpdatePinStateUI();
             }
             else
             {
@@ -609,6 +639,8 @@ namespace KeyMapper
             }
         }
 
+        private string? _artistFilter = null;
+
         private void FilterByArtistName(string artistName)
         {
             if (_isMiniMode)
@@ -616,9 +648,30 @@ namespace KeyMapper
                 ToggleMiniPlayerMode();
             }
 
-            _activeTab = "ARTISTS";
+            _artistFilter = artistName;
+            _selectedCustomPlaylist = null;
+            _activeTab = "ALL";
             UpdateTabStyles();
             UpdatePlaylistList();
+        }
+
+        private void ClearArtistFilter_Click(object sender, RoutedEventArgs e)
+        {
+            _artistFilter = null;
+            UpdatePlaylistList();
+        }
+
+        private static bool IsTrackByArtist(AudioTrackItem track, string targetArtist)
+        {
+            if (string.IsNullOrWhiteSpace(targetArtist)) return true;
+            string artistStr = track.DisplayArtist;
+            if (string.IsNullOrWhiteSpace(artistStr)) return false;
+
+            string[] delims = new[] { ";", ",", "&", "/", "\\", " ft. ", " FEAT. ", " feat. ", " WITH ", " with ", " AND ", " and " };
+            var artists = artistStr.Split(delims, StringSplitOptions.RemoveEmptyEntries)
+                .Select(a => a.Trim());
+
+            return artists.Any(a => string.Equals(a, targetArtist, StringComparison.OrdinalIgnoreCase));
         }
 
         private void UpdateMiniArtworkBackdrop(BitmapSource? artwork)
@@ -982,6 +1035,7 @@ namespace KeyMapper
         private void TabQueue_Click(object sender, RoutedEventArgs e)
         {
             _activeTab = "QUEUE";
+            _artistFilter = null;
             _selectedCustomPlaylist = null;
             UpdateTabStyles();
             UpdatePlaylistList();
@@ -991,6 +1045,7 @@ namespace KeyMapper
         private void TabTopPlayed_Click(object sender, RoutedEventArgs e)
         {
             _activeTab = "TOP_PLAYED";
+            _artistFilter = null;
             _selectedCustomPlaylist = null;
             UpdateTabStyles();
             UpdatePlaylistList();
@@ -1000,6 +1055,7 @@ namespace KeyMapper
         private void TabPlaylists_Click(object sender, RoutedEventArgs e)
         {
             _activeTab = "PLAYLISTS";
+            _artistFilter = null;
             _selectedCustomPlaylist = null;
             UpdateTabStyles();
             UpdatePlaylistList();
@@ -1009,6 +1065,7 @@ namespace KeyMapper
         private void TabAll_Click(object sender, RoutedEventArgs e)
         {
             _activeTab = "ALL";
+            _artistFilter = null;
             _selectedCustomPlaylist = null;
             UpdateTabStyles();
             UpdatePlaylistList();
@@ -1018,6 +1075,7 @@ namespace KeyMapper
         private void TabGenres_Click(object sender, RoutedEventArgs e)
         {
             _activeTab = "GENRES";
+            _artistFilter = null;
             _selectedCustomPlaylist = null;
             UpdateTabStyles();
             UpdatePlaylistList();
@@ -1027,6 +1085,7 @@ namespace KeyMapper
         private void TabArtists_Click(object sender, RoutedEventArgs e)
         {
             _activeTab = "ARTISTS";
+            _artistFilter = null;
             _selectedCustomPlaylist = null;
             UpdateTabStyles();
             UpdatePlaylistList();
@@ -1036,6 +1095,7 @@ namespace KeyMapper
         private void TabFavs_Click(object sender, RoutedEventArgs e)
         {
             _activeTab = "FAVS";
+            _artistFilter = null;
             _selectedCustomPlaylist = null;
             UpdateTabStyles();
             UpdatePlaylistList();
@@ -1045,6 +1105,7 @@ namespace KeyMapper
         private void TabHistory_Click(object sender, RoutedEventArgs e)
         {
             _activeTab = "HISTORY";
+            _artistFilter = null;
             _selectedCustomPlaylist = null;
             UpdateTabStyles();
             UpdatePlaylistList();
@@ -1062,6 +1123,7 @@ namespace KeyMapper
             settings.MusicPlayerActiveTab = _activeTab;
             settings.MusicPlayerSortIndex =
                 Math.Max(0, SortComboBox?.SelectedIndex ?? 0);
+            settings.MusicPlayerVolume = LocalAudioPlayerService.Instance.CurrentVolume * 100.0;
             ConfigManager.Save(settings);
         }
 
@@ -1133,6 +1195,19 @@ namespace KeyMapper
 
             string query = SearchBox.Text?.Trim() ?? string.Empty;
 
+            if (!string.IsNullOrWhiteSpace(_artistFilter) && _activeTab == "ALL")
+            {
+                if (ArtistFilterBanner != null)
+                {
+                    ArtistFilterBanner.Visibility = Visibility.Visible;
+                    FilteredArtistNameTxt.Text = $"\"{_artistFilter}\"";
+                }
+            }
+            else
+            {
+                if (ArtistFilterBanner != null) ArtistFilterBanner.Visibility = Visibility.Collapsed;
+            }
+
             if (_activeTab == "ARTISTS")
             {
                 var artists = LocalAudioPlayerService.Instance.ArtistGroups;
@@ -1175,6 +1250,11 @@ namespace KeyMapper
                 else
                 {
                     list = LocalAudioPlayerService.Instance.Playlist.AsEnumerable();
+                }
+
+                if (!string.IsNullOrWhiteSpace(_artistFilter) && _activeTab == "ALL")
+                {
+                    list = list.Where(x => IsTrackByArtist(x, _artistFilter));
                 }
 
                 if (!string.IsNullOrWhiteSpace(query))

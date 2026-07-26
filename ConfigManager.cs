@@ -59,6 +59,7 @@ namespace KeyMapper
         public bool MusicPlayerPlaylistVisible { get; set; } = true;
         public string MusicPlayerActiveTab { get; set; } = "QUEUE";
         public int MusicPlayerSortIndex { get; set; } = 0;
+        public double MusicPlayerVolume { get; set; } = 80.0;
         public string UserName { get; set; } = string.Empty;
     }
 

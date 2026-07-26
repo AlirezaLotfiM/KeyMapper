@@ -64,11 +64,8 @@ namespace KeyMapper
                 catch { }
             });
 
-            // The control center opens normally. Pet visibility is restored by
-            // MainWindow from the user's saved preference.
-            _mainWindow.Show();
-            _mainWindow.WindowState = WindowState.Normal;
-            _mainWindow.Activate();
+            // The app starts silently in system tray and pet overlay.
+            // MainWindow (settings) can be opened from the system tray menu.
             _mainWindow.ShowStartupNotification();
         }
 

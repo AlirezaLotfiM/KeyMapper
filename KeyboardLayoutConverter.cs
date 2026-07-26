@@ -60,65 +60,21 @@ namespace KeyMapper
             ['<'] = '>', ['>'] = '<', ['?'] = '؟'
         };
 
-        // Physical Keyboard Key Indices to Characters for EN (QWERTY), DE (QWERTZ), FA (ISIRI)
-        private static readonly string EnQwerty = "`1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:\"ZXCVBNM<>?";
-        private static readonly string DeQwertz = "^1234567890-ßqwertzuiopü+#asdfghjklöäyxcvbnm,.-°!\"§$%&/()=?`QWERTZUIOPÜ'*ASDFGHJKLÖÄYXCVBNM;:_";
-        private static readonly string FaIsiri = "`;1234567890-=ضصثقفغعهخحجچ\\شسیبلاتنمکگظطزرذدپo~!@#$%^&*()_+ضصثقفغعهخحجچ|شسیبلاتنمکگظطزرذدپ؟";
-
-        // Dictionary of common words for language likelihood validation
-        private static readonly HashSet<string> GermanCommonWords = new(StringComparer.OrdinalIgnoreCase)
-        {
-            "der", "die", "das", "und", "ist", "in", "den", "zu", "mit", "nicht", "von", "sie", "hallo",
-            "mein", "lehrer", "ich", "es", "sich", "auf", "für", "eine", "einen", "haben", "wir", "guten", "tag"
-        };
-
-        private static readonly HashSet<string> EnglishCommonWords = new(StringComparer.OrdinalIgnoreCase)
-        {
-            "the", "be", "to", "of", "and", "a", "in", "that", "have", "i", "it", "for", "not", "on", "with",
-            "he", "as", "you", "do", "at", "this", "but", "his", "by", "from", "hello", "teacher", "my"
-        };
-
-        private static readonly HashSet<string> PersianCommonWords = new(StringComparer.OrdinalIgnoreCase)
-        {
-            "و", "در", "به", "از", "که", "این", "را", "با", "است", "برای", "آن", "یک", "خود", "تا", "سلام", "من", "استاد"
-        };
-
         public string ConvertText(string input, out string detectedTargetLanguage)
         {
             detectedTargetLanguage = "Unknown";
             if (string.IsNullOrEmpty(input)) return input;
 
-            // A manual layout-fix action means "interpret these glyphs as physical
-            // key positions", not "translate this natural-language sentence".
             if (input.Any(IsPersianCharacter))
             {
                 detectedTargetLanguage = "English";
                 return MapCharacters(input, PersianToEnglish);
             }
-
-            string fromEnToDe = RemapString(input, EnQwerty, DeQwertz);
-            string fromEnToFa = MapCharacters(input, EnglishToPersian);
-            string fromDeToEn = RemapString(input, DeQwertz, EnQwerty);
-            string fromDeToFa = RemapString(input, DeQwertz, FaIsiri);
-
-            var candidates = new (string text, string targetLang, double score)[]
+            else
             {
-                (fromEnToDe, "German", EvaluateScore(fromEnToDe, GermanCommonWords)),
-                (fromEnToFa, "Persian", EvaluateScore(fromEnToFa, PersianCommonWords)),
-                (fromDeToEn, "English", EvaluateScore(fromDeToEn, EnglishCommonWords)),
-                (fromDeToFa, "Persian", EvaluateScore(fromDeToFa, PersianCommonWords))
-            };
-
-            var bestCandidate = candidates.OrderByDescending(c => c.score).FirstOrDefault();
-
-            if (bestCandidate.score > 0.0)
-            {
-                detectedTargetLanguage = bestCandidate.targetLang;
-                return bestCandidate.text;
+                detectedTargetLanguage = "Persian";
+                return MapCharacters(input, EnglishToPersian);
             }
-
-            detectedTargetLanguage = "Persian";
-            return fromEnToFa;
         }
 
         private static bool IsPersianCharacter(char character) =>
