@@ -231,14 +231,30 @@ namespace KeyMapper
             {
                 MiniVerticalLayout.Visibility = Visibility.Collapsed;
                 MiniHorizontalLayout.Visibility = Visibility.Visible;
-                if (MiniBackdropScale != null)
+                if (MiniBackdropLayoutScale != null)
                 {
-                    MiniBackdropScale.ScaleX = 1.55;
-                    MiniBackdropScale.ScaleY = 1.55;
+                    MiniBackdropLayoutScale.ScaleX = 1.62;
+                    MiniBackdropLayoutScale.ScaleY = 1.62;
+                }
+                if (MiniBackdropImage != null)
+                {
+                    MiniBackdropImage.Opacity = 0.52;
                 }
                 if (MiniBackdropDarkOverlay != null)
                 {
-                    MiniBackdropDarkOverlay.Opacity = 0.62;
+                    MiniBackdropDarkOverlay.Opacity = 0.72;
+                }
+                if (MiniLandscapeVignette != null)
+                {
+                    MiniLandscapeVignette.Visibility = Visibility.Visible;
+                }
+                if (MiniArtworkGradient != null)
+                {
+                    MiniArtworkGradient.Opacity = 0.24;
+                }
+                if (MiniGrainOverlay != null)
+                {
+                    MiniGrainOverlay.Opacity = 0.22;
                 }
                 if (MiniArtworkBackdrop != null)
                 {
@@ -255,14 +271,30 @@ namespace KeyMapper
             {
                 MiniHorizontalLayout.Visibility = Visibility.Collapsed;
                 MiniVerticalLayout.Visibility = Visibility.Visible;
-                if (MiniBackdropScale != null)
+                if (MiniBackdropLayoutScale != null)
                 {
-                    MiniBackdropScale.ScaleX = 1.28;
-                    MiniBackdropScale.ScaleY = 1.28;
+                    MiniBackdropLayoutScale.ScaleX = 1.28;
+                    MiniBackdropLayoutScale.ScaleY = 1.28;
+                }
+                if (MiniBackdropImage != null)
+                {
+                    MiniBackdropImage.Opacity = 0.82;
                 }
                 if (MiniBackdropDarkOverlay != null)
                 {
                     MiniBackdropDarkOverlay.Opacity = 0.52;
+                }
+                if (MiniLandscapeVignette != null)
+                {
+                    MiniLandscapeVignette.Visibility = Visibility.Collapsed;
+                }
+                if (MiniArtworkGradient != null)
+                {
+                    MiniArtworkGradient.Opacity = 0.42;
+                }
+                if (MiniGrainOverlay != null)
+                {
+                    MiniGrainOverlay.Opacity = 0.30;
                 }
                 if (MiniArtworkBackdrop != null)
                 {
@@ -597,7 +629,8 @@ namespace KeyMapper
                 MiniBackdropImage.Visibility = Visibility.Collapsed;
                 MiniArtworkGradient.Fill =
                     (Brush)FindResource("AppAccentSoftBrush");
-                MiniArtworkGradient.Opacity = 0.38;
+                MiniArtworkGradient.Opacity =
+                    _isMiniHorizontal ? 0.24 : 0.38;
                 return;
             }
 
@@ -661,13 +694,15 @@ namespace KeyMapper
                 gradient.Freeze();
 
                 MiniArtworkGradient.Fill = gradient;
-                MiniArtworkGradient.Opacity = 0.42;
+                MiniArtworkGradient.Opacity =
+                    _isMiniHorizontal ? 0.24 : 0.42;
             }
             catch
             {
                 MiniArtworkGradient.Fill =
                     (Brush)FindResource("AppAccentSoftBrush");
-                MiniArtworkGradient.Opacity = 0.38;
+                MiniArtworkGradient.Opacity =
+                    _isMiniHorizontal ? 0.24 : 0.38;
             }
         }
 
