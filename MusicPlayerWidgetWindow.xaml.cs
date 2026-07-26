@@ -54,6 +54,7 @@ namespace KeyMapper
 
             AppSettings settings = ConfigManager.Load();
             _activeTab = NormalizeMusicTab(settings.MusicPlayerActiveTab);
+            _isMiniHorizontal = settings.MusicPlayerMiniHorizontal;
             _playlistVisiblePreference =
                 settings.MusicPlayerPlaylistVisible;
             SortComboBox.SelectedIndex = Math.Clamp(
@@ -219,6 +220,7 @@ namespace KeyMapper
         {
             _isMiniHorizontal = !_isMiniHorizontal;
             ApplyMiniOrientation();
+            SaveMusicPlayerPreferences();
         }
 
         private void ApplyMiniOrientation()
@@ -231,21 +233,21 @@ namespace KeyMapper
                 MiniHorizontalLayout.Visibility = Visibility.Visible;
                 if (MiniBackdropScale != null)
                 {
-                    MiniBackdropScale.ScaleX = 2.5;
-                    MiniBackdropScale.ScaleY = 2.5;
+                    MiniBackdropScale.ScaleX = 1.55;
+                    MiniBackdropScale.ScaleY = 1.55;
                 }
                 if (MiniBackdropDarkOverlay != null)
                 {
-                    MiniBackdropDarkOverlay.Opacity = 0.90;
+                    MiniBackdropDarkOverlay.Opacity = 0.62;
                 }
                 if (MiniArtworkBackdrop != null)
                 {
-                    MiniArtworkBackdrop.SetResourceReference(Border.BackgroundProperty, "AppSurfaceBrush");
-                    MiniArtworkBackdrop.SetResourceReference(Border.BorderBrushProperty, "AppBorderBrush");
-                    MiniArtworkBackdrop.BorderThickness = new Thickness(1);
+                    MiniArtworkBackdrop.Background = null;
+                    MiniArtworkBackdrop.BorderBrush = null;
+                    MiniArtworkBackdrop.BorderThickness = new Thickness(0);
                 }
-                Width = 380;
-                Height = 95;
+                Width = 455;
+                Height = 150;
                 Left = workArea.Right - Width - 20;
                 Top = workArea.Bottom - Height - 20;
             }
@@ -273,6 +275,7 @@ namespace KeyMapper
                 Left = workArea.Right - Width - 20;
                 Top = workArea.Top + 20;
             }
+            UpdateOuterWindowClip();
         }
 
         private void ToggleMiniPlayerMode()
@@ -322,7 +325,35 @@ namespace KeyMapper
                 Left = Math.Max(0, (workArea.Width - Width) / 2 + workArea.Left);
                 Top = Math.Max(0, (workArea.Height - Height) / 2 + workArea.Top);
             }
+            UpdateOuterWindowClip();
             SaveMusicPlayerPreferences();
+        }
+
+        private void OuterWindowBorder_SizeChanged(
+            object sender,
+            SizeChangedEventArgs e)
+        {
+            UpdateOuterWindowClip();
+        }
+
+        private void UpdateOuterWindowClip()
+        {
+            if (OuterWindowBorder == null ||
+                OuterWindowBorder.ActualWidth <= 0 ||
+                OuterWindowBorder.ActualHeight <= 0)
+            {
+                return;
+            }
+
+            double radius = OuterWindowBorder.CornerRadius.TopLeft;
+            OuterWindowBorder.Clip = new RectangleGeometry(
+                new Rect(
+                    0,
+                    0,
+                    OuterWindowBorder.ActualWidth,
+                    OuterWindowBorder.ActualHeight),
+                radius,
+                radius);
         }
 
         private async void ManageFoldersBtn_Click(object sender, RoutedEventArgs e)
@@ -745,6 +776,14 @@ namespace KeyMapper
                 MiniLikeBtn.Opacity = track.IsFavorite ? 1 : 0.5;
                 MiniLikeBtn.ToolTip = LikeBtn.ToolTip;
             }
+            if (MiniLikeBtnH != null)
+            {
+                MiniLikeBtnH.Foreground = track.IsFavorite
+                    ? brush
+                    : (Brush)FindResource("MiniMutedBrush");
+                MiniLikeBtnH.Opacity = track.IsFavorite ? 1 : 0.5;
+                MiniLikeBtnH.ToolTip = LikeBtn.ToolTip;
+            }
         }
 
         private void Instance_OnPlaybackStateChanged(bool isPlaying)
@@ -756,6 +795,10 @@ namespace KeyMapper
                 MiniPlayIcon.Visibility =
                     isPlaying ? Visibility.Collapsed : Visibility.Visible;
                 MiniPauseGlyph.Visibility =
+                    isPlaying ? Visibility.Visible : Visibility.Collapsed;
+                MiniPlayIconH.Visibility =
+                    isPlaying ? Visibility.Collapsed : Visibility.Visible;
+                MiniPauseGlyphH.Visibility =
                     isPlaying ? Visibility.Visible : Visibility.Collapsed;
                 EqualizerPanel.Visibility = isPlaying ? Visibility.Visible : Visibility.Collapsed;
 
@@ -978,6 +1021,7 @@ namespace KeyMapper
             if (_isRestoringPreferences) return;
             AppSettings settings = ConfigManager.Load();
             settings.MusicPlayerMiniMode = _isMiniMode;
+            settings.MusicPlayerMiniHorizontal = _isMiniHorizontal;
             settings.MusicPlayerPlaylistVisible =
                 _playlistVisiblePreference;
             settings.MusicPlayerActiveTab = _activeTab;

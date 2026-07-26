@@ -55,6 +55,7 @@ namespace KeyMapper
         public string TranslatorTargetLanguage { get; set; } = "en";
         public bool TranslatorSettingsExpanded { get; set; } = false;
         public bool MusicPlayerMiniMode { get; set; } = false;
+        public bool MusicPlayerMiniHorizontal { get; set; } = false;
         public bool MusicPlayerPlaylistVisible { get; set; } = true;
         public string MusicPlayerActiveTab { get; set; } = "QUEUE";
         public int MusicPlayerSortIndex { get; set; } = 0;
