@@ -42,15 +42,20 @@ actions, reminders, and keyboard-layout repair in one friendly Windows experienc
 
 ## Highlights
 
-### Three distinct desktop companions
+### Six distinct desktop companions
 
 - **Pip** is energetic, curious, and playful.
 - **Professor Owlet** is calm, analytical, and precise.
 - **Dude** is direct, practical, and dryly funny.
+- **Frieren** is observant, patient, and quietly curious.
+- **Yuji Itadori** is upbeat, determined, and encouraging.
+- **Monkey D. Luffy** is fearless, spontaneous, and always ready for an adventure.
 
 Characters can walk around the desktop, remain in one place, react to active applications and music, and speak at a Quiet, Normal, or Chatty frequency. Walking speed and idle-animation speed are independent controls.
 
 Movement can be disabled, roam freely, or be locked to a strict horizontal line. A pet placed on the taskbar edge keeps its ground position when walking begins instead of snapping to a hidden movement boundary. Speech and hover music controls stay inside the working area when the pet is placed near a screen edge.
+
+Luffy uses crisp frames prepared from the supplied Game Boy Advance sprite atlas. His transparent idle and walking strips share a fixed foot baseline, so animation stays sharp and grounded without white boxes, clipped feet, or frame-to-frame jumping.
 
 ### Theme-aware music studio
 
