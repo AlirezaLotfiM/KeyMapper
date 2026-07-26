@@ -1225,23 +1225,14 @@ namespace KeyMapper
                     _ => "Pink_Monster"
                 };
 
-                bool usesSeparatedSpriteFrames = folderName == "Luffy";
-                string idleFileName = usesSeparatedSpriteFrames
-                    ? "Luffy_Idle_6.png"
-                    : $"{spritePrefix}_Idle_4.png";
-                string walkFileName = usesSeparatedSpriteFrames
-                    ? "Luffy_Walk_8.png"
-                    : $"{spritePrefix}_Walk_6.png";
                 _idleFrames = LoadFrames(
                     folderName,
-                    idleFileName,
-                    4,
-                    usesSeparatedSpriteFrames);
+                    $"{spritePrefix}_Idle_4.png",
+                    4);
                 _walkFrames = LoadFrames(
                     folderName,
-                    walkFileName,
-                    6,
-                    usesSeparatedSpriteFrames);
+                    $"{spritePrefix}_Walk_6.png",
+                    6);
                 _animationFrame = 0;
                 PetSpriteImage.Source = _idleFrames.Count > 0 ? _idleFrames[0] : null;
                 _isListeningAnimationActive = false;
@@ -1373,8 +1364,7 @@ namespace KeyMapper
         private IReadOnlyList<BitmapSource> LoadFrames(
             string folderName,
             string fileName,
-            int frameCount,
-            bool detectSeparatedFrames = false)
+            int frameCount)
         {
             string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "Characters", folderName, fileName);
             if (!File.Exists(path)) return Array.Empty<BitmapSource>();
@@ -1385,11 +1375,6 @@ namespace KeyMapper
             spriteSheet.CacheOption = BitmapCacheOption.OnLoad;
             spriteSheet.EndInit();
             spriteSheet.Freeze();
-
-            if (detectSeparatedFrames)
-            {
-                return LoadSeparatedFrames(spriteSheet);
-            }
 
             int frameWidth = spriteSheet.PixelWidth / frameCount;
             var frames = new List<BitmapSource>(frameCount);
@@ -1425,118 +1410,6 @@ namespace KeyMapper
                 paddedFrame.Freeze();
                 frames.Add(paddedFrame);
             }
-            return frames;
-        }
-
-        internal static IReadOnlyList<BitmapSource> LoadSeparatedFrames(
-            BitmapSource source)
-        {
-            var converted = new FormatConvertedBitmap(
-                source,
-                PixelFormats.Bgra32,
-                null,
-                0);
-            converted.Freeze();
-
-            int width = converted.PixelWidth;
-            int height = converted.PixelHeight;
-            int stride = width * 4;
-            byte[] pixels = new byte[stride * height];
-            converted.CopyPixels(pixels, stride, 0);
-
-            bool ColumnContainsArtwork(int x)
-            {
-                for (int y = 0; y < height; y++)
-                {
-                    if (pixels[(y * stride) + (x * 4) + 3] > 8)
-                    {
-                        return true;
-                    }
-                }
-                return false;
-            }
-
-            const int maximumInternalGap = 12;
-            var regions = new List<(int Start, int End)>();
-            int regionStart = -1;
-            int lastArtworkColumn = -1;
-            for (int x = 0; x < width; x++)
-            {
-                if (!ColumnContainsArtwork(x))
-                {
-                    continue;
-                }
-
-                if (regionStart < 0)
-                {
-                    regionStart = x;
-                }
-                else if (x - lastArtworkColumn > maximumInternalGap)
-                {
-                    regions.Add((regionStart, lastArtworkColumn));
-                    regionStart = x;
-                }
-                lastArtworkColumn = x;
-            }
-            if (regionStart >= 0)
-            {
-                regions.Add((regionStart, lastArtworkColumn));
-            }
-
-            if (regions.Count == 0)
-            {
-                return Array.Empty<BitmapSource>();
-            }
-
-            const int sidePadding = 3;
-            const int topPadding = 2;
-            const int bottomPadding = 3;
-            int commonFrameWidth = 1;
-            foreach ((int start, int end) in regions)
-            {
-                commonFrameWidth = Math.Max(
-                    commonFrameWidth,
-                    end - start + 1);
-            }
-            var frames = new List<BitmapSource>(regions.Count);
-
-            for (int index = 0; index < regions.Count; index++)
-            {
-                (int start, int end) = regions[index];
-                int cropWidth = end - start + 1;
-                var crop = new CroppedBitmap(
-                    converted,
-                    new Int32Rect(start, 0, cropWidth, height));
-                crop.Freeze();
-
-                int destinationLeft =
-                    sidePadding + ((commonFrameWidth - cropWidth) / 2);
-                var visual = new DrawingVisual();
-                RenderOptions.SetBitmapScalingMode(
-                    visual,
-                    BitmapScalingMode.NearestNeighbor);
-                using (DrawingContext drawing = visual.RenderOpen())
-                {
-                    drawing.DrawImage(
-                        crop,
-                        new Rect(
-                            destinationLeft,
-                            topPadding,
-                            cropWidth,
-                            height));
-                }
-
-                var normalized = new RenderTargetBitmap(
-                    commonFrameWidth + (sidePadding * 2),
-                    height + topPadding + bottomPadding,
-                    96,
-                    96,
-                    PixelFormats.Pbgra32);
-                normalized.Render(visual);
-                normalized.Freeze();
-                frames.Add(normalized);
-            }
-
             return frames;
         }
 
