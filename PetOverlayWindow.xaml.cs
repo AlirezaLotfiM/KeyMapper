@@ -99,6 +99,18 @@ namespace KeyMapper
         private string _lastCommentedTrackKey = string.Empty;
         private DateTime _lastMusicCommentAt = DateTime.MinValue;
         private bool _ambientAiBusy;
+        private bool _isListeningAnimationActive;
+
+        private enum PixelMusicGlyph
+        {
+            EighthNote,
+            QuarterNote,
+            SixteenthNote,
+            BeamedPair,
+            Chord,
+            BeatSpark,
+            Equalizer
+        }
 
         public PetStateMachine StateMachine => _stateMachine;
 
@@ -129,7 +141,7 @@ namespace KeyMapper
 
             _musicNoteTimer = new DispatcherTimer
             {
-                Interval = TimeSpan.FromMilliseconds(900)
+                Interval = TimeSpan.FromMilliseconds(620)
             };
             _musicNoteTimer.Tick += MusicNoteTimer_Tick;
 
@@ -145,8 +157,16 @@ namespace KeyMapper
 
             Loaded += PetOverlayWindow_Loaded;
 
-            LocalAudioPlayerService.Instance.OnTrackChanged += track => Dispatcher.Invoke(UpdatePetMusicControlsUI);
-            LocalAudioPlayerService.Instance.OnPlaybackStateChanged += isPlaying => Dispatcher.Invoke(UpdatePetMusicControlsUI);
+            LocalAudioPlayerService.Instance.OnTrackChanged += track => Dispatcher.Invoke(() =>
+            {
+                UpdatePetMusicControlsUI();
+                UpdateMusicListeningState();
+            });
+            LocalAudioPlayerService.Instance.OnPlaybackStateChanged += isPlaying => Dispatcher.Invoke(() =>
+            {
+                UpdatePetMusicControlsUI();
+                UpdateMusicListeningState();
+            });
             LocalAudioPlayerService.Instance.OnVolumeChanged += volumePercent => Dispatcher.Invoke(() =>
             {
                 if (PetVolumeSlider != null && Math.Abs(PetVolumeSlider.Value - volumePercent) > 0.5)
@@ -230,6 +250,7 @@ namespace KeyMapper
             _behaviorTimer.Start();
             _musicTimer.Start();
             _musicNoteTimer.Start();
+            UpdateMusicListeningState();
         }
 
         private void MusicNoteTimer_Tick(object? sender, EventArgs e)
@@ -241,8 +262,8 @@ namespace KeyMapper
                 SpeechBubble.Visibility == Visibility.Visible ||
                 PetMusicControlsOverlay.Visibility == Visibility.Visible ||
                 _isContextMenuOpen ||
-                MusicNotesCanvas.Children.Count >= 4 ||
-                _random.NextDouble() < 0.32)
+                MusicNotesCanvas.Children.Count >= 7 ||
+                _random.NextDouble() < 0.12)
             {
                 return;
             }
@@ -252,74 +273,82 @@ namespace KeyMapper
 
         private void SpawnPixelMusicNote()
         {
-            bool doubleNote = _random.NextDouble() > 0.68;
-            Canvas note = CreatePixelMusicNote(doubleNote);
-            bool spawnOnRight = _random.NextDouble() > 0.5;
-            double startLeft = spawnOnRight
-                ? _random.Next(100, 124)
-                : _random.Next(8, 34);
-            double startTop = _random.Next(73, 104);
-            double direction = spawnOnRight ? 1 : -1;
-
-            Canvas.SetLeft(note, startLeft);
-            Canvas.SetTop(note, startTop);
-            MusicNotesCanvas.Children.Add(note);
-
-            int steps = _random.Next(7, 10);
-            double durationSeconds = 2.8 + (_random.NextDouble() * 1.3);
-            var leftAnimation = new DoubleAnimationUsingKeyFrames();
-            var topAnimation = new DoubleAnimationUsingKeyFrames();
-
-            for (int step = 0; step <= steps; step++)
+            int burstSize = _random.NextDouble() < 0.24 ? 2 : 1;
+            for (int burstIndex = 0;
+                 burstIndex < burstSize &&
+                 MusicNotesCanvas.Children.Count < 7;
+                 burstIndex++)
             {
-                double progress = step / (double)steps;
-                TimeSpan time = TimeSpan.FromSeconds(
-                    durationSeconds * progress);
-                double sway = ((step % 2 == 0) ? -1 : 1) *
-                              (2 + (progress * 3));
-                leftAnimation.KeyFrames.Add(
-                    new DiscreteDoubleKeyFrame(
-                        startLeft + (direction * progress * 10) + sway,
-                        time));
-                topAnimation.KeyFrames.Add(
-                    new DiscreteDoubleKeyFrame(
-                        startTop - (progress * 72),
-                        time));
+                PixelMusicGlyph glyph = (PixelMusicGlyph)_random.Next(
+                    Enum.GetValues<PixelMusicGlyph>().Length);
+                Canvas note = CreatePixelMusicGlyph(glyph);
+                bool spawnOnRight = _random.NextDouble() > 0.5;
+                double startLeft = spawnOnRight
+                    ? _random.Next(98, 121)
+                    : _random.Next(7, 33);
+                double startTop = _random.Next(72, 108) + (burstIndex * 8);
+                double direction = spawnOnRight ? 1 : -1;
+
+                Canvas.SetLeft(note, startLeft);
+                Canvas.SetTop(note, startTop);
+                MusicNotesCanvas.Children.Add(note);
+
+                int steps = _random.Next(7, 11);
+                double durationSeconds = 2.35 + (_random.NextDouble() * 1.45);
+                var leftAnimation = new DoubleAnimationUsingKeyFrames();
+                var topAnimation = new DoubleAnimationUsingKeyFrames();
+
+                for (int step = 0; step <= steps; step++)
+                {
+                    double progress = step / (double)steps;
+                    TimeSpan time = TimeSpan.FromSeconds(
+                        durationSeconds * progress);
+                    double sway = ((step % 2 == 0) ? -1 : 1) *
+                                  (2 + (progress * 3));
+                    leftAnimation.KeyFrames.Add(
+                        new DiscreteDoubleKeyFrame(
+                            startLeft + (direction * progress * 11) + sway,
+                            time));
+                    topAnimation.KeyFrames.Add(
+                        new DiscreteDoubleKeyFrame(
+                            startTop - (progress * 76),
+                            time));
+                }
+
+                var opacityAnimation = new DoubleAnimationUsingKeyFrames();
+                opacityAnimation.KeyFrames.Add(
+                    new LinearDoubleKeyFrame(0, TimeSpan.Zero));
+                opacityAnimation.KeyFrames.Add(
+                    new LinearDoubleKeyFrame(
+                        0.94,
+                        TimeSpan.FromSeconds(durationSeconds * 0.12)));
+                opacityAnimation.KeyFrames.Add(
+                    new LinearDoubleKeyFrame(
+                        0.82,
+                        TimeSpan.FromSeconds(durationSeconds * 0.68)));
+                opacityAnimation.KeyFrames.Add(
+                    new LinearDoubleKeyFrame(
+                        0,
+                        TimeSpan.FromSeconds(durationSeconds)));
+                opacityAnimation.Completed += (_, _) =>
+                    MusicNotesCanvas.Children.Remove(note);
+
+                note.BeginAnimation(Canvas.LeftProperty, leftAnimation);
+                note.BeginAnimation(Canvas.TopProperty, topAnimation);
+                note.BeginAnimation(OpacityProperty, opacityAnimation);
             }
-
-            var opacityAnimation = new DoubleAnimationUsingKeyFrames();
-            opacityAnimation.KeyFrames.Add(
-                new LinearDoubleKeyFrame(0, TimeSpan.Zero));
-            opacityAnimation.KeyFrames.Add(
-                new LinearDoubleKeyFrame(
-                    0.92,
-                    TimeSpan.FromSeconds(durationSeconds * 0.16)));
-            opacityAnimation.KeyFrames.Add(
-                new LinearDoubleKeyFrame(
-                    0.78,
-                    TimeSpan.FromSeconds(durationSeconds * 0.72)));
-            opacityAnimation.KeyFrames.Add(
-                new LinearDoubleKeyFrame(
-                    0,
-                    TimeSpan.FromSeconds(durationSeconds)));
-            opacityAnimation.Completed += (_, _) =>
-                MusicNotesCanvas.Children.Remove(note);
-
-            note.BeginAnimation(Canvas.LeftProperty, leftAnimation);
-            note.BeginAnimation(Canvas.TopProperty, topAnimation);
-            note.BeginAnimation(OpacityProperty, opacityAnimation);
         }
 
-        private Canvas CreatePixelMusicNote(bool doubleNote)
+        private Canvas CreatePixelMusicGlyph(PixelMusicGlyph glyph)
         {
             Brush noteBrush = (Brush)FindResource(
-                _random.NextDouble() > 0.18
+                _random.NextDouble() > 0.24
                     ? "AppAccentBrush"
                     : "AppTextBrush");
             var note = new Canvas
             {
-                Width = doubleNote ? 18 : 14,
-                Height = 18,
+                Width = 20,
+                Height = 20,
                 SnapsToDevicePixels = true
             };
             RenderOptions.SetEdgeMode(note, EdgeMode.Aliased);
@@ -339,23 +368,133 @@ namespace KeyMapper
                 note.Children.Add(pixel);
             }
 
-            if (doubleNote)
+            switch (glyph)
             {
-                AddPixel(3, 2, 12, 3);
-                AddPixel(3, 4, 3, 10);
-                AddPixel(12, 4, 3, 10);
-                AddPixel(0, 12, 7, 5);
-                AddPixel(9, 12, 7, 5);
-            }
-            else
-            {
-                AddPixel(5, 2, 3, 12);
-                AddPixel(7, 2, 6, 3);
-                AddPixel(1, 12, 7, 5);
+                case PixelMusicGlyph.EighthNote:
+                    AddPixel(6, 2, 3, 12);
+                    AddPixel(8, 2, 7, 3);
+                    AddPixel(2, 12, 7, 5);
+                    break;
+                case PixelMusicGlyph.QuarterNote:
+                    AddPixel(9, 2, 3, 12);
+                    AddPixel(4, 12, 8, 6);
+                    break;
+                case PixelMusicGlyph.SixteenthNote:
+                    AddPixel(6, 1, 3, 13);
+                    AddPixel(8, 2, 7, 3);
+                    AddPixel(8, 7, 6, 3);
+                    AddPixel(1, 12, 8, 6);
+                    break;
+                case PixelMusicGlyph.BeamedPair:
+                    AddPixel(3, 2, 13, 3);
+                    AddPixel(3, 4, 3, 10);
+                    AddPixel(13, 4, 3, 10);
+                    AddPixel(0, 12, 7, 5);
+                    AddPixel(10, 12, 7, 5);
+                    break;
+                case PixelMusicGlyph.Chord:
+                    AddPixel(10, 2, 3, 13);
+                    AddPixel(5, 8, 8, 5);
+                    AddPixel(3, 13, 8, 5);
+                    break;
+                case PixelMusicGlyph.BeatSpark:
+                    AddPixel(8, 1, 3, 6);
+                    AddPixel(8, 13, 3, 6);
+                    AddPixel(1, 8, 6, 3);
+                    AddPixel(13, 8, 6, 3);
+                    AddPixel(8, 8, 3, 3);
+                    break;
+                case PixelMusicGlyph.Equalizer:
+                    AddPixel(2, 9, 3, 9);
+                    AddPixel(7, 4, 3, 14);
+                    AddPixel(12, 7, 3, 11);
+                    AddPixel(17, 11, 3, 7);
+                    break;
             }
 
             return note;
         }
+
+        private void UpdateMusicListeningState()
+        {
+            bool shouldListen =
+                _musicNotesEnabled &&
+                LocalAudioPlayerService.Instance.IsPlaying &&
+                LocalAudioPlayerService.Instance.CurrentTrack != null;
+            if (shouldListen == _isListeningAnimationActive) return;
+
+            _isListeningAnimationActive = shouldListen;
+            if (!shouldListen)
+            {
+                MusicBounceTransform.BeginAnimation(
+                    TranslateTransform.YProperty,
+                    null);
+                MusicSwayTransform.BeginAnimation(
+                    RotateTransform.AngleProperty,
+                    null);
+                MusicBounceTransform.Y = 0;
+                MusicSwayTransform.Angle = 0;
+                return;
+            }
+
+            (double bounce, double sway, double beatSeconds) =
+                GetCharacterGroove();
+            var bounceAnimation = new DoubleAnimationUsingKeyFrames
+            {
+                Duration = TimeSpan.FromSeconds(beatSeconds),
+                RepeatBehavior = RepeatBehavior.Forever
+            };
+            bounceAnimation.KeyFrames.Add(
+                new DiscreteDoubleKeyFrame(0, KeyTime.FromPercent(0)));
+            bounceAnimation.KeyFrames.Add(
+                new DiscreteDoubleKeyFrame(
+                    -bounce,
+                    KeyTime.FromPercent(0.36)));
+            bounceAnimation.KeyFrames.Add(
+                new DiscreteDoubleKeyFrame(
+                    -bounce,
+                    KeyTime.FromPercent(0.58)));
+            bounceAnimation.KeyFrames.Add(
+                new DiscreteDoubleKeyFrame(0, KeyTime.FromPercent(1)));
+
+            var swayAnimation = new DoubleAnimationUsingKeyFrames
+            {
+                Duration = TimeSpan.FromSeconds(beatSeconds * 2),
+                RepeatBehavior = RepeatBehavior.Forever
+            };
+            swayAnimation.KeyFrames.Add(
+                new DiscreteDoubleKeyFrame(
+                    -sway,
+                    KeyTime.FromPercent(0)));
+            swayAnimation.KeyFrames.Add(
+                new DiscreteDoubleKeyFrame(
+                    sway,
+                    KeyTime.FromPercent(0.5)));
+            swayAnimation.KeyFrames.Add(
+                new DiscreteDoubleKeyFrame(
+                    -sway,
+                    KeyTime.FromPercent(1)));
+
+            MusicBounceTransform.BeginAnimation(
+                TranslateTransform.YProperty,
+                bounceAnimation);
+            MusicSwayTransform.BeginAnimation(
+                RotateTransform.AngleProperty,
+                swayAnimation);
+        }
+
+        private (double Bounce, double Sway, double BeatSeconds)
+            GetCharacterGroove() =>
+            _personality.CharacterName switch
+            {
+                "Pink Monster" => (3.0, 2.2, 0.48),
+                "Owlet Monster" => (1.5, 1.1, 0.62),
+                "Dude Monster" => (2.2, 3.0, 0.56),
+                "Frieren" => (1.2, 0.8, 0.72),
+                "Yuji Itadori" => (3.4, 2.6, 0.42),
+                "Monkey D. Luffy" => (3.8, 3.2, 0.38),
+                _ => (2.0, 1.6, 0.55)
+            };
 
         public void SetCharacter(string characterName)
         {
@@ -385,6 +524,8 @@ namespace KeyMapper
                 _walkFrames = LoadFrames(folderName, $"{spritePrefix}_Walk_6.png", 6);
                 _animationFrame = 0;
                 PetSpriteImage.Source = _idleFrames.Count > 0 ? _idleFrames[0] : null;
+                _isListeningAnimationActive = false;
+                UpdateMusicListeningState();
 
                 _activeContextKey = string.Empty;
                 _nextObservationAt =
@@ -1091,13 +1232,14 @@ namespace KeyMapper
             {
                 MusicNotesCanvas.Children.Clear();
             }
+            UpdateMusicListeningState();
             UpdateCommentMenuState();
 
             ShowSpeechBubble(
                 _personality.SpeakerName,
                 _musicNotesEnabled
-                    ? "Pixel music notes are on. I’ll let the song decorate the air."
-                    : "Pixel music notes are off. The music can keep its secrets.",
+                    ? "Music ambience is on. I’ll move with the rhythm and let it decorate the air."
+                    : "Music ambience is off. I’ll listen without the visual groove.",
                 5);
         }
 
@@ -1145,8 +1287,8 @@ namespace KeyMapper
                 _commentsEnabled ? "Comments: On" : "Comments: Off";
             MusicNotesToggleMenuItem.Header =
                 _musicNotesEnabled
-                    ? "Pixel Music Notes: On"
-                    : "Pixel Music Notes: Off";
+                    ? "Music Ambience: On"
+                    : "Music Ambience: Off";
             AiCommentsToggleMenuItem.Header =
                 _aiAmbientCommentsEnabled
                     ? "Fresh AI Comments: On"

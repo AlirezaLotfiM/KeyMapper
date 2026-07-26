@@ -23,14 +23,6 @@
                              From="1.0" To="1.04" Duration="0:0:1.6" />
         </Storyboard>
 
-        <Storyboard x:Key="ListeningAnimation" RepeatBehavior="Forever" AutoReverse="True">
-            <DoubleAnimation Storyboard.TargetName="GlowRing"
-                             Storyboard.TargetProperty="Opacity"
-                             From="0.3" To="0.95" Duration="0:0:0.5" />
-            <DoubleAnimation Storyboard.TargetName="PetBodyTransform"
-                             Storyboard.TargetProperty="Y"
-                             From="0" To="-5" Duration="0:0:0.5" />
-        </Storyboard>
     </Window.Resources>
 
     <Grid x:Name="OverlayRoot" Margin="10" ClipToBounds="True">
@@ -109,13 +101,26 @@
                 </Ellipse>
                 <Ellipse Canvas.Left="56" Canvas.Top="108" Width="28" Height="3" Fill="#42000000"/>
 
-                <!-- 2D Pixel Art Sprite Image -->
-                <Image x:Name="PetSpriteImage"
-                       Width="120" Height="120"
-                       Canvas.Left="10" Canvas.Top="4"
-                       Stretch="Uniform"
-                       RenderOptions.BitmapScalingMode="NearestNeighbor"
-                       RenderOptions.EdgeMode="Aliased"/>
+                <!-- The listening transform moves only the artwork. The window,
+                     feet anchor, and contact shadow remain perfectly stable. -->
+                <Canvas x:Name="PetListeningStage"
+                        Width="140" Height="140"
+                        RenderTransformOrigin="0.5,0.78">
+                    <Canvas.RenderTransform>
+                        <TransformGroup>
+                            <RotateTransform x:Name="MusicSwayTransform"/>
+                            <TranslateTransform x:Name="MusicBounceTransform"/>
+                        </TransformGroup>
+                    </Canvas.RenderTransform>
+
+                    <!-- 2D Pixel Art Sprite Image -->
+                    <Image x:Name="PetSpriteImage"
+                           Width="120" Height="120"
+                           Canvas.Left="10" Canvas.Top="4"
+                           Stretch="Uniform"
+                           RenderOptions.BitmapScalingMode="NearestNeighbor"
+                           RenderOptions.EdgeMode="Aliased"/>
+                </Canvas>
 
                 <!-- Status Badge Indicator -->
                 <Border x:Name="StatusBadge" Canvas.Left="95" Canvas.Top="15"
@@ -218,7 +223,7 @@
                 </MenuItem.Icon>
             </MenuItem>
             <MenuItem x:Name="MusicNotesToggleMenuItem"
-                      Header="Pixel Music Notes: On"
+                      Header="Music Ambience: On"
                       Click="MenuToggleMusicNotes_Click">
                 <MenuItem.Icon>
                     <Rectangle Style="{StaticResource PetMenuIcon}">
