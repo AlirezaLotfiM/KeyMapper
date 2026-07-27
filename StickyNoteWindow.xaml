@@ -138,7 +138,7 @@
         </Grid.ColumnDefinitions>
 
         <!-- MAIN CARD BORDER -->
-        <Border Grid.Column="0" x:Name="NoteCardBorder" 
+        <Border ClipToBounds="True" Grid.Column="0" x:Name="NoteCardBorder" 
                 CornerRadius="10" 
                 BorderThickness="1.5"
                 BorderBrush="#25000000"

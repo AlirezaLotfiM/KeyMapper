@@ -322,7 +322,7 @@ namespace KeyMapper
                 {
                     SetParent(hwnd, IntPtr.Zero);
                     Topmost = true;
-                    SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+                    //SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
                 }
             }
             catch (Exception ex)
