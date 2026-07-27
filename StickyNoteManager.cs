@@ -48,7 +48,7 @@ namespace KeyMapper
                     // Create default welcome note positioned at the top-right of the screen
                     double margin = 20;
                     double noteWidth = 450;
-                    double noteHeight = 400;
+                    double noteHeight = 300;
                     double workAreaRight = SystemParameters.WorkArea.Right;
                     double startLeft = workAreaRight - noteWidth - margin;
                     double startTop = SystemParameters.WorkArea.Top + margin;
