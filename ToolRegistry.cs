@@ -211,6 +211,34 @@ namespace KeyMapper
                 return new ToolExecutionResult { Success = true, OutputMessage = "Started Screen OCR Snipper." };
             }
 
+            // 4.5. Sticky Notes Commands
+            if (lower.Contains("new note") || lower.Contains("add note") || lower.Contains("sticky note") ||
+                lower.Contains("یادداشت") || lower.Contains("استیکی نوت") || lower.Contains("نوت جدید"))
+            {
+                string noteContent = prompt;
+                if (lower.StartsWith("new note ")) noteContent = prompt.Substring(9).Trim();
+                else if (lower.StartsWith("add note ")) noteContent = prompt.Substring(9).Trim();
+                
+                var note = StickyNoteManager.Instance.CreateNewNote("Quick Note", noteContent);
+                return new ToolExecutionResult
+                {
+                    Success = true,
+                    OutputMessage = $"📝 Created new Sticky Note! (ID: {note.Id.Substring(0, 6)})"
+                };
+            }
+
+            if (lower.Contains("show notes") || lower.Contains("show sticky notes") || lower.Contains("نمایش یادداشت") || lower.Contains("یادداشت ها"))
+            {
+                StickyNoteManager.Instance.ShowAllNotes();
+                return new ToolExecutionResult { Success = true, OutputMessage = "Shown all desktop sticky notes." };
+            }
+
+            if (lower.Contains("hide notes") || lower.Contains("hide sticky notes") || lower.Contains("مخفی کردن یادداشت"))
+            {
+                StickyNoteManager.Instance.HideAllNotes();
+                return new ToolExecutionResult { Success = true, OutputMessage = "Hidden all sticky notes." };
+            }
+
             // 5. General fallback
             return new ToolExecutionResult
             {

@@ -10,6 +10,7 @@
         Topmost="True"
         ShowInTaskbar="False"
         MouseDown="Window_MouseDown"
+        MouseDoubleClick="PetOverlay_MouseDoubleClick"
         MouseEnter="Window_MouseEnter"
         MouseLeave="Window_MouseLeave">
 
@@ -48,12 +49,13 @@
             </StackPanel>
         </Border>
 
-        <!-- Pet Hover Mini Music Control Overlay -->
+        <!-- Pet Hover Mini Music Control Overlay (Double Click Opens Music Player Widget) -->
         <Border x:Name="PetMusicControlsOverlay"
                 Background="{DynamicResource AppSurfaceBrush}" CornerRadius="10" Padding="10,7"
                 BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="1.5"
                 Visibility="Collapsed" HorizontalAlignment="Center"
                 VerticalAlignment="Bottom" Margin="0,0,0,138" Panel.ZIndex="3"
+                MouseLeftButtonDown="PetMusicOverlay_MouseLeftButtonDown"
                 MouseEnter="PetMusicControlsOverlay_MouseEnter"
                 MouseLeave="PetMusicControlsOverlay_MouseLeave">
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -93,7 +95,7 @@
                     </TransformGroup>
                 </Canvas.RenderTransform>
 
-                <!-- A tight contact shadow keeps the sprite grounded without a detached halo. -->
+                <!-- Shadow -->
                 <Ellipse Canvas.Left="46" Canvas.Top="107" Width="48" Height="6" Fill="#26000000">
                     <Ellipse.Effect>
                         <BlurEffect Radius="2"/>
@@ -101,16 +103,14 @@
                 </Ellipse>
                 <Ellipse Canvas.Left="56" Canvas.Top="108" Width="28" Height="3" Fill="#42000000"/>
 
-                <!-- The listening transform moves only the artwork. The window,
-                     feet anchor, and contact shadow remain perfectly stable. -->
                 <Canvas x:Name="PetListeningStage"
                         Width="140" Height="140"
                         RenderTransformOrigin="0.5,0.78">
                     <Canvas.RenderTransform>
                         <TransformGroup>
                             <ScaleTransform x:Name="MusicGrooveScaleTransform"
-                                            ScaleX="1" ScaleY="1"
-                                            CenterX="70" CenterY="108"/>
+                                             ScaleX="1" ScaleY="1"
+                                             CenterX="70" CenterY="108"/>
                             <RotateTransform x:Name="MusicSwayTransform"/>
                             <TranslateTransform x:Name="MusicBounceTransform"/>
                         </TransformGroup>
@@ -132,8 +132,6 @@
                 </Border>
             </Canvas>
 
-            <!-- Lightweight block-built notes appear only during active
-                 playback. Their stepped animation preserves the pixel style. -->
             <Canvas x:Name="MusicNotesCanvas"
                     Width="140" Height="140"
                     Panel.ZIndex="4"
@@ -148,45 +146,30 @@
                 <Style TargetType="{x:Type MenuItem}">
                     <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}"/>
                     <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}"/>
-                    <Setter Property="MinWidth" Value="238"/>
+                    <Setter Property="MinWidth" Value="220"/>
                     <Setter Property="Template">
                         <Setter.Value>
                             <ControlTemplate TargetType="{x:Type MenuItem}">
                                 <Grid>
-                                <Border x:Name="PixelCell" Background="{TemplateBinding Background}" BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="0,0,0,1" SnapsToDevicePixels="True">
-                                    <Grid Height="29">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="8"/>
-                                            <ColumnDefinition Width="24"/>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="22"/>
-                                        </Grid.ColumnDefinitions>
-                                        <Rectangle x:Name="PixelMarker" Grid.Column="0" Fill="{DynamicResource AppAccentBrush}" Visibility="Collapsed"/>
-                                        <ContentPresenter Grid.Column="1"
-                                                          HorizontalAlignment="Center"
-                                                          VerticalAlignment="Center"
-                                                          ContentSource="Icon"/>
-                                        <ContentPresenter Grid.Column="2" Margin="5,0,4,0" VerticalAlignment="Center" ContentSource="Header" RecognizesAccessKey="True"/>
-                                        <TextBlock x:Name="Arrow" Grid.Column="3" Text="›" FontSize="17" Foreground="{DynamicResource AppAccentBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed"/>
-                                    </Grid>
-                                </Border>
-                                <!-- WPF requires PART_Popup to display nested menu items. -->
-                                <Popup x:Name="PART_Popup"
-                                       Placement="Right"
-                                       HorizontalOffset="-2"
-                                       VerticalOffset="-2"
-                                       AllowsTransparency="True"
-                                       Focusable="False"
-                                       IsOpen="{Binding IsSubmenuOpen, RelativeSource={RelativeSource TemplatedParent}}">
-                                    <Border Background="{DynamicResource AppBackgroundBrush}"
-                                            BorderBrush="{DynamicResource AppTextBrush}"
-                                            BorderThickness="2"
-                                            Padding="2"
-                                            SnapsToDevicePixels="True">
-                                        <StackPanel IsItemsHost="True"
-                                                    KeyboardNavigation.DirectionalNavigation="Cycle"/>
+                                    <Border x:Name="PixelCell" Background="{TemplateBinding Background}" BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="0,0,0,1" SnapsToDevicePixels="True">
+                                        <Grid Height="29">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="8"/>
+                                                <ColumnDefinition Width="24"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="22"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Rectangle x:Name="PixelMarker" Grid.Column="0" Fill="{DynamicResource AppAccentBrush}" Visibility="Collapsed"/>
+                                            <ContentPresenter Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" ContentSource="Icon"/>
+                                            <ContentPresenter Grid.Column="2" Margin="5,0,4,0" VerticalAlignment="Center" ContentSource="Header" RecognizesAccessKey="True"/>
+                                            <TextBlock x:Name="Arrow" Grid.Column="3" Text="›" FontSize="17" Foreground="{DynamicResource AppAccentBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed"/>
+                                        </Grid>
                                     </Border>
-                                </Popup>
+                                    <Popup x:Name="PART_Popup" Placement="Right" HorizontalOffset="-2" VerticalOffset="-2" AllowsTransparency="True" Focusable="False" IsOpen="{Binding IsSubmenuOpen, RelativeSource={RelativeSource TemplatedParent}}">
+                                        <Border Background="{DynamicResource AppBackgroundBrush}" BorderBrush="{DynamicResource AppTextBrush}" BorderThickness="2" Padding="2" SnapsToDevicePixels="True">
+                                            <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Cycle"/>
+                                        </Border>
+                                    </Popup>
                                 </Grid>
                                 <ControlTemplate.Triggers>
                                     <Trigger Property="HasItems" Value="True">
@@ -206,7 +189,7 @@
                     <Setter Property="Height" Value="3"/>
                     <Setter Property="Margin" Value="7,4"/>
                     <Setter Property="Template">
-                            <Setter.Value><ControlTemplate TargetType="{x:Type Separator}"><Border Background="{DynamicResource AppBorderBrush}" Height="1"/></ControlTemplate></Setter.Value>
+                        <Setter.Value><ControlTemplate TargetType="{x:Type Separator}"><Border Background="{DynamicResource AppBorderBrush}" Height="1"/></ControlTemplate></Setter.Value>
                     </Setter>
                 </Style>
                 <Style x:Key="PetMenuIcon" TargetType="Rectangle">
@@ -216,151 +199,79 @@
                     <Setter Property="SnapsToDevicePixels" Value="True"/>
                 </Style>
             </ContextMenu.Resources>
-            <MenuItem Header="Music Player" Click="MenuMusicPlayer_Click">
-                <MenuItem.Icon>
-                    <Rectangle Style="{StaticResource PetMenuIcon}">
-                        <Rectangle.OpacityMask>
-                            <ImageBrush ImageSource="/Resources/Icons/music-music-note-2-svgrepo-com.png"/>
-                        </Rectangle.OpacityMask>
-                    </Rectangle>
-                </MenuItem.Icon>
+
+            <!-- 1. STICKY NOTES SUBMENU -->
+            <MenuItem Header="📝 Sticky Notes">
+                <MenuItem Header="➕ Add New Note" Click="MenuNewStickyNote_Click"/>
+                <MenuItem Header="👁️ Show All Notes" Click="MenuShowAllStickyNotes_Click"/>
+                <MenuItem Header="🙈 Hide All Notes" Click="MenuHideAllStickyNotes_Click"/>
+                <MenuItem Header="⚙️ Manage Notes" Click="MenuManageStickyNotes_Click"/>
             </MenuItem>
-            <MenuItem x:Name="MusicNotesToggleMenuItem"
-                      Header="Music Ambience: On"
-                      Click="MenuToggleMusicNotes_Click">
-                <MenuItem.Icon>
-                    <Rectangle Style="{StaticResource PetMenuIcon}">
-                        <Rectangle.OpacityMask>
-                            <ImageBrush ImageSource="/Resources/Icons/music-music-note-2-svgrepo-com.png"/>
-                        </Rectangle.OpacityMask>
-                    </Rectangle>
-                </MenuItem.Icon>
+
+            <!-- 2. MEDIA PLAYER SUBMENU -->
+            <MenuItem Header="🎵 Media Player">
+                <MenuItem Header="🎧 Open Music Player" Click="MenuMusicPlayer_Click"/>
+                <MenuItem x:Name="MusicNotesToggleMenuItem" Header="💃 Dance (Ambience): On" Click="MenuToggleMusicNotes_Click"/>
             </MenuItem>
-            <MenuItem Header="Talk with Character" Click="MenuAsk_Click">
-                <MenuItem.Icon>
-                    <Rectangle Style="{StaticResource PetMenuIcon}">
-                        <Rectangle.OpacityMask><ImageBrush ImageSource="Resources/Icons/chat.png"/></Rectangle.OpacityMask>
-                    </Rectangle>
-                </MenuItem.Icon>
+
+            <!-- 3. TEXT TOOLS SUBMENU -->
+            <MenuItem Header="🔤 Text Tools">
+                <MenuItem Header="🌐 Translate Selected Text" Click="MenuTranslate_Click"/>
+                <MenuItem Header="📷 OCR Screen Snipper" Click="MenuOcr_Click"/>
+                <MenuItem Header="🔄 De-gibberish Layout Fix" Click="MenuDeGibberish_Click"/>
             </MenuItem>
-            <MenuItem Header="De-gibberish selected text (Ctrl+Alt+K)" Click="MenuDeGibberish_Click"
-                      ToolTip="Turns text typed under the wrong Persian, English, or German keyboard layout back into the intended text.">
-                <MenuItem.Icon>
-                    <Rectangle Style="{StaticResource PetMenuIcon}">
-                        <Rectangle.OpacityMask><ImageBrush ImageSource="Resources/Icons/keyboard.png"/></Rectangle.OpacityMask>
-                    </Rectangle>
-                </MenuItem.Icon>
-            </MenuItem>
-            <MenuItem Header="Translate Selected Text" Click="MenuTranslate_Click">
-                <MenuItem.Icon>
-                    <Rectangle Style="{StaticResource PetMenuIcon}">
-                        <Rectangle.OpacityMask><ImageBrush ImageSource="Resources/Icons/translate.png"/></Rectangle.OpacityMask>
-                    </Rectangle>
-                </MenuItem.Icon>
-            </MenuItem>
-            <MenuItem Header="OCR Screen Snipper" Click="MenuOcr_Click">
-                <MenuItem.Icon>
-                    <Rectangle Style="{StaticResource PetMenuIcon}">
-                        <Rectangle.OpacityMask><ImageBrush ImageSource="Resources/Icons/ocr.png"/></Rectangle.OpacityMask>
-                    </Rectangle>
-                </MenuItem.Icon>
-            </MenuItem>
-            <Separator/>
-            <MenuItem Header="Switch Character">
-                <MenuItem.Icon>
-                    <Rectangle Style="{StaticResource PetMenuIcon}">
-                        <Rectangle.OpacityMask><ImageBrush ImageSource="Resources/Icons/character.png"/></Rectangle.OpacityMask>
-                    </Rectangle>
-                </MenuItem.Icon>
-                <MenuItem Header="Pink Monster" Click="MenuCharPink_Click"/>
-                <MenuItem Header="Owlet Monster" Click="MenuCharOwlet_Click"/>
-                <MenuItem Header="Dude Monster" Click="MenuCharDude_Click"/>
+
+            <!-- 4. DESKTOP PET SUBMENU -->
+            <MenuItem Header="🐾 Desktop Pet">
+                <MenuItem Header="💬 Talk to Character" Click="MenuAsk_Click"/>
+                <MenuItem Header="🎭 Switch Character">
+                    <MenuItem Header="Pink Monster" Click="MenuCharPink_Click"/>
+                    <MenuItem Header="Owlet Monster" Click="MenuCharOwlet_Click"/>
+                    <MenuItem Header="Dude Monster" Click="MenuCharDude_Click"/>
+                    <Separator/>
+                    <MenuItem Header="Frieren" Click="MenuCharFrieren_Click"/>
+                    <MenuItem Header="Yuji Itadori" Click="MenuCharYuji_Click"/>
+                    <MenuItem Header="Monkey D. Luffy" Click="MenuCharLuffy_Click"/>
+                </MenuItem>
                 <Separator/>
-                <MenuItem Header="Frieren" Click="MenuCharFrieren_Click"/>
-                <MenuItem Header="Yuji Itadori" Click="MenuCharYuji_Click"/>
-                <MenuItem Header="Monkey D. Luffy" Click="MenuCharLuffy_Click"/>
+                <MenuItem Header="💬 Comments">
+                    <MenuItem x:Name="CommentsToggleMenuItem" Header="Enable Comments: On" Click="MenuToggleComments_Click"/>
+                    <MenuItem Header="Comment Frequency">
+                        <MenuItem x:Name="CommentsQuietMenuItem" Header="Quiet (Rare)" Tag="Quiet" Click="MenuSetCommentFrequency_Click"/>
+                        <MenuItem x:Name="CommentsNormalMenuItem" Header="Normal" Tag="Normal" Click="MenuSetCommentFrequency_Click"/>
+                        <MenuItem x:Name="CommentsChattyMenuItem" Header="Chatty (Frequent)" Tag="Chatty" Click="MenuSetCommentFrequency_Click"/>
+                    </MenuItem>
+                    <MenuItem x:Name="AiCommentsToggleMenuItem" Header="AI Ambient Comments: On" Click="MenuToggleAiComments_Click"/>
+                </MenuItem>
+                <MenuItem Header="🚶 Walking">
+                    <MenuItem x:Name="WalkingToggleMenuItem" Header="Enable Walking: On" Click="MenuToggleWalking_Click"/>
+                    <MenuItem x:Name="HorizontalWalkingToggleMenuItem" Header="Horizontal Only: Off" Click="MenuToggleHorizontalWalking_Click"/>
+                    <MenuItem Header="Movement Speed">
+                        <MenuItem Header="Slow" Tag="45" Click="MenuSetWalkingSpeed_Click"/>
+                        <MenuItem Header="Normal" Tag="92" Click="MenuSetWalkingSpeed_Click"/>
+                        <MenuItem Header="Fast" Tag="160" Click="MenuSetWalkingSpeed_Click"/>
+                    </MenuItem>
+                    <MenuItem Header="Idle Animation Speed">
+                        <MenuItem Header="Calm" Tag="750" Click="MenuSetIdleSpeed_Click"/>
+                        <MenuItem Header="Normal" Tag="430" Click="MenuSetIdleSpeed_Click"/>
+                        <MenuItem Header="Lively" Tag="220" Click="MenuSetIdleSpeed_Click"/>
+                    </MenuItem>
+                </MenuItem>
+                <Separator/>
+                <MenuItem Header="⚙️ Pet Settings" Click="MenuSettings_Click"/>
+                <MenuItem Header="👁️ Hide Desktop Pet" Click="MenuHide_Click"/>
             </MenuItem>
-            <MenuItem x:Name="WalkingToggleMenuItem" Header="Walking: On" Click="MenuToggleWalking_Click">
-                <MenuItem.Icon>
-                    <Rectangle Style="{StaticResource PetMenuIcon}">
-                        <Rectangle.OpacityMask><ImageBrush ImageSource="Resources/Icons/walking.png"/></Rectangle.OpacityMask>
-                    </Rectangle>
-                </MenuItem.Icon>
+
+            <!-- 5. KEYMAPPER SETTINGS SUBMENU -->
+            <MenuItem Header="⚙️ KeyMapper Settings">
+                <MenuItem Header="⚡ Text Expansions &amp; Shortcuts" Click="MenuExpansions_Click"/>
+                <MenuItem Header="🔧 All Settings" Click="MenuSettings_Click"/>
             </MenuItem>
-            <MenuItem x:Name="HorizontalWalkingToggleMenuItem" Header="Horizontal Only: Off" Click="MenuToggleHorizontalWalking_Click">
-                <MenuItem.Icon>
-                    <Rectangle Style="{StaticResource PetMenuIcon}">
-                        <Rectangle.OpacityMask><ImageBrush ImageSource="Resources/Icons/walk-horizontal.png"/></Rectangle.OpacityMask>
-                    </Rectangle>
-                </MenuItem.Icon>
-            </MenuItem>
-            <MenuItem Header="Movement Speed">
-                <MenuItem.Icon>
-                    <Rectangle Style="{StaticResource PetMenuIcon}">
-                        <Rectangle.OpacityMask><ImageBrush ImageSource="Resources/Icons/speed.png"/></Rectangle.OpacityMask>
-                    </Rectangle>
-                </MenuItem.Icon>
-                <MenuItem Header="Slow" Tag="45" Click="MenuSetWalkingSpeed_Click"/>
-                <MenuItem Header="Normal" Tag="92" Click="MenuSetWalkingSpeed_Click"/>
-                <MenuItem Header="Fast" Tag="160" Click="MenuSetWalkingSpeed_Click"/>
-            </MenuItem>
-            <MenuItem Header="Idle Animation Speed">
-                <MenuItem.Icon>
-                    <Rectangle Style="{StaticResource PetMenuIcon}">
-                        <Rectangle.OpacityMask><ImageBrush ImageSource="Resources/Icons/idle.png"/></Rectangle.OpacityMask>
-                    </Rectangle>
-                </MenuItem.Icon>
-                <MenuItem Header="Calm" Tag="750" Click="MenuSetIdleSpeed_Click"/>
-                <MenuItem Header="Normal" Tag="430" Click="MenuSetIdleSpeed_Click"/>
-                <MenuItem Header="Lively" Tag="220" Click="MenuSetIdleSpeed_Click"/>
-            </MenuItem>
-            <MenuItem x:Name="CommentsToggleMenuItem" Header="Comments: On" Click="MenuToggleComments_Click">
-                <MenuItem.Icon>
-                    <Rectangle Style="{StaticResource PetMenuIcon}">
-                        <Rectangle.OpacityMask><ImageBrush ImageSource="Resources/Icons/chat.png"/></Rectangle.OpacityMask>
-                    </Rectangle>
-                </MenuItem.Icon>
-            </MenuItem>
-            <MenuItem x:Name="AiCommentsToggleMenuItem" Header="Fresh AI Comments: On" Click="MenuToggleAiComments_Click"
-                      ToolTip="Uses only a downloaded local model. Window and music titles never go to a hosted service.">
-                <MenuItem.Icon>
-                    <Rectangle Style="{StaticResource PetMenuIcon}">
-                        <Rectangle.OpacityMask><ImageBrush ImageSource="Resources/Icons/ai.png"/></Rectangle.OpacityMask>
-                    </Rectangle>
-                </MenuItem.Icon>
-            </MenuItem>
-            <MenuItem Header="Comment Frequency">
-                <MenuItem.Icon>
-                    <Rectangle Style="{StaticResource PetMenuIcon}">
-                        <Rectangle.OpacityMask><ImageBrush ImageSource="Resources/Icons/sound.png"/></Rectangle.OpacityMask>
-                    </Rectangle>
-                </MenuItem.Icon>
-                <MenuItem x:Name="CommentsQuietMenuItem" Header="Quiet" Tag="Quiet" Click="MenuSetCommentFrequency_Click"/>
-                <MenuItem x:Name="CommentsNormalMenuItem" Header="Normal" Tag="Normal" Click="MenuSetCommentFrequency_Click"/>
-                <MenuItem x:Name="CommentsChattyMenuItem" Header="Chatty" Tag="Chatty" Click="MenuSetCommentFrequency_Click"/>
-            </MenuItem>
-            <MenuItem Header="Open KeyMapper Settings" Click="MenuSettings_Click">
-                <MenuItem.Icon>
-                    <Rectangle Style="{StaticResource PetMenuIcon}">
-                        <Rectangle.OpacityMask><ImageBrush ImageSource="Resources/Icons/settings.png"/></Rectangle.OpacityMask>
-                    </Rectangle>
-                </MenuItem.Icon>
-            </MenuItem>
+
             <Separator/>
-            <MenuItem Header="Hide Desktop Pet" Click="MenuHide_Click">
-                <MenuItem.Icon>
-                    <Rectangle Style="{StaticResource PetMenuIcon}">
-                        <Rectangle.OpacityMask><ImageBrush ImageSource="Resources/Icons/hide.png"/></Rectangle.OpacityMask>
-                    </Rectangle>
-                </MenuItem.Icon>
-            </MenuItem>
-            <MenuItem Header="Exit Desktop Pet" Click="MenuExit_Click" Foreground="#B53D64">
-                <MenuItem.Icon>
-                    <Rectangle Style="{StaticResource PetMenuIcon}" Fill="#B53D64">
-                        <Rectangle.OpacityMask><ImageBrush ImageSource="Resources/Icons/exit.png"/></Rectangle.OpacityMask>
-                    </Rectangle>
-                </MenuItem.Icon>
-            </MenuItem>
+
+            <!-- 6. EXIT -->
+            <MenuItem Header="🚪 Exit KeyMapper" Click="MenuExitApp_Click" Foreground="#B53D64"/>
         </ContextMenu>
     </Window.ContextMenu>
 </Window>

@@ -46,6 +46,12 @@ namespace KeyMapper
             contextMenu.Items.Add(new ToolStripMenuItem("Hide Desktop Pet", null, (s, e) => _mainWindow.HidePetOverlayWindow()));
             contextMenu.Items.Add(new ToolStripMenuItem("Music Player (موزیک پلیر)", null, (s, e) => _mainWindow.ShowMusicPlayerWidget()));
 
+            var stickyNotesMenu = new ToolStripMenuItem("Sticky Notes (یادداشت‌ها)");
+            stickyNotesMenu.DropDownItems.Add(new ToolStripMenuItem("➕ New Note", null, (s, e) => StickyNoteManager.Instance.CreateNewNote()));
+            stickyNotesMenu.DropDownItems.Add(new ToolStripMenuItem("📌 Show All Notes", null, (s, e) => StickyNoteManager.Instance.ShowAllNotes()));
+            stickyNotesMenu.DropDownItems.Add(new ToolStripMenuItem("🙈 Hide All Notes", null, (s, e) => StickyNoteManager.Instance.HideAllNotes()));
+            contextMenu.Items.Add(stickyNotesMenu);
+
             _enableItem = new ToolStripMenuItem("Enabled", null, (s, e) =>
             {
                 var item = (ToolStripMenuItem)s!;

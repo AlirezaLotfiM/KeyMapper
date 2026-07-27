@@ -90,6 +90,7 @@ namespace KeyMapper
             ActionsList.ItemsSource = Actions;
             ExclusionsList.ItemsSource = Exclusions;
             DonationWalletsList.ItemsSource = DonationWallets;
+            StickyNotesListView.ItemsSource = StickyNoteManager.Instance.Notes;
 
             // Setup subcomponents
             _hook = new KeyboardHook
@@ -121,6 +122,8 @@ namespace KeyMapper
             _hook.OnAutoExpandTriggered += Hook_OnAutoExpandTriggered;
             _hook.IsShortcutAllowed = IsShortcutAllowedByActiveWindow;
             _hook.OnPauseToggled += Hook_OnPauseToggled;
+
+            StickyNoteManager.Instance.NotesUpdated += (s, e) => Dispatcher.Invoke(RefreshStickyNotesList);
 
             _audioDeviceMonitor = new AudioDeviceMonitor();
             _audioDeviceMonitor.Initialize(this);
@@ -2200,6 +2203,118 @@ namespace KeyMapper
                 var match = LocalAiService.Models.FirstOrDefault(m => string.Equals(m.FileName, selectedFileName, StringComparison.OrdinalIgnoreCase));
                 settings.LocalAiModelId = match?.Id ?? selectedFileName;
                 ConfigManager.Save(settings);
+            }
+        }
+
+        #endregion
+
+        #region Sticky Notes Handlers
+
+        private string _currentNoteFilter = "All";
+
+        private void RefreshStickyNotesList()
+        {
+            if (StickyNotesListView == null) return;
+            var notes = StickyNoteManager.Instance.Notes;
+            if (_currentNoteFilter == "Visible")
+            {
+                StickyNotesListView.ItemsSource = notes.Where(n => !n.IsHidden).ToList();
+            }
+            else if (_currentNoteFilter == "Hidden")
+            {
+                StickyNotesListView.ItemsSource = notes.Where(n => n.IsHidden).ToList();
+            }
+            else
+            {
+                StickyNotesListView.ItemsSource = notes.ToList();
+            }
+        }
+
+        private void FilterNotes_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.Tag is string filter)
+            {
+                _currentNoteFilter = filter;
+                RefreshStickyNotesList();
+            }
+        }
+
+        private void BtnNewStickyNote_Click(object sender, RoutedEventArgs e)
+        {
+            StickyNoteManager.Instance.CreateNewNote("Quick Note", "", "Warm Yellow");
+            RefreshStickyNotesList();
+        }
+
+        private void BtnShowAllStickyNotes_Click(object sender, RoutedEventArgs e)
+        {
+            StickyNoteManager.Instance.ShowAllNotes();
+            RefreshStickyNotesList();
+        }
+
+        private void BtnHideAllStickyNotes_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (var note in StickyNoteManager.Instance.Notes.ToList())
+            {
+                StickyNoteManager.Instance.HideNote(note.Id);
+            }
+            RefreshStickyNotesList();
+        }
+
+        private void BtnPinAllStickyNotes_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (var note in StickyNoteManager.Instance.Notes.ToList())
+            {
+                note.IsPinned = true;
+            }
+            StickyNoteManager.Instance.SaveNotes();
+            RefreshStickyNotesList();
+        }
+
+        private void BtnUnpinAllStickyNotes_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (var note in StickyNoteManager.Instance.Notes.ToList())
+            {
+                note.IsPinned = false;
+            }
+            StickyNoteManager.Instance.SaveNotes();
+            RefreshStickyNotesList();
+        }
+
+        private void BtnOpenStickyNote_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.Tag is StickyNoteModel note)
+            {
+                StickyNoteManager.Instance.UnhideNote(note.Id);
+                RefreshStickyNotesList();
+            }
+        }
+
+        private void BtnToggleHideStickyNote_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.Tag is StickyNoteModel note)
+            {
+                if (note.IsHidden)
+                {
+                    StickyNoteManager.Instance.UnhideNote(note.Id);
+                }
+                else
+                {
+                    StickyNoteManager.Instance.HideNote(note.Id);
+                }
+                RefreshStickyNotesList();
+            }
+        }
+
+        private void BtnDeleteStickyNote_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.Tag is StickyNoteModel note)
+            {
+                var result = MessageBox.Show($"Delete note '{note.Title}'?", "KeyMapper", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                if (result == MessageBoxResult.Yes)
+                {
+                    StickyNoteManager.Instance.DeleteNote(note.Id);
+                    RefreshStickyNotesList();
+                }
             }
         }
 

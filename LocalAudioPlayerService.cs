@@ -113,6 +113,8 @@ namespace KeyMapper
 
         private SavedPlaybackSession? _savedSession;
         private double _pendingSeekPositionSeconds = -1;
+        // True once the saved session (last track + queue) has been applied after first scan.
+        private bool _sessionRestored = false;
 
         public List<AudioTrackItem> ActivePlaybackQueue
         {
@@ -686,7 +688,9 @@ namespace KeyMapper
         {
             AudioTrackItem? activeTrackBeforeScan = CurrentTrack;
             string activePath = CurrentTrack?.FilePath ?? string.Empty;
-            bool isInitialLibraryLoad = Playlist.Count == 0;
+            // isInitialLibraryLoad must be based on whether we have ever restored the session,
+            // NOT on Playlist.Count (which is already populated by BuildInitialPlaylistFromCache).
+            bool isInitialLibraryLoad = !_sessionRestored;
             List<string> queuedPaths = UserQueue
                 .Select(track => track.FilePath)
                 .Concat(
@@ -938,9 +942,10 @@ namespace KeyMapper
                             OnPlaybackStateChanged?.Invoke(wasPlaying);
                         }
                     }
-                    // Restore the saved session only on the initial library load.
-                    else if (_savedSession != null)
+                    // Restore the saved session only on the first library scan.
+                    else if (isInitialLibraryLoad && _savedSession != null)
                     {
+                        _sessionRestored = true;
                         if (!string.IsNullOrWhiteSpace(_savedSession.LastTrackFilePath))
                         {
                             var lastTrack = items.FirstOrDefault(x => string.Equals(x.FilePath, _savedSession.LastTrackFilePath, StringComparison.OrdinalIgnoreCase));
@@ -949,27 +954,34 @@ namespace KeyMapper
                                 CurrentTrack = lastTrack;
                                 CurrentTrack.IsCurrentlyPlaying = true;
                                 _contextIndex = ContextQueue.IndexOf(lastTrack);
+
+                                // Set pending seek BEFORE Open() — MediaOpened handler will apply it
                                 if (_savedSession.PositionSeconds > 0)
                                 {
                                     _pendingSeekPositionSeconds = _savedSession.PositionSeconds;
                                 }
+
                                 try
                                 {
                                     _mediaPlayer.Open(new Uri(CurrentTrack.FilePath));
-                                    if (_pendingSeekPositionSeconds > 0)
-                                    {
-                                        _mediaPlayer.Position = TimeSpan.FromSeconds(_pendingSeekPositionSeconds);
-                                    }
+                                    // Do NOT set Position here — it has no effect before MediaOpened fires.
+                                    // _pendingSeekPositionSeconds is applied in MediaPlayer_MediaOpened.
                                 }
                                 catch { }
 
                                 OnTrackChanged?.Invoke(CurrentTrack);
-                                if (_pendingSeekPositionSeconds > 0)
+                                // Fire an optimistic position update so the UI shows the saved position
+                                if (_savedSession.PositionSeconds > 0)
                                 {
-                                    OnPositionChanged?.Invoke(TimeSpan.FromSeconds(_pendingSeekPositionSeconds), CurrentTrack.Duration);
+                                    OnPositionChanged?.Invoke(TimeSpan.FromSeconds(_savedSession.PositionSeconds), CurrentTrack.Duration);
                                 }
                             }
                         }
+                    }
+                    else if (!_sessionRestored)
+                    {
+                        // Mark as restored even if no session file existed
+                        _sessionRestored = true;
                     }
                 });
             });

@@ -58,6 +58,7 @@ namespace KeyMapper
         public bool MusicPlayerMiniHorizontal { get; set; } = false;
         public bool MusicPlayerPlaylistVisible { get; set; } = true;
         public string MusicPlayerActiveTab { get; set; } = "QUEUE";
+        public bool AutoOrganizeWidgetsEnabled { get; set; } = false;
         public int MusicPlayerSortIndex { get; set; } = 0;
         public double MusicPlayerVolume { get; set; } = 80.0;
         public string UserName { get; set; } = string.Empty;

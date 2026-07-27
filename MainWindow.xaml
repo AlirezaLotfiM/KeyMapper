@@ -1541,6 +1541,89 @@
                     </ScrollViewer>
                 </Grid>
             </TabItem>
+
+            <!-- Tab: Sticky Notes & Comments -->
+            <TabItem x:Name="StickyNotesTabItem">
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="📝" Margin="0,0,6,0"/>
+                        <TextBlock Text="Sticky Notes &amp; Comments"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <Grid Margin="0,15,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Sticky Notes Action Bar & Filter Chips -->
+                    <Border Grid.Row="0" Background="{DynamicResource AppSurfaceBrush}" BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="2" Padding="14,10" Margin="0,0,0,12">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Orientation="Vertical">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <TextBlock Text="Sticky Notes &amp; Comments Manager" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource AppTextBrush}" VerticalAlignment="Center"/>
+                                    <TextBlock Text="• Manage all desktop notes &amp; comments in one place" FontSize="11" Foreground="{DynamicResource AppMutedTextBrush}" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                                </StackPanel>
+
+                                <!-- Filter Chips -->
+                                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                    <Button x:Name="FilterAllBtn" Content="All Notes" Style="{StaticResource SecondaryButton}" Padding="10,3" Margin="0,0,6,0" Click="FilterNotes_Click" Tag="All"/>
+                                    <Button x:Name="FilterVisibleBtn" Content="Visible Desktop" Style="{StaticResource SecondaryButton}" Padding="10,3" Margin="0,0,6,0" Click="FilterNotes_Click" Tag="Visible"/>
+                                    <Button x:Name="FilterHiddenBtn" Content="Hidden 👁️" Style="{StaticResource SecondaryButton}" Padding="10,3" Click="FilterNotes_Click" Tag="Hidden"/>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Button Content="➕ New Note" Style="{StaticResource PrimaryButton}" Click="BtnNewStickyNote_Click" Margin="0,0,6,0"/>
+                                <Button Content="👁️ Show All" Style="{StaticResource SecondaryButton}" Click="BtnShowAllStickyNotes_Click" Margin="0,0,6,0"/>
+                                <Button Content="🙈 Hide All" Style="{StaticResource SecondaryButton}" Click="BtnHideAllStickyNotes_Click" Margin="0,0,6,0"/>
+                                <Button Content="📌 Pin All" Style="{StaticResource SecondaryButton}" Click="BtnPinAllStickyNotes_Click" Margin="0,0,6,0"/>
+                                <Button Content="📍 Desktop All" Style="{StaticResource SecondaryButton}" Click="BtnUnpinAllStickyNotes_Click"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- Sticky Notes Manager List (Title Only View) -->
+                    <ListView x:Name="StickyNotesListView" Grid.Row="1" Background="{DynamicResource AppSurfaceBrush}" BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="2" ItemContainerStyle="{StaticResource ModernListViewItem}">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="6,4">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="100"/>
+                                        <ColumnDefinition Width="110"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Title Only -->
+                                    <TextBlock Grid.Column="0" Text="{Binding Title}" FontWeight="Bold" FontSize="14" Foreground="{DynamicResource AppAccentBrush}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                    
+                                    <Border Grid.Column="1" CornerRadius="4" Padding="6,2" HorizontalAlignment="Center" VerticalAlignment="Center" Background="{DynamicResource AppSurfaceAltBrush}">
+                                        <TextBlock Text="{Binding ColorTheme}" FontSize="11" Foreground="{DynamicResource AppTextBrush}"/>
+                                    </Border>
+
+                                    <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <Border CornerRadius="3" Padding="4,1" Margin="2,0" Background="{DynamicResource AppSurfaceAltBrush}">
+                                            <TextBlock Text="{Binding IsPinned, StringFormat='Pinned: {0}'}" FontSize="10" Foreground="{DynamicResource AppMutedTextBrush}"/>
+                                        </Border>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="3" Orientation="Horizontal">
+                                        <Button Content="Open" Style="{StaticResource SecondaryButton}" Padding="10,3" Margin="0,0,6,0" Click="BtnOpenStickyNote_Click" Tag="{Binding}"/>
+                                        <Button Content="Toggle Hide" Style="{StaticResource SecondaryButton}" Padding="10,3" Margin="0,0,6,0" Click="BtnToggleHideStickyNote_Click" Tag="{Binding}"/>
+                                        <Button Content="Delete" Style="{StaticResource SecondaryButton}" Padding="10,3" Foreground="#FF453A" Click="BtnDeleteStickyNote_Click" Tag="{Binding}"/>
+                                    </StackPanel>
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </Grid>
+            </TabItem>
         </TabControl>
     </Grid>
 </Window>

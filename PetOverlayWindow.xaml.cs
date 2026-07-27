@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -2249,7 +2250,59 @@ namespace KeyMapper
             }
         }
 
+        private void PetMusicOverlay_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ClickCount == 2)
+            {
+                if (Application.Current.MainWindow is MainWindow mainWin)
+                {
+                    mainWin.ShowMusicPlayerWidget();
+                }
+            }
+        }
+
+        private void PetOverlay_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (Application.Current.MainWindow is MainWindow mainWin)
+            {
+                mainWin.ShowMusicPlayerWidget();
+            }
+        }
+
+        private void MenuNewStickyNote_Click(object sender, RoutedEventArgs e) => StickyNoteManager.Instance.CreateNewNote();
+        private void MenuShowAllStickyNotes_Click(object sender, RoutedEventArgs e) => StickyNoteManager.Instance.ShowAllNotes();
+        private void MenuHideAllStickyNotes_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (var note in StickyNoteManager.Instance.Notes.ToList())
+            {
+                StickyNoteManager.Instance.HideNote(note.Id);
+            }
+        }
+
+        private void MenuManageStickyNotes_Click(object sender, RoutedEventArgs e)
+        {
+            if (Application.Current.MainWindow is MainWindow mainWin)
+            {
+                mainWin.Show();
+                mainWin.Activate();
+            }
+        }
+
+        private void MenuExpansions_Click(object sender, RoutedEventArgs e)
+        {
+            if (Application.Current.MainWindow is MainWindow mainWin)
+            {
+                mainWin.Show();
+                mainWin.Activate();
+            }
+        }
+
         private void MenuExit_Click(object sender, RoutedEventArgs e)
+        {
+            System.Windows.Application.Current.Shutdown();
+        }
+
+        private void MenuExitApp_Click(object sender, RoutedEventArgs e)
         {
             System.Windows.Application.Current.Shutdown();
         }
