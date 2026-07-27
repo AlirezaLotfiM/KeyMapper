@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -227,13 +229,21 @@ namespace KeyMapper
                 }
                 else if (!string.IsNullOrEmpty(Note.PlainTextContent))
                 {
-                    RichEditor.Document.Blocks.Add(new Paragraph(new Run(Note.PlainTextContent)));
+                    // Split on newlines so each line becomes its own Paragraph —
+                    // a single Run containing \n does NOT render as a line break in WPF RichTextBox.
+                    var lines = Note.PlainTextContent.Split('\n');
+                    foreach (var line in lines)
+                    {
+                        RichEditor.Document.Blocks.Add(new Paragraph(new Run(line.TrimEnd('\r'))));
+                    }
                 }
             }
             catch
             {
                 RichEditor.Document.Blocks.Clear();
-                RichEditor.Document.Blocks.Add(new Paragraph(new Run(Note.PlainTextContent ?? "")));
+                var fallbackLines = (Note.PlainTextContent ?? "").Split('\n');
+                foreach (var line in fallbackLines)
+                    RichEditor.Document.Blocks.Add(new Paragraph(new Run(line.TrimEnd('\r'))));
             }
         }
 
@@ -876,7 +886,88 @@ namespace KeyMapper
         }
 
         // LIBRETRANSLATION & TARGET LANGUAGE REPLACEMENT
+
+        // Language metadata: code -> (flag emoji, display name)
+        private static readonly Dictionary<string, (string Flag, string Name)> _langMeta = new()
+        {
+            ["en"] = ("🇺🇸", "English"),
+            ["fa"] = ("🇮🇷", "Persian (فارسی)"),
+            ["de"] = ("🇩🇪", "German (Deutsch)"),
+            ["fr"] = ("🇫🇷", "French (Français)"),
+            ["es"] = ("🇪🇸", "Spanish (Español)"),
+            ["ar"] = ("🇸🇦", "Arabic (العربية)"),
+            ["zh"] = ("🇨🇳", "Chinese (中文)"),
+            ["ja"] = ("🇯🇵", "Japanese (日本語)"),
+            ["ko"] = ("🇰🇷", "Korean (한국어)"),
+            ["ru"] = ("🇷🇺", "Russian (Русский)"),
+            ["it"] = ("🇮🇹", "Italian (Italiano)"),
+            ["pt"] = ("🇵🇹", "Portuguese"),
+            ["tr"] = ("🇹🇷", "Turkish (Türkçe)"),
+            ["nl"] = ("🇳🇱", "Dutch (Nederlands)"),
+            ["pl"] = ("🇵🇱", "Polish (Polski)"),
+            ["sv"] = ("🇸🇪", "Swedish (Svenska)"),
+            ["uk"] = ("🇺🇦", "Ukrainian (Українська)"),
+            ["id"] = ("🇮🇩", "Indonesian"),
+            ["vi"] = ("🇻🇳", "Vietnamese (Tiếng Việt)"),
+            ["hi"] = ("🇮🇳", "Hindi (हिन्दी)"),
+        };
+
         private void TranslateButton_Click(object sender, RoutedEventArgs e) => TranslatePopup.IsOpen = true;
+
+        private async void TranslatePopup_Opened(object sender, EventArgs e)
+        {
+            TranslateLangList.Children.Clear();
+            TranslateLangEmptyHint.Visibility = Visibility.Collapsed;
+
+            HashSet<string> installedCodes;
+            try
+            {
+                installedCodes = await LocalLibreTranslateManager.GetInstalledLanguageCodesAsync();
+            }
+            catch
+            {
+                installedCodes = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "en" };
+            }
+
+            if (installedCodes.Count == 0)
+            {
+                TranslateLangEmptyHint.Visibility = Visibility.Visible;
+                return;
+            }
+
+            // Show installed languages in a consistent order (meta-defined first, then unknown codes)
+            var ordered = _langMeta.Keys
+                .Where(k => installedCodes.Contains(k))
+                .Concat(installedCodes.Where(c => !_langMeta.ContainsKey(c)).OrderBy(c => c));
+
+            foreach (string code in ordered)
+            {
+                _langMeta.TryGetValue(code, out var meta);
+                string flag = meta.Flag ?? "🌐";
+                string name = meta.Name ?? code.ToUpperInvariant();
+
+                var btn = new Button
+                {
+                    Style = (Style)FindResource("SidebarIconButton"),
+                    Width = 155,
+                    Height = 28,
+                    Margin = new Thickness(0, 2, 0, 2),
+                    HorizontalContentAlignment = HorizontalAlignment.Left,
+                    Padding = new Thickness(8, 2, 8, 2),
+                    Tag = code,
+                    ToolTip = name
+                };
+                var panel = new StackPanel { Orientation = Orientation.Horizontal };
+                panel.Children.Add(new TextBlock { Text = flag, FontSize = 13, Margin = new Thickness(0, 0, 8, 0) });
+                panel.Children.Add(new TextBlock { Text = name, FontSize = 11, FontWeight = FontWeights.SemiBold, Foreground = new SolidColorBrush(Color.FromRgb(0x33, 0x33, 0x33)), VerticalAlignment = VerticalAlignment.Center });
+                btn.Content = panel;
+                btn.Click += TranslateLanguageOption_Click;
+                TranslateLangList.Children.Add(btn);
+            }
+
+            if (TranslateLangList.Children.Count == 0)
+                TranslateLangEmptyHint.Visibility = Visibility.Visible;
+        }
 
         private async void TranslateLanguageOption_Click(object sender, RoutedEventArgs e)
         {
@@ -885,8 +976,8 @@ namespace KeyMapper
             {
                 Note.TargetTranslateLanguage = targetLang;
                 TextSelection sel = RichEditor.Selection;
-                string textToTranslate = sel != null && !sel.IsEmpty 
-                    ? sel.Text.Trim() 
+                string textToTranslate = sel != null && !sel.IsEmpty
+                    ? sel.Text.Trim()
                     : new TextRange(RichEditor.Document.ContentStart, RichEditor.Document.ContentEnd).Text.Trim();
 
                 if (string.IsNullOrWhiteSpace(textToTranslate)) return;

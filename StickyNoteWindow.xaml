@@ -474,49 +474,20 @@
         </Popup>
 
         <!-- Modern Styled Target Language Selector Flyout -->
-        <Popup x:Name="TranslatePopup" StaysOpen="False" PlacementTarget="{Binding ElementName=FormatToolbar}" Placement="Bottom">
+        <Popup x:Name="TranslatePopup" StaysOpen="False" PlacementTarget="{Binding ElementName=FormatToolbar}" Placement="Bottom" Opened="TranslatePopup_Opened">
             <Border Background="#FFFFFF" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="10" Padding="8">
                 <Border.Effect>
                     <DropShadowEffect BlurRadius="12" ShadowDepth="3" Direction="270" Color="#000000" Opacity="0.18"/>
                 </Border.Effect>
                 <StackPanel Width="165">
                     <TextBlock Text="🌐 Target Language" FontWeight="Bold" FontSize="11" Foreground="#333333" Margin="4,2,4,8"/>
-                    <Button Style="{StaticResource SidebarIconButton}" Width="155" Height="28" Margin="0,2" HorizontalContentAlignment="Left" Padding="8,2" Click="TranslateLanguageOption_Click" Tag="fa" ToolTip="Persian / فارسی">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="🇮🇷" FontSize="13" Margin="0,0,8,0"/>
-                            <TextBlock Text="Persian (فارسی)" FontSize="11" FontWeight="SemiBold" Foreground="#333333" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Button>
-                    <Button Style="{StaticResource SidebarIconButton}" Width="155" Height="28" Margin="0,2" HorizontalContentAlignment="Left" Padding="8,2" Click="TranslateLanguageOption_Click" Tag="en" ToolTip="English">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="🇺🇸" FontSize="13" Margin="0,0,8,0"/>
-                            <TextBlock Text="English" FontSize="11" FontWeight="SemiBold" Foreground="#333333" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Button>
-                    <Button Style="{StaticResource SidebarIconButton}" Width="155" Height="28" Margin="0,2" HorizontalContentAlignment="Left" Padding="8,2" Click="TranslateLanguageOption_Click" Tag="de" ToolTip="German">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="🇩🇪" FontSize="13" Margin="0,0,8,0"/>
-                            <TextBlock Text="German (Deutsch)" FontSize="11" FontWeight="SemiBold" Foreground="#333333" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Button>
-                    <Button Style="{StaticResource SidebarIconButton}" Width="155" Height="28" Margin="0,2" HorizontalContentAlignment="Left" Padding="8,2" Click="TranslateLanguageOption_Click" Tag="fr" ToolTip="French">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="🇫🇷" FontSize="13" Margin="0,0,8,0"/>
-                            <TextBlock Text="French (Français)" FontSize="11" FontWeight="SemiBold" Foreground="#333333" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Button>
-                    <Button Style="{StaticResource SidebarIconButton}" Width="155" Height="28" Margin="0,2" HorizontalContentAlignment="Left" Padding="8,2" Click="TranslateLanguageOption_Click" Tag="es" ToolTip="Spanish">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="🇪🇸" FontSize="13" Margin="0,0,8,0"/>
-                            <TextBlock Text="Spanish (Español)" FontSize="11" FontWeight="SemiBold" Foreground="#333333" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Button>
-                    <Button Style="{StaticResource SidebarIconButton}" Width="155" Height="28" Margin="0,2" HorizontalContentAlignment="Left" Padding="8,2" Click="TranslateLanguageOption_Click" Tag="ar" ToolTip="Arabic">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="🇸🇦" FontSize="13" Margin="0,0,8,0"/>
-                            <TextBlock Text="Arabic (العربية)" FontSize="11" FontWeight="SemiBold" Foreground="#333333" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Button>
+                    <!-- Populated dynamically from installed LibreTranslate languages -->
+                    <StackPanel x:Name="TranslateLangList"/>
+                    <TextBlock x:Name="TranslateLangEmptyHint"
+                               Text="No languages installed.&#x0a;Open Settings → Translation&#x0a;to download language packs."
+                               FontSize="10" Foreground="#888888"
+                               TextWrapping="Wrap" Margin="4,4,4,4"
+                               Visibility="Collapsed"/>
                 </StackPanel>
             </Border>
         </Popup>

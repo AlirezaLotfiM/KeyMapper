@@ -45,8 +45,33 @@ namespace KeyMapper
             {
                 if (Notes.Count == 0)
                 {
-                    // Create default welcome note if none exist
-                    CreateNewNote("Welcome Note", "Welcome to KeyMapper Super Sticky Notes! 📌\n\nFeatures:\n• Always-On-Top Pinning or Stick to Desktop\n• Bi-directional RTL (Persian/Arabic) & LTR support\n• Rich formatting & Markdown tools\n• Images, Tables, & Voice Notes\n• Fold / Collapse mode", "Warm Yellow");
+                    // Create default welcome note positioned at the top-right of the screen
+                    double margin = 20;
+                    double noteWidth = 450;
+                    double noteHeight = 400;
+                    double workAreaRight = SystemParameters.WorkArea.Right;
+                    double startLeft = workAreaRight - noteWidth - margin;
+                    double startTop = SystemParameters.WorkArea.Top + margin;
+
+                    var welcome = new StickyNoteModel
+                    {
+                        Title = "Welcome Note",
+                        PlainTextContent = "📌Welcome to KeyMapper Super Sticky Notes! \nFeatures:\n•\tAlways-On-Top Pinning or Stick to Desktop\n•\tBi-directional RTL (Persian/Arabic) & LTR support\n•\tRich formatting & Markdown tools\n•\tImages, Tables, & Voice Notes\n•\tFold / Collapse mode\n",
+                        ColorTheme = "Warm Yellow",
+                        Left = startLeft,
+                        Top = startTop,
+                        Width = noteWidth,
+                        Height = noteHeight,
+                        IsPinned = true
+                    };
+
+                    lock (_syncRoot)
+                    {
+                        Notes.Add(welcome);
+                        SaveNotes();
+                    }
+
+                    OpenNoteWindow(welcome);
                 }
                 else
                 {

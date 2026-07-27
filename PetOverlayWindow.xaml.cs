@@ -2254,6 +2254,11 @@ namespace KeyMapper
         {
             if (e.ClickCount == 2)
             {
+                // Mark handled BEFORE opening — prevents the event from bubbling to
+                // PetOverlay_MouseDoubleClick (Window level), which would call
+                // ShowMusicPlayerWidget a second time and immediately toggle it closed.
+                e.Handled = true;
+
                 if (Application.Current.MainWindow is MainWindow mainWin)
                 {
                     mainWin.ShowMusicPlayerWidget();
