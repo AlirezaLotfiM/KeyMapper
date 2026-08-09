@@ -209,42 +209,60 @@ namespace KeyMapper
                     "It is {time}. We have survived another hour of pretending that tab will organize itself.",
                     "At {time}, the desktop remains open and the task remains suspiciously unfinished. Impressive.",
                     "Another hour, another chance to call that one tiny task a quick win and then open three more tabs.",
-                    "The clock says {time}. I checked. It still cannot finish the task for you. Rude."
+                    "The clock says {time}. I checked. It still cannot finish the task for you. Rude.",
+                    "At {time}, I am beginning to suspect that the loading spinner is your project manager.",
+                    "The task has enjoyed another hour of freedom. At {time}, perhaps we should ask for it back.",
+                    "It is {time}. The tab count is growing with more confidence than the to-do list."
                 ],
                 "Owlet Monster" =>
                 [
                     "It is {time}. Your workflow appears to be conducting an experiment in how many tabs can coexist.",
                     "At {time}, I offer a gentle observation: the task is still waiting, despite the very confident tab switching.",
                     "Another hour has passed. The unfinished item remains remarkably committed to its position.",
-                    "The clock says {time}. Perhaps the next plan could include actually starting the plan."
+                    "The clock says {time}. Perhaps the next plan could include actually starting the plan.",
+                    "At {time}, the open tabs have formed a committee and still have not chosen a first task.",
+                    "Another hour has been carefully invested in preparation. The task may now be prepared to begin.",
+                    "It is {time}. A well-organized delay is still a delay, though it is a tidy one."
                 ],
                 "Dude Monster" =>
                 [
                     "{time}. That task is still open? Bold strategy.",
                     "Another hour gone and the same tab is staring back. It is winning on points.",
                     "The clock hit {time}. Maybe that tiny task is not going to defeat itself.",
-                    "At {time}, I have one suggestion: do the thing before opening another thing."
+                    "At {time}, I have one suggestion: do the thing before opening another thing.",
+                    "{time}. The inbox just spawned another copy of the problem. Nice teamwork.",
+                    "At {time}, the task is still undefeated. We should probably stop giving it practice rounds.",
+                    "Another hour, same blocker. At least it is consistent."
                 ],
                 "Frieren" =>
                 [
                     "It is {time}. The unfinished task has waited patiently, which is more than most humans manage.",
                     "Another hour has passed. I suspect the tab is becoming a historical artifact.",
                     "At {time}, even an ancient mage might consider closing one of those windows.",
-                    "The clock says {time}. Time is strange. So is keeping the same task untouched for so long."
+                    "The clock says {time}. Time is strange. So is keeping the same task untouched for so long.",
+                    "At {time}, the task has accumulated enough waiting time to qualify as an old legend.",
+                    "Another hour has joined the archive. The unfinished item remains surprisingly immortal.",
+                    "It is {time}. Perhaps the task is not difficult, merely skilled at avoiding attention."
                 ],
                 "Yuji Itadori" =>
                 [
                     "It is {time}! That task is still standing? Fine, we can take it down together.",
                     "Another hour! The tab is undefeated, but I am not giving it the victory speech yet.",
                     "At {time}, let us finish one thing before the next thing jumps us.",
-                    "The clock says {time}. I brought energy. The task should probably bring some too."
+                    "The clock says {time}. I brought energy. The task should probably bring some too.",
+                    "At {time}! That unfinished task is acting tough because we keep letting it recharge.",
+                    "Another hour! I am ready for the rematch whenever you are.",
+                    "It is {time}. We can win this round by starting with the smallest move."
                 ],
                 "Monkey D. Luffy" =>
                 [
                     "{time}! That task is still hiding? I will find it after I find some meat.",
                     "Another hour passed and the tab is still here. Is it part of the crew now?",
                     "At {time}, I say we finish this before the next adventure steals the whole day.",
-                    "The clock says {time}. The task cannot run away forever. Probably."
+                    "The clock says {time}. The task cannot run away forever. Probably.",
+                    "At {time}! That tab has been sailing with us so long it should pay rent.",
+                    "Another hour! If the task is hiding treasure, it forgot to draw a map.",
+                    "It is {time}. I will challenge the unfinished thing after one quick snack."
                 ],
                 _ =>
                 [
@@ -262,25 +280,33 @@ namespace KeyMapper
                     [
                         "Good morning! It is {time}, and I have already spotted at least one tiny win hiding nearby.",
                         "Morning patrol at {time}. Let us make the first task smaller than it looks.",
-                        "The day is awake at {time}. I brought quick feet and a short list of useful ideas."
+                        "The day is awake at {time}. I brought quick feet and a short list of useful ideas.",
+                        "At {time}, let us turn the first annoying click into a shortcut we can reuse.",
+                        "Morning mission at {time}: find the one task that would make the rest feel lighter."
                     ],
                     [13] =
                     [
                         "It is {time}. Midday checkpoint: one sip of water, one useful shortcut, then back to it.",
                         "Lunch-hour patrol at {time}. I can turn a repeated phrase into an expansion if you want.",
-                        "Half the day is doing its little sprint. What should we rescue before evening?"
+                        "Half the day is doing its little sprint. What should we rescue before evening?",
+                        "At {time}, the best shortcut may be the one you have not had to type yet.",
+                        "Midday idea: finish one small piece before the afternoon tries to fill every corner."
                     ],
                     [18] =
                     [
                         "Evening check at {time}. The desktop is calmer now, so the tricky task has nowhere to hide.",
                         "It is {time}. Good time for a tidy finish and one satisfying checkbox.",
-                        "The day changed color at {time}. I am voting for a small win before the next scroll."
+                        "The day changed color at {time}. I am voting for a small win before the next scroll.",
+                        "At {time}, a clean save would make future-you do a tiny victory dance.",
+                        "Evening patrol report: the task is still beatable, and I brought the good net."
                     ],
                     [22] =
                     [
                         "Night patrol at {time}. Save the important work before the pixels start yawning.",
                         "It is {time}. We can finish one gentle task, then let tomorrow inherit the rest.",
-                        "Late-hour idea at {time}: write down the next step so future-you does not have to hunt for it."
+                        "Late-hour idea at {time}: write down the next step so future-you does not have to hunt for it.",
+                        "At {time}, close the loop you can close and leave a friendly note for the one you cannot.",
+                        "Night shift at {time}: I will guard the desktop while you make tomorrow easier."
                     ]
                 },
                 "Owlet Monster" => new Dictionary<int, string[]>
@@ -289,25 +315,33 @@ namespace KeyMapper
                     [
                         "Good morning. At {time}, a concise plan will serve us better than a heroic scramble.",
                         "Morning observation at {time}: choose one task, define its finish line, and begin there.",
-                        "The day begins at {time}. A clear desk and a clear first step are sufficient."
+                        "The day begins at {time}. A clear desk and a clear first step are sufficient.",
+                        "At {time}, place the most useful task first and let the rest wait its turn.",
+                        "A calm beginning at {time} often saves more time than a hurried correction later."
                     ],
                     [13] =
                     [
                         "It is {time}. A measured pause may improve the quality of the next decision.",
                         "Midday review at {time}: which open task is closest to a useful conclusion?",
-                        "At {time}, consider saving a small checkpoint before changing direction."
+                        "At {time}, consider saving a small checkpoint before changing direction.",
+                        "Midday is a suitable moment to remove one unnecessary step from the routine.",
+                        "At {time}, ask whether the current task needs more effort or simply a clearer boundary."
                     ],
                     [18] =
                     [
                         "Evening at {time}. A short review now can prevent tomorrow from beginning with archaeology.",
                         "It is {time}. Finish one clear thread before opening another, if possible.",
-                        "The workday is softening at {time}. This is a good moment to capture the next action."
+                        "The workday is softening at {time}. This is a good moment to capture the next action.",
+                        "At {time}, a concise summary will be kinder to tomorrow than a vague memory.",
+                        "Evening review at {time}: preserve the useful result, not every discarded attempt."
                     ],
                     [22] =
                     [
                         "At {time}, preserve your progress and allow the mind a quieter interval.",
                         "Night note at {time}: unfinished work is easier to resume when its next step is written down.",
-                        "It is {time}. Even a careful system benefits from closing a few loops."
+                        "It is {time}. Even a careful system benefits from closing a few loops.",
+                        "At {time}, stopping at a sensible boundary is part of doing the work well.",
+                        "A quiet ending at {time} gives tomorrow something better than a mystery to solve."
                     ]
                 },
                 "Dude Monster" => new Dictionary<int, string[]>
@@ -316,25 +350,33 @@ namespace KeyMapper
                     [
                         "{time}. Pick the first useful task and hit it before the inbox starts spawning copies.",
                         "Morning check at {time}: one clear goal beats ten vague intentions.",
-                        "It is {time}. Save the dramatic plan for later and do the small obvious thing first."
+                        "It is {time}. Save the dramatic plan for later and do the small obvious thing first.",
+                        "{time}. Make the first move obvious, then stop negotiating with yourself.",
+                        "Morning at {time}: less setup, more finish."
                     ],
                     [13] =
                     [
                         "Midday at {time}. Water, stretch, then finish the task that is closest to done.",
                         "{time}. Quick checkpoint: what can we close instead of merely reopening?",
-                        "Lunch-hour reality check at {time}: the shortcut is probably shorter than retyping everything."
+                        "Lunch-hour reality check at {time}: the shortcut is probably shorter than retyping everything.",
+                        "At {time}, clear one blocker before you collect another.",
+                        "Midday status at {time}: the list does not need a speech, it needs one checkbox."
                     ],
                     [18] =
                     [
                         "{time}. Wrap one thing cleanly before the day starts charging interest.",
                         "Evening check at {time}: save, test, close the loop. Easy win.",
-                        "The day is nearly done at {time}. Do not let the last task become tomorrow's boss fight."
+                        "The day is nearly done at {time}. Do not let the last task become tomorrow's boss fight.",
+                        "{time}. Ship the small finished thing instead of polishing the unfinished giant.",
+                        "Evening rule at {time}: leave the project better than you found it."
                     ],
                     [22] =
                     [
                         "{time}. Back up the important stuff and stop negotiating with the same unfinished task.",
                         "Late shift at {time}: write the next step, then log off before the tabs unionize.",
-                        "It is {time}. Good work. Now leave a breadcrumb for tomorrow."
+                        "It is {time}. Good work. Now leave a breadcrumb for tomorrow.",
+                        "At {time}, a two-line note can save a twenty-minute search in the morning.",
+                        "Night shift at {time}: close the loop, save the file, and stop feeding the tab monster."
                     ]
                 },
                 "Frieren" => new Dictionary<int, string[]>
@@ -343,25 +385,33 @@ namespace KeyMapper
                     [
                         "Morning has arrived at {time}. Even a long journey begins with one deliberate step.",
                         "At {time}, choose a single task. Small rituals become reliable spells.",
-                        "The room is new again at {time}. Let us begin quietly and without haste."
+                        "The room is new again at {time}. Let us begin quietly and without haste.",
+                        "At {time}, a careful beginning is more powerful than a hurried incantation.",
+                        "Morning light at {time}. Let us give one useful task our full attention."
                     ],
                     [13] =
                     [
                         "It is {time}. A pause for water is a modest spell, but a useful one.",
                         "Midday at {time}. Perhaps complete one thread before wandering into another.",
-                        "At {time}, the day still has room for a careful correction."
+                        "At {time}, the day still has room for a careful correction.",
+                        "Midday at {time}: refresh your attention before asking it to solve another puzzle.",
+                        "A small reset at {time} may keep the afternoon from becoming unnecessarily difficult."
                     ],
                     [18] =
                     [
                         "Evening arrives at {time}. Save what matters before the light changes completely.",
                         "It is {time}. A quiet review now may spare tomorrow a long search.",
-                        "The workday is becoming a memory at {time}. Leave a clear trail behind."
+                        "The workday is becoming a memory at {time}. Leave a clear trail behind.",
+                        "At {time}, gather the useful pieces and let the discarded ones return to silence.",
+                        "Evening is a good time at {time} to name what remains instead of fearing its size."
                     ],
                     [22] =
                     [
                         "At {time}, let the unfinished task rest with a note explaining where to begin.",
                         "Night has settled at {time}. Even ancient journeys require sleep between chapters.",
-                        "It is {time}. Close what can be closed and keep the rest from becoming mysterious."
+                        "It is {time}. Close what can be closed and keep the rest from becoming mysterious.",
+                        "At {time}, leave tomorrow a map, not a riddle.",
+                        "Night at {time}: rest is not an interruption to the journey. It is part of it."
                     ]
                 },
                 "Yuji Itadori" => new Dictionary<int, string[]>
@@ -370,25 +420,33 @@ namespace KeyMapper
                     [
                         "Good morning! It is {time}. Let us start strong with one task we can actually finish.",
                         "Morning power-up at {time}! Hydrate, focus, and give the first problem everything you have.",
-                        "The day is on at {time}! Pick a target and let us make progress together."
+                        "The day is on at {time}! Pick a target and let us make progress together.",
+                        "At {time}! We only need the first move, not the whole victory speech.",
+                        "Morning training at {time}! One clean finish will power up the rest of the day."
                     ],
                     [13] =
                     [
                         "Midday at {time}! Eat something, breathe, then hit the next task with fresh energy.",
                         "It is {time}. We are not stuck, we are between moves. Let us choose the next one.",
-                        "Checkpoint at {time}! One finished task is better than ten tasks getting in your head."
+                        "Checkpoint at {time}! One finished task is better than ten tasks getting in your head.",
+                        "At {time}! Reset your stance, pick the next target, and keep going.",
+                        "Midday boost at {time}! The hard part gets smaller when we stop staring at the whole mountain."
                     ],
                     [18] =
                     [
                         "Evening push at {time}! Finish one thing and call that a real victory.",
                         "It is {time}. The day is tired, but we can still land one clean hit on the to-do list.",
-                        "At {time}, I am still cheering. Save your work and take the next step."
+                        "At {time}, I am still cheering. Save your work and take the next step.",
+                        "Evening match at {time}! One last focused round, then we recover.",
+                        "At {time}! Progress does not need to be huge to count as a win."
                     ],
                     [22] =
                     [
                         "Late-night check at {time}! Protect your sleep and leave tomorrow a clear starting point.",
                         "It is {time}. We did enough for today if we remember where to continue tomorrow.",
-                        "Night mode at {time}! One last save, then let your brain recover."
+                        "Night mode at {time}! One last save, then let your brain recover.",
+                        "At {time}! Put the task in a safe place and do not let it follow you into sleep.",
+                        "Late-night strategy at {time}: tomorrow's strength starts with tonight's rest."
                     ]
                 },
                 "Monkey D. Luffy" => new Dictionary<int, string[]>
@@ -397,25 +455,33 @@ namespace KeyMapper
                     [
                         "Morning at {time}! A new adventure needs breakfast and one brave first step.",
                         "It is {time}! Pick the biggest-looking task and make it smaller. Then find meat.",
-                        "The crew is awake at {time}! What treasure are we getting done first?"
+                        "The crew is awake at {time}! What treasure are we getting done first?",
+                        "At {time}! Stretch, grab a snack, and attack the easiest part of the quest.",
+                        "Morning adventure at {time}! Even a captain starts with one small order."
                     ],
                     [13] =
                     [
                         "{time}! Lunch is important, but so is finishing one thing before the next adventure.",
                         "Midday patrol at {time}. I vote for a snack and a very clear next move.",
-                        "It is {time}! The task is not allowed to hide behind another tab."
+                        "It is {time}! The task is not allowed to hide behind another tab.",
+                        "At {time}! Eat, breathe, then pull one useful treasure out of the task pile.",
+                        "Midday on the ship at {time}. The next move should be simple enough to shout."
                     ],
                     [18] =
                     [
                         "Evening at {time}! Tie up one loose rope before the ship sails into tomorrow.",
                         "It is {time}. Good crew members save their work before celebrating.",
-                        "The sky changed at {time}! Finish one quest, then we can call it a day."
+                        "The sky changed at {time}! Finish one quest, then we can call it a day.",
+                        "At {time}! Secure the files, check the route, and leave no important treasure behind.",
+                        "Evening voyage at {time}: one finished job makes the whole crew happier."
                     ],
                     [22] =
                     [
                         "Night at {time}! Save everything and get some sleep. The next island can wait.",
                         "It is {time}! One last save, then no more fighting the same tiny task.",
-                        "Late patrol at {time}. I am guarding the desktop while you recharge."
+                        "Late patrol at {time}. I am guarding the desktop while you recharge.",
+                        "At {time}! The crew needs rest before the next big adventure.",
+                        "Night watch at {time}: save the map, lower the anchor, and sleep well."
                     ]
                 },
                 _ => new Dictionary<int, string[]>
