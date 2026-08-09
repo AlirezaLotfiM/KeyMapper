@@ -145,7 +145,7 @@ namespace KeyMapper
                 ThemePopup.IsOpen = false;
             }
 
-            if (_isEditMode)
+            if (_isEditMode && !Note.IsToolbarPinned)
             {
                 ExitEditMode();
             }
@@ -218,6 +218,7 @@ namespace KeyMapper
             ApplyColumnLayout(Note.ColumnCount);
 
             LoadDocumentContent();
+            ApplyToolbarLayout();
 
             if (!string.IsNullOrEmpty(Note.AudioMemoPath) && File.Exists(Note.AudioMemoPath))
             {
@@ -606,6 +607,10 @@ namespace KeyMapper
                 if (ThemeButton != null) ThemeButton.Visibility = Visibility.Visible;
                 if (NewNoteButton != null) NewNoteButton.Visibility = Visibility.Visible;
                 if (DeleteButton != null) DeleteButton.Visibility = Visibility.Visible;
+
+                // A pinned toolbar returns with the expanded note, even when the
+                // note was collapsed while it was being edited.
+                ApplyToolbarLayout();
             }
             SaveNoteState();
         }
@@ -621,8 +626,7 @@ namespace KeyMapper
             TitleTextBox.Focusable = true;
             TitleTextBox.Cursor = Cursors.IBeam;
 
-            FormatBarRow.Height = GridLength.Auto;
-            FormatToolbar.Visibility = Visibility.Visible;
+            ApplyToolbarLayout();
             if (!Note.IsCollapsed) DoneSidebarButton.Visibility = Visibility.Visible;
             if (FoldButton != null) FoldButton.Visibility = Visibility.Collapsed;
             SidebarMenuBorder.Opacity = 1.0;
@@ -639,8 +643,7 @@ namespace KeyMapper
             TitleTextBox.Focusable = false;
             TitleTextBox.Cursor = Cursors.Arrow;
 
-            FormatBarRow.Height = new GridLength(0);
-            FormatToolbar.Visibility = Visibility.Collapsed;
+            ApplyToolbarLayout();
             DoneSidebarButton.Visibility = Visibility.Collapsed;
             if (FoldButton != null) FoldButton.Visibility = Visibility.Visible;
             SidebarMenuBorder.Opacity = 0.0;
@@ -661,6 +664,24 @@ namespace KeyMapper
         {
             if (Note.IsCollapsed) CollapseNote(false);
             EnterEditMode();
+        }
+
+        private void RichEditor_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            // The palette is intentionally persistent while it is being used, but text
+            // selection is a new editing task and should always reclaim the workspace.
+            if (ThemePopup.IsOpen)
+            {
+                ThemePopup.IsOpen = false;
+            }
+        }
+
+        private void RichEditor_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
+        {
+            if (ThemePopup.IsOpen)
+            {
+                ThemePopup.IsOpen = false;
+            }
         }
 
         private void DoneEditButton_Click(object sender, RoutedEventArgs e)
@@ -771,7 +792,7 @@ namespace KeyMapper
         {
             if (e.Delta != 0)
             {
-                FormatToolbarScrollViewer.ScrollToHorizontalOffset(FormatToolbarScrollViewer.HorizontalOffset - e.Delta);
+                FormatToolbarScrollViewer.ScrollToVerticalOffset(FormatToolbarScrollViewer.VerticalOffset - e.Delta);
                 e.Handled = true;
             }
         }
@@ -788,6 +809,28 @@ namespace KeyMapper
 
         private void TitleTextBox_LostFocus(object sender, RoutedEventArgs e) => SaveNoteState();
         private void TitleTextBox_TextChanged(object sender, TextChangedEventArgs e) => SaveNoteState();
+
+        private void ApplyToolbarLayout()
+        {
+            if (ToolbarPinButton != null)
+            {
+                ToolbarPinButton.Content = Note.IsToolbarPinned ? "📍" : "📌";
+                ToolbarPinButton.ToolTip = Note.IsToolbarPinned
+                    ? "Unpin writing tools"
+                    : "Pin writing tools";
+            }
+
+            bool showToolbar = !Note.IsCollapsed && (_isEditMode || Note.IsToolbarPinned);
+            FormatBarRow.Height = showToolbar ? GridLength.Auto : new GridLength(0);
+            FormatToolbar.Visibility = showToolbar ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        private void ToolbarPinButton_Click(object sender, RoutedEventArgs e)
+        {
+            Note.IsToolbarPinned = !Note.IsToolbarPinned;
+            ApplyToolbarLayout();
+            SaveNoteState();
+        }
 
         private void PinButton_Click(object sender, RoutedEventArgs e) => SetPinnedState(!Note.IsPinned);
         private void HideNoteButton_Click(object sender, RoutedEventArgs e) => StickyNoteManager.Instance.HideNote(Note.Id);
@@ -1539,7 +1582,15 @@ namespace KeyMapper
             }
         }
 
-        private void RichEditor_SelectionChanged(object sender, RoutedEventArgs e) => UpdateWordCount();
+        private void RichEditor_SelectionChanged(object sender, RoutedEventArgs e)
+        {
+            if (ThemePopup.IsOpen && RichEditor.Selection != null && !RichEditor.Selection.IsEmpty)
+            {
+                ThemePopup.IsOpen = false;
+            }
+
+            UpdateWordCount();
+        }
 
         private void RichEditor_TextChanged(object sender, TextChangedEventArgs e)
         {

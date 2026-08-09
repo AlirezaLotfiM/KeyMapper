@@ -90,6 +90,8 @@ The local music player is part of the companion experience, not a separate skin:
 - Dark palettes switch the footer, pin badge, audio label, and action icons to readable companion colors instead of leaving low-contrast gray text behind.
 - The `Pinned` badge keeps a safe inset from the lower-right resize grip, so it never collides with the grip or card edge.
 - The color palette uses a clipped rounded surface and stays open while colors are previewed or applied. It closes when the user clicks outside the palette.
+- Starting a text selection closes the note palette so it cannot cover the writing surface.
+- The writing toolbar has generous wrapping and vertical scrolling, plus a Word-style pin button. Its pinned state is saved per note and survives a restart.
 
 ### Conversation and computer actions
 

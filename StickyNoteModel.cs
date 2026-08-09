@@ -29,6 +29,7 @@ namespace KeyMapper
         public double ExpandedHeight { get; set; } = 0;
         
         public bool IsPinned { get; set; } = true; // true = Always On Top, false = Stick to Desktop
+        public bool IsToolbarPinned { get; set; } = false; // keep the writing toolbar open after editing ends
         public bool IsCollapsed { get; set; } = false;
         public bool IsHidden { get; set; } = false;
         public bool IsChecklistMode { get; set; } = false;
