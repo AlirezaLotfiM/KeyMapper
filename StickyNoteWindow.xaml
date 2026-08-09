@@ -143,22 +143,13 @@
                 BorderThickness="1.5"
                 BorderBrush="#25000000"
                 Background="#FFF59D" 
-                SnapsToDevicePixels="True">
+                SnapsToDevicePixels="True"
+                SizeChanged="NoteCardBorder_SizeChanged">
             <Border.Effect>
                 <DropShadowEffect BlurRadius="10" ShadowDepth="3" Direction="270" Color="#000000" Opacity="0.2"/>
             </Border.Effect>
 
             <Grid ClipToBounds="True">
-                <Grid.OpacityMask>
-                    <VisualBrush Stretch="None" AlignmentX="Left" AlignmentY="Top">
-                        <VisualBrush.Visual>
-                            <Border Background="Black" 
-                                    CornerRadius="10" 
-                                    Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Grid}}" 
-                                    Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType=Grid}}" />
-                        </VisualBrush.Visual>
-                    </VisualBrush>
-                </Grid.OpacityMask>
                 <Grid.RowDefinitions>
                     <!-- Row 0: TOP CENTERED TITLE HEADER -->
                     <RowDefinition Height="Auto"/>
@@ -410,16 +401,17 @@
         </Border>
 
         <!-- Expanded Palette Color Swatches Circle Grid Flyout -->
-        <Popup x:Name="ThemePopup" StaysOpen="False" PlacementTarget="{Binding ElementName=ThemeButton}" Placement="Left">
-            <Border Background="#FFFFFF" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="10" Padding="8">
+        <Popup x:Name="ThemePopup" StaysOpen="True" AllowsTransparency="True" PopupAnimation="Fade" PlacementTarget="{Binding ElementName=ThemeButton}" Placement="Left">
+            <Border Background="#22000000" CornerRadius="12" Padding="1">
                 <Border.Effect>
                     <DropShadowEffect BlurRadius="12" ShadowDepth="3" Direction="270" Color="#000000" Opacity="0.18"/>
                 </Border.Effect>
-                <StackPanel Width="155">
-                    <TextBlock Text="🎨 Select Palette" FontWeight="Bold" FontSize="11" Foreground="#333333" Margin="2,0,2,6"/>
+                <Border x:Name="ThemePopupCard" Background="#FFFFFF" BorderBrush="#D5D5D5" BorderThickness="1" CornerRadius="11" Padding="8" ClipToBounds="True" SnapsToDevicePixels="True">
+                    <StackPanel Width="155">
+                        <TextBlock Text="🎨 Select Palette" FontWeight="Bold" FontSize="11" Foreground="#333333" Margin="2,0,2,6"/>
                     
                     <!-- Color Swatch Circle Grid -->
-                    <WrapPanel Width="150" HorizontalAlignment="Center">
+                        <WrapPanel Width="150" HorizontalAlignment="Center">
                         <Button Style="{StaticResource PaletteCircleButton}" Background="#FFF59D" ToolTip="Warm Yellow" Click="ThemeOption_Click" Tag="Warm Yellow"/>
                         <Button Style="{StaticResource PaletteCircleButton}" Background="#F8BBD0" ToolTip="Pastel Pink" Click="ThemeOption_Click" Tag="Pastel Pink"/>
                         <Button Style="{StaticResource PaletteCircleButton}" Background="#A5D6A7" ToolTip="Soft Mint" Click="ThemeOption_Click" Tag="Soft Mint"/>
@@ -439,19 +431,20 @@
                         <Button Style="{StaticResource PaletteCircleButton}" Background="#D7CCC8" ToolTip="Mocha" Click="ThemeOption_Click" Tag="Mocha"/>
                         <Button Style="{StaticResource PaletteCircleButton}" Background="#181028" ToolTip="Cyber Neon" Click="ThemeOption_Click" Tag="Cyber Neon"/>
                         <Button Style="{StaticResource PaletteCircleButton}" Background="#2A1B3D" ToolTip="Sunset Purple" Click="ThemeOption_Click" Tag="Sunset Purple"/>
-                    </WrapPanel>
+                        </WrapPanel>
 
-                    <Separator Margin="2,6"/>
-                    <TextBlock Text="Custom Hex Color" FontSize="10" Foreground="#666666" Margin="2,0,2,3"/>
-                    <Grid Margin="2">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBox x:Name="CustomHexTextBox" Text="#FFE082" FontSize="11" Padding="4,2"/>
-                        <Button Grid.Column="1" Content="Apply" FontSize="10" Margin="4,0,0,0" Padding="6,2" Click="CustomHexApply_Click"/>
-                    </Grid>
-                </StackPanel>
+                        <Separator Margin="2,6"/>
+                        <TextBlock Text="Custom Hex Color" FontSize="10" Foreground="#666666" Margin="2,0,2,3"/>
+                        <Grid Margin="2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox x:Name="CustomHexTextBox" Text="#FFE082" FontSize="11" Padding="4,2"/>
+                            <Button Grid.Column="1" Content="Apply" FontSize="10" Margin="4,0,0,0" Padding="6,2" Click="CustomHexApply_Click"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
             </Border>
         </Popup>
 

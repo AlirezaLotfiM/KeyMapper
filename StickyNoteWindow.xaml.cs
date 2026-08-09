@@ -140,6 +140,11 @@ namespace KeyMapper
             // Do not interrupt an active resize drag — Z-order changes corrupt size
             if (_isResizing) return;
 
+            if (ThemePopup.IsOpen && !ThemePopupCard.IsMouseOver)
+            {
+                ThemePopup.IsOpen = false;
+            }
+
             if (_isEditMode)
             {
                 ExitEditMode();
@@ -166,6 +171,26 @@ namespace KeyMapper
             Note.Width = Width;
             Note.Height = Height;
             SaveNoteState();
+        }
+
+        private void NoteCardBorder_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (NoteCardBorder == null ||
+                NoteCardBorder.ActualWidth <= 0 ||
+                NoteCardBorder.ActualHeight <= 0)
+            {
+                return;
+            }
+
+            double radius = NoteCardBorder.CornerRadius.TopLeft;
+            NoteCardBorder.Clip = new RectangleGeometry(
+                new Rect(
+                    0,
+                    0,
+                    NoteCardBorder.ActualWidth,
+                    NoteCardBorder.ActualHeight),
+                radius,
+                radius);
         }
 
         private void ApplyNoteModelToUi()
@@ -662,10 +687,34 @@ namespace KeyMapper
 
         private void WindowRootGrid_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
+            if (ThemePopup.IsOpen &&
+                e.OriginalSource is DependencyObject source &&
+                !IsDescendantOf(source, ThemePopupCard))
+            {
+                ThemePopup.IsOpen = false;
+            }
+
             if (!_isEditMode && e.ChangedButton == MouseButton.Left)
             {
                 DragMove();
             }
+        }
+
+        private static bool IsDescendantOf(
+            DependencyObject? source,
+            DependencyObject ancestor)
+        {
+            DependencyObject? current = source;
+            while (current != null)
+            {
+                if (ReferenceEquals(current, ancestor)) return true;
+
+                current = current is Visual visual
+                    ? VisualTreeHelper.GetParent(visual)
+                    : LogicalTreeHelper.GetParent(current);
+            }
+
+            return false;
         }
 
         private void FormatToolbarScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
@@ -692,7 +741,7 @@ namespace KeyMapper
 
         private void PinButton_Click(object sender, RoutedEventArgs e) => SetPinnedState(!Note.IsPinned);
         private void HideNoteButton_Click(object sender, RoutedEventArgs e) => StickyNoteManager.Instance.HideNote(Note.Id);
-        private void ThemeButton_Click(object sender, RoutedEventArgs e) => ThemePopup.IsOpen = true;
+        private void ThemeButton_Click(object sender, RoutedEventArgs e) => ThemePopup.IsOpen = !ThemePopup.IsOpen;
         private void AiButton_Click(object sender, RoutedEventArgs e) => AiPopup.IsOpen = true;
         private void FoldButton_Click(object sender, RoutedEventArgs e)
         {
@@ -714,7 +763,6 @@ namespace KeyMapper
             if (sender is Button btn && btn.Tag is string theme)
             {
                 ApplyColorTheme(theme);
-                ThemePopup.IsOpen = false;
             }
         }
 
@@ -725,7 +773,6 @@ namespace KeyMapper
             {
                 if (!hex.StartsWith("#")) hex = "#" + hex;
                 ApplyColorTheme(hex);
-                ThemePopup.IsOpen = false;
             }
         }
 

@@ -84,6 +84,11 @@ The local music player is part of the companion experience, not a separate skin:
 - Numeric ID3 genre codes such as `(13)Pop` are normalized to readable names; the separate line below each genre is the real track count.
 - The player keeps a clean border instead of a large neon halo.
 
+### Sticky notes
+
+- Sticky note cards keep their rounded corners while hover-only footer and sidebar details appear, without clipping labels at the card edge.
+- The color palette uses a clipped rounded surface and stays open while colors are previewed or applied. It closes when the user clicks outside the palette.
+
 ### Conversation and computer actions
 
 Talk to the selected character in Persian or English. Deterministic computer actions are handled locally and separately from natural-language conversation.
