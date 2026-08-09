@@ -92,6 +92,8 @@ The local music player is part of the companion experience, not a separate skin:
 - The color palette uses a clipped rounded surface and stays open while colors are previewed or applied. It closes when the user clicks outside the palette.
 - Starting a text selection closes the note palette so it cannot cover the writing surface.
 - The writing toolbar has generous wrapping and vertical scrolling, plus a Word-style pin button. Its pinned state is saved per note and survives a restart.
+- Notes are saved locally as formatted RTF plus plain text after edits and again when the window closes, so content, formatting, title, position, and preferences return on the next launch.
+- Delete confirmation uses a compact themed dialog with a clear cancel action instead of the default Windows message box.
 
 ### Conversation and computer actions
 

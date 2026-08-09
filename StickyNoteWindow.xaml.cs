@@ -844,8 +844,8 @@ namespace KeyMapper
         private void NewNoteButton_Click(object sender, RoutedEventArgs e) => StickyNoteManager.Instance.CreateNewNote("Quick Note", "", Note.ColorTheme);
         private void DeleteButton_Click(object sender, RoutedEventArgs e)
         {
-            var result = MessageBox.Show("Delete this sticky note?", "KeyMapper Note", MessageBoxButton.YesNo, MessageBoxImage.Question);
-            if (result == MessageBoxResult.Yes)
+            var dialog = new StickyNoteConfirmDialog(Note.Title, Note.ColorTheme, this);
+            if (dialog.ShowDialog() == true)
             {
                 StickyNoteManager.Instance.DeleteNote(Note.Id);
             }
@@ -1616,6 +1616,9 @@ namespace KeyMapper
 
         protected override void OnClosed(EventArgs e)
         {
+            // Text changes are saved immediately, and this final write covers a
+            // last title or document change made just before the window closes.
+            SaveNoteState();
             _audioRecorder.Dispose();
             base.OnClosed(e);
         }

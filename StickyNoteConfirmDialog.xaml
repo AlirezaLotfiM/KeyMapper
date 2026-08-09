@@ -1,0 +1,105 @@
+<Window x:Class="KeyMapper.StickyNoteConfirmDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Delete note"
+        Width="360"
+        Height="205"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ShowInTaskbar="False"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        FontFamily="Segoe UI"
+        KeyDown="Window_KeyDown">
+
+    <Window.Resources>
+        <Style x:Key="DialogButton" TargetType="Button">
+            <Setter Property="Background" Value="#FFFFFF"/>
+            <Setter Property="Foreground" Value="#26384F"/>
+            <Setter Property="BorderBrush" Value="#C8B991"/>
+            <Setter Property="BorderThickness" Value="1.5"/>
+            <Setter Property="Padding" Value="13,8"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ButtonBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="9"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.82"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.68"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="CloseButton" TargetType="Button" BasedOn="{StaticResource DialogButton}">
+            <Setter Property="Width" Value="28"/>
+            <Setter Property="Height" Value="28"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="FontWeight" Value="Normal"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+    </Window.Resources>
+
+    <Border x:Name="DialogCard" CornerRadius="16" BorderThickness="1.5" Padding="18">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="20" ShadowDepth="5" Direction="270" Color="#000000" Opacity="0.30"/>
+        </Border.Effect>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <Grid x:Name="HeaderPanel" Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <Border x:Name="IconBadge" Width="38" Height="38" CornerRadius="12" VerticalAlignment="Center">
+                    <TextBlock Text="🗑" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+
+                <StackPanel Grid.Column="1" Margin="11,0,8,0" VerticalAlignment="Center" MouseLeftButtonDown="HeaderPanel_MouseLeftButtonDown">
+                    <TextBlock x:Name="DialogTitle" Text="Delete note?" FontSize="16" FontWeight="SemiBold"/>
+                    <TextBlock x:Name="DialogSubtitle" Text="This action cannot be undone." FontSize="11" Margin="0,2,0,0"/>
+                </StackPanel>
+
+                <Button x:Name="CloseButton" Grid.Column="2" Style="{StaticResource CloseButton}" Content="×" Click="CancelButton_Click" ToolTip="Keep note"/>
+            </Grid>
+
+            <TextBlock x:Name="PromptText"
+                       Grid.Row="1"
+                       TextWrapping="Wrap"
+                       FontSize="12"
+                       LineHeight="18"
+                       Margin="0,16,0,16"
+                       VerticalAlignment="Center"/>
+
+            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button x:Name="CancelButton" Style="{StaticResource DialogButton}" Content="Keep note" Click="CancelButton_Click" Margin="0,0,8,0"/>
+                <Button x:Name="DeleteButton" Style="{StaticResource DialogButton}" Content="Delete note" Click="DeleteButton_Click"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>
