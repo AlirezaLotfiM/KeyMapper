@@ -817,7 +817,14 @@ namespace KeyMapper
                     ],
                     musicObservations:
                     [
-                        "“{title}” by {artist}. A soothing melody; music endures across the ages."
+                        "“{title}” by {artist}. A soothing melody; music endures across the ages.",
+                        "This song moves like a quiet spell. I will let it settle before I speak again.",
+                        "The arrangement has a patient rhythm. Even a long task can borrow its calm.",
+                        "A gentle track for a gentle focus. Notice how the room seems less hurried.",
+                        "The melody remembers where it has been, then changes just enough to stay alive.",
+                        "I have heard many journeys begin with music like this. Perhaps yours can begin too.",
+                        "This is not loud, but it is present. Some useful things do not need to announce themselves.",
+                        "The quieter sections are doing important work. Silence can be part of the composition."
                     ],
                     generalObservations:
                     [
@@ -871,7 +878,14 @@ namespace KeyMapper
                     ],
                     musicObservations:
                     [
-                        "Aw yeah! “{title}” by {artist}! This track gets me hyped up!"
+                        "Aw yeah! “{title}” by {artist}! This track gets me hyped up!",
+                        "Okay, that beat just showed up like a training montage. Let us use the energy.",
+                        "This song has momentum! Pick one task and let us hit it before the next chorus.",
+                        "I can feel the rhythm in my shoulders. Do not worry, I am keeping the important pixels still.",
+                        "That change in the beat was awesome. The boring part of the task just got a little less scary.",
+                        "This track is giving us a power-up. Small step first, then we go again.",
+                        "If the song wants a victory lap, we should give it one after we save the work.",
+                        "I vote we keep this one on. It has the kind of energy that makes a stubborn bug blink first."
                     ],
                     generalObservations:
                     [
@@ -925,7 +939,14 @@ namespace KeyMapper
                     ],
                     musicObservations:
                     [
-                        "Yoo-hoo! “{title}” by {artist}! Let's sing and party!"
+                        "Yoo-hoo! “{title}” by {artist}! Let's sing and party!",
+                        "Shishishi! This song has wind-in-the-sails energy. What treasure are we finishing first?",
+                        "That beat is making my feet hungry for an adventure. Save the file, then we celebrate.",
+                        "If this track were a sea, I would steer straight into the fun part.",
+                        "The song changed course! I like it. Let us change one small task into a finished one too.",
+                        "This is good ship music. Even a stubborn window title cannot hide from the crew now.",
+                        "I am not dancing. I am practicing a captain's victory move. There is a difference.",
+                        "Keep the music going! A long voyage needs a good song and a clear next step."
                     ],
                     generalObservations:
                     [

@@ -68,6 +68,8 @@ The local music player is part of the companion experience, not a separate skin:
 - Supplied vector-style icons are used for folders, playback, shuffle, repeat, volume, and library navigation.
 - Every playing track gets a live, track-seeded groove animation.
 - While music is playing, eleven block-built pixel glyphs rise around the pet in varied stepped bursts: notes, chords, beat sparks, equalizer bars, waves, stars, bolts, and moons. Genre and detected mood decide which symbols appear.
+- Music reactions are staged so they never compete visually: a track comment appears first, existing glyphs clear while the speech bubble is visible, and the next pixel burst waits until the comment has disappeared.
+- Song comments use a personality-specific shuffled pool, so Frieren, Yuji, and Luffy do not repeat the same one-line reaction every time a track changes.
 - A lightweight streaming analyzer reads bass energy in the background and creates a compact beat map. The whole audio file is never loaded into memory, only one track is analyzed at a time, and completed analyses are kept in a small bounded cache.
 - The pet moves on detected beats instead of repeating a fixed loop. Every character has a different mixture of nods, sways, bounces, head movements, jumps, and quiet rests. The artwork stays anchored at its feet, so the window and contact shadow remain stable.
 - Tracks receive peaceful, melancholic, cheerful, dramatic, intense, or focused moods. Character tastes affect their reactions, while favorites, repeats, strong sections, and playback returning after a long pause receive special responses.

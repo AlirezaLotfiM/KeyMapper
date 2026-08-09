@@ -109,6 +109,8 @@ namespace KeyMapper
         private DateTime _lastStrongMusicReactionAt = DateTime.MinValue;
         private int _nextMusicBeatIndex;
         private int _musicBeatSequence;
+        private bool _musicNotesWaitingForComment;
+        private DateTime _musicNotesReleaseAt = DateTime.MinValue;
         private static readonly Brush FoodOutlineBrush =
             CreateFrozenPixelBrush(91, 43, 25);
         private static readonly Brush MeatBrush =
@@ -335,6 +337,18 @@ namespace KeyMapper
 
         private void MusicNoteTimer_Tick(object? sender, EventArgs e)
         {
+            if (_musicNotesWaitingForComment)
+            {
+                if (SpeechBubble.Visibility == Visibility.Visible ||
+                    DateTime.Now < _musicNotesReleaseAt)
+                {
+                    return;
+                }
+
+                _musicNotesWaitingForComment = false;
+                _musicNotesReleaseAt = DateTime.MinValue;
+            }
+
             if (!_musicNotesEnabled ||
                 !IsVisible ||
                 !LocalAudioPlayerService.Instance.IsPlaying ||
@@ -349,6 +363,33 @@ namespace KeyMapper
             }
 
             SpawnPixelMusicNote();
+        }
+
+        private void BeginMusicCommentSequence()
+        {
+            _musicNotesWaitingForComment = true;
+            _musicNotesReleaseAt = DateTime.MaxValue;
+            MusicNotesCanvas.Children.Clear();
+        }
+
+        private void ReleaseMusicNotesAfterComment(int delayMilliseconds = 260)
+        {
+            if (!_musicNotesWaitingForComment)
+            {
+                return;
+            }
+
+            _musicNotesReleaseAt = DateTime.Now.AddMilliseconds(
+                Math.Max(0, delayMilliseconds));
+        }
+
+        private void ShowMusicSpeechBubble(string message, int autoHideSeconds = 9)
+        {
+            BeginMusicCommentSequence();
+            ShowSpeechBubble(
+                _personality.SpeakerName,
+                message,
+                autoHideSeconds);
         }
 
         private void SpawnPixelMusicNote(
@@ -715,29 +756,42 @@ namespace KeyMapper
 
             if (isNewStart && _commentsEnabled)
             {
-                await Task.Delay(900);
-                if (SpeechBubble.Visibility != Visibility.Visible &&
-                    !_isContextMenuOpen &&
-                    LocalAudioPlayerService.Instance.IsPlaying &&
-                    string.Equals(
-                        LocalAudioPlayerService.Instance.CurrentTrack?.FilePath,
-                        requestedPath,
-                        StringComparison.OrdinalIgnoreCase))
+                BeginMusicCommentSequence();
+                bool commentShown = false;
+                try
                 {
-                    string reaction =
-                        isRepeat
-                            ? BuildRepeatReaction(track)
-                            : BuildMusicStartReaction(
-                                track,
-                                reactionAnalysis,
-                                memory!);
-                    ShowSpeechBubble(
-                        _personality.SpeakerName,
-                        reaction,
-                        8);
-                    _lastCommentedTrackKey =
-                        $"{track.DisplayTitle}-{track.DisplayArtist}";
-                    _lastMusicCommentAt = DateTime.Now;
+                    await Task.Delay(900);
+                    if (SpeechBubble.Visibility != Visibility.Visible &&
+                        !_isContextMenuOpen &&
+                        LocalAudioPlayerService.Instance.IsPlaying &&
+                        string.Equals(
+                            LocalAudioPlayerService.Instance.CurrentTrack?.FilePath,
+                            requestedPath,
+                            StringComparison.OrdinalIgnoreCase))
+                    {
+                        string reaction =
+                            isRepeat
+                                ? BuildRepeatReaction(track)
+                                : BuildMusicStartReaction(
+                                    track,
+                                    reactionAnalysis,
+                                    memory!);
+                        ShowSpeechBubble(
+                            _personality.SpeakerName,
+                            reaction,
+                            8);
+                        commentShown = true;
+                        _lastCommentedTrackKey =
+                            $"{track.DisplayTitle}-{track.DisplayArtist}";
+                        _lastMusicCommentAt = DateTime.Now;
+                    }
+                }
+                finally
+                {
+                    if (!commentShown)
+                    {
+                        ReleaseMusicNotesAfterComment();
+                    }
                 }
             }
 
@@ -784,8 +838,7 @@ namespace KeyMapper
                 SpeechBubble.Visibility != Visibility.Visible &&
                 !_isContextMenuOpen)
             {
-                ShowSpeechBubble(
-                    _personality.SpeakerName,
+                ShowMusicSpeechBubble(
                     BuildResumeReaction(),
                     7);
             }
@@ -843,6 +896,7 @@ namespace KeyMapper
             }
 
             if (_musicNotesEnabled &&
+                !_musicNotesWaitingForComment &&
                 SpeechBubble.Visibility != Visibility.Visible &&
                 PetMusicControlsOverlay.Visibility != Visibility.Visible &&
                 MusicNotesCanvas.Children.Count < 7 &&
@@ -863,8 +917,7 @@ namespace KeyMapper
                 !_isContextMenuOpen)
             {
                 _lastStrongMusicReactionAt = DateTime.Now;
-                ShowSpeechBubble(
-                    _personality.SpeakerName,
+                ShowMusicSpeechBubble(
                     BuildStrongSectionReaction(),
                     7);
             }
@@ -1347,6 +1400,7 @@ namespace KeyMapper
             {
                 _speechBubbleTimer.Stop();
                 SpeechBubble.Visibility = Visibility.Collapsed;
+                ReleaseMusicNotesAfterComment();
             });
         }
 
@@ -1690,40 +1744,53 @@ namespace KeyMapper
 
         private async Task ShowMusicObservationAsync(PlayingTrack track)
         {
-            TrackDetails details = await MusicGenreService.Instance.FetchTrackDetailsAsync(track.Title, track.Artist);
-            string genreLabel = string.IsNullOrWhiteSpace(details.Genre) ? "" : $" (Genre: {details.Genre})";
-            AudioTrackItem? localTrack =
-                LocalAudioPlayerService.Instance.CurrentTrack;
-            string experienceContext = string.Empty;
-            if (localTrack != null &&
-                _currentMusicAnalysis != null)
+            BeginMusicCommentSequence();
+            bool commentShown = false;
+            try
             {
-                int listens = MusicExperienceService.Instance
-                    .GetCharacterListenCount(
-                        localTrack,
-                        _personality.CharacterName);
-                experienceContext =
-                    $"; detected mood: {_currentMusicAnalysis.Mood}; " +
-                    $"energy: {_currentMusicAnalysis.Energy:0.00}; " +
-                    $"familiar to this character: {listens > 1}. " +
-                    "React naturally without quoting measurements";
-            }
+                TrackDetails details = await MusicGenreService.Instance.FetchTrackDetailsAsync(track.Title, track.Artist);
+                string genreLabel = string.IsNullOrWhiteSpace(details.Genre) ? "" : $" (Genre: {details.Genre})";
+                AudioTrackItem? localTrack =
+                    LocalAudioPlayerService.Instance.CurrentTrack;
+                string experienceContext = string.Empty;
+                if (localTrack != null &&
+                    _currentMusicAnalysis != null)
+                {
+                    int listens = MusicExperienceService.Instance
+                        .GetCharacterListenCount(
+                            localTrack,
+                            _personality.CharacterName);
+                    experienceContext =
+                        $"; detected mood: {_currentMusicAnalysis.Mood}; " +
+                        $"energy: {_currentMusicAnalysis.Energy:0.00}; " +
+                        $"familiar to this character: {listens > 1}. " +
+                        "React naturally without quoting measurements";
+                }
 
-            string fallback = _personality.MusicObservation(
-                track.Title,
-                $"{track.Artist}{genreLabel}",
-                _random);
-            string? generated = await TryCreateAmbientCommentAsync(
-                _activeContextKey,
-                $"{track.Title}{genreLabel}{experienceContext}",
-                track.Artist);
-            if (SpeechBubble.Visibility != Visibility.Visible &&
-                !_isContextMenuOpen)
+                string fallback = _personality.MusicObservation(
+                    track.Title,
+                    $"{track.Artist}{genreLabel}",
+                    _random);
+                string? generated = await TryCreateAmbientCommentAsync(
+                    _activeContextKey,
+                    $"{track.Title}{genreLabel}{experienceContext}",
+                    track.Artist);
+                if (SpeechBubble.Visibility != Visibility.Visible &&
+                    !_isContextMenuOpen)
+                {
+                    ShowSpeechBubble(
+                        _personality.SpeakerName,
+                        generated ?? fallback,
+                        9);
+                    commentShown = true;
+                }
+            }
+            finally
             {
-                ShowSpeechBubble(
-                    _personality.SpeakerName,
-                    generated ?? fallback,
-                    9);
+                if (!commentShown)
+                {
+                    ReleaseMusicNotesAfterComment();
+                }
             }
         }
 
