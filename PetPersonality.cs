@@ -581,7 +581,15 @@ namespace KeyMapper
                         "{artist} has officially changed the weather on this desktop.",
                         "This track makes the boring little tasks look suspiciously beatable.",
                         "If “{title}” keeps this up, I may need a larger dance floor.",
-                        "I have decided this is our scene-transition music. Something good should happen next."
+                        "I have decided this is our scene-transition music. Something good should happen next.",
+                        "The opening just winked at me. I think this track has a secret route.",
+                        "I am keeping time with the tiny tasks. This beat can carry the next one.",
+                        "The chorus arrived like a friendly notification. I approve of the timing.",
+                        "This song has enough sparkle for a fresh shortcut.",
+                        "I found a good loop here. We can work inside it for a while.",
+                        "That little pause was dramatic. Even my pixels leaned closer.",
+                        "The rhythm is doing the motivating, so I can focus on the useful part.",
+                        "New soundtrack note: this track makes the desktop feel less crowded."
                     ],
                     generalObservations:
                     [
@@ -668,7 +676,15 @@ namespace KeyMapper
                         "An observation: {artist} gives this desktop a noticeably different temperament.",
                         "This is a useful moment to listen for one instrument you had not noticed before.",
                         "The track continues, but the details do not repeat quite as simply as the title suggests.",
-                        "I approve of music that leaves enough space for thought. This one appears to understand the assignment."
+                        "I approve of music that leaves enough space for thought. This one appears to understand the assignment.",
+                        "The introduction establishes a clear mood. I will file that under focused and pleasant.",
+                        "There is a useful balance here: enough motion to energize, enough space to think.",
+                        "A well-timed change in texture can reset attention without interrupting it.",
+                        "This track would make a reasonable boundary for the next work interval.",
+                        "I notice the percussion arriving before the melody resolves. Nicely arranged.",
+                        "The quiet passage is not empty. It is giving the next phrase room to matter.",
+                        "A subtle shift, but an effective one. The atmosphere has changed.",
+                        "If you need a steady pace, this is a sensible companion."
                     ],
                     generalObservations:
                     [
@@ -755,7 +771,15 @@ namespace KeyMapper
                         "{artist} understood the job: give the room some energy and stay out of the way.",
                         "Okay, that part was good. I almost reacted. Almost.",
                         "This track makes clicking through chores feel less like clicking through chores.",
-                        "Keep this one on. The desktop has finally found a decent rhythm."
+                        "Keep this one on. The desktop has finally found a decent rhythm.",
+                        "This beat is doing the heavy lifting. I can handle the next checkbox.",
+                        "Not bad. The hook landed, and the task list did not get away.",
+                        "Good track. Keep it running while we clear one more blocker.",
+                        "That bass line has a better plan than half the tabs open right now.",
+                        "The song found the groove before we found the bug. Fair enough.",
+                        "I would call this a clean upgrade to the room's productivity.",
+                        "No notes from me, except the ones floating around the pet.",
+                        "This is the kind of track that makes a boring repeatable task tolerable."
                     ],
                     generalObservations:
                     [
@@ -824,7 +848,15 @@ namespace KeyMapper
                         "The melody remembers where it has been, then changes just enough to stay alive.",
                         "I have heard many journeys begin with music like this. Perhaps yours can begin too.",
                         "This is not loud, but it is present. Some useful things do not need to announce themselves.",
-                        "The quieter sections are doing important work. Silence can be part of the composition."
+                        "The quieter sections are doing important work. Silence can be part of the composition.",
+                        "The first phrase feels like an old path in a new forest. Familiar, but not unchanged.",
+                        "There is patience in this rhythm. It asks for attention without demanding it.",
+                        "A melody can hold a memory without explaining it. This one seems content to do so.",
+                        "The song has found its own stillness. We need not hurry it.",
+                        "A small variation has appeared. It is enough to keep the journey moving.",
+                        "This would be suitable music for sorting thoughts into their proper places.",
+                        "The room feels briefly elsewhere. I will keep watch while you work.",
+                        "Some songs are companions rather than performances. This is one of them."
                     ],
                     generalObservations:
                     [
@@ -885,7 +917,15 @@ namespace KeyMapper
                         "That change in the beat was awesome. The boring part of the task just got a little less scary.",
                         "This track is giving us a power-up. Small step first, then we go again.",
                         "If the song wants a victory lap, we should give it one after we save the work.",
-                        "I vote we keep this one on. It has the kind of energy that makes a stubborn bug blink first."
+                        "I vote we keep this one on. It has the kind of energy that makes a stubborn bug blink first.",
+                        "That beat came in strong! Let us use the boost before it fades.",
+                        "This is the kind of song that makes a hard problem look ready for a rematch.",
+                        "The chorus is here! Save your progress, then enjoy the victory moment.",
+                        "I am feeling the rhythm. One task, one step, one win at a time.",
+                        "That switch-up was awesome. Even the stubborn parts of the project should be nervous.",
+                        "Good energy! Stretch your shoulders and hit the next move.",
+                        "This track is cheering with us. I can hear it.",
+                        "Keep it going. We are building momentum, not just making noise."
                     ],
                     generalObservations:
                     [
@@ -946,7 +986,15 @@ namespace KeyMapper
                         "The song changed course! I like it. Let us change one small task into a finished one too.",
                         "This is good ship music. Even a stubborn window title cannot hide from the crew now.",
                         "I am not dancing. I am practicing a captain's victory move. There is a difference.",
-                        "Keep the music going! A long voyage needs a good song and a clear next step."
+                        "Keep the music going! A long voyage needs a good song and a clear next step.",
+                        "This song has treasure-map energy. I want to see what the next section hides.",
+                        "The beat is sailing fast! Hold on to the task and do not lose the route.",
+                        "That chorus is huge! It deserves a celebration after the next save.",
+                        "This track makes me want to challenge the biggest tab on the screen.",
+                        "A surprise turn! Great songs are like good islands, never exactly what you expect.",
+                        "I can hear the crew getting excited. What are we conquering next?",
+                        "This rhythm needs a victory pose. I will keep it small so I do not knock over the UI.",
+                        "More music, more adventure. Finish one thing and we can set sail again."
                     ],
                     generalObservations:
                     [
