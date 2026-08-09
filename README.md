@@ -87,6 +87,8 @@ The local music player is part of the companion experience, not a separate skin:
 ### Sticky notes
 
 - Sticky note cards keep their rounded corners while hover-only footer and sidebar details appear, without clipping labels at the card edge.
+- Dark palettes switch the footer, pin badge, audio label, and action icons to readable companion colors instead of leaving low-contrast gray text behind.
+- The `Pinned` badge keeps a safe inset from the lower-right resize grip, so it never collides with the grip or card edge.
 - The color palette uses a clipped rounded surface and stays open while colors are previewed or applied. It closes when the user clicks outside the palette.
 
 ### Conversation and computer actions

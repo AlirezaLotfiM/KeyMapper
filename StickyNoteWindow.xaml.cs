@@ -383,8 +383,11 @@ namespace KeyMapper
             {
                 try
                 {
-                    bgBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(themeName));
-                    borderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(themeName));
+                    Color customColor = (Color)ColorConverter.ConvertFromString(themeName);
+                    bgBrush = new SolidColorBrush(customColor);
+                    borderBrush = new SolidColorBrush(customColor);
+                    isDark = GetRelativeLuminance(customColor) < 0.52;
+                    textBrush = isDark ? Brushes.White : Brushes.Black;
                 }
                 catch
                 {
@@ -473,21 +476,68 @@ namespace KeyMapper
             NoteCardBorder.BorderBrush = borderBrush;
             TitleTextBox.Foreground = textBrush;
             RichEditor.Foreground = textBrush;
-            
-            Brush iconBrush = isDark ? Brushes.White : new SolidColorBrush((Color)ColorConverter.ConvertFromString("#222222"));
+
+            Brush iconBrush = isDark
+                ? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F8F4FF"))
+                : new SolidColorBrush((Color)ColorConverter.ConvertFromString("#222222"));
+            Brush mutedBrush = isDark
+                ? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#D8D0E4"))
+                : new SolidColorBrush((Color)ColorConverter.ConvertFromString("#666666"));
+            Brush sidebarTextBrush = isDark
+                ? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F8F4FF"))
+                : new SolidColorBrush((Color)ColorConverter.ConvertFromString("#333333"));
+
             TitleTextBox.Foreground = iconBrush;
+            StatusLabel.Foreground = mutedBrush;
+            PinBadgeLabel.Foreground = mutedBrush;
+            AudioStatusText.Foreground = mutedBrush;
+
+            if (HeaderActionPanel != null)
+            {
+                foreach (Button button in HeaderActionPanel.Children.OfType<Button>())
+                {
+                    button.Foreground = sidebarTextBrush;
+                }
+            }
+
+            if (DoneSidebarButton?.Content is TextBlock doneText)
+            {
+                doneText.Foreground = isDark
+                    ? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#9FF2B7"))
+                    : new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2E7D32"));
+            }
+
+            if (PinIconPath != null)
+            {
+                PinIconPath.Fill = sidebarTextBrush;
+            }
 
             if (SidebarMenuBorder != null)
             {
                 SidebarMenuBorder.Background = isDark 
-                    ? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#EE333333"))
+                    ? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#EE211A30"))
                     : new SolidColorBrush((Color)ColorConverter.ConvertFromString("#EEFFFFFF"));
                 SidebarMenuBorder.BorderBrush = isDark
-                    ? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#555555"))
+                    ? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#806F5B88"))
                     : new SolidColorBrush((Color)ColorConverter.ConvertFromString("#25000000"));
             }
 
             SaveNoteState();
+        }
+
+        private static double GetRelativeLuminance(Color color)
+        {
+            static double Linearize(byte channel)
+            {
+                double value = channel / 255.0;
+                return value <= 0.03928
+                    ? value / 12.92
+                    : Math.Pow((value + 0.055) / 1.055, 2.4);
+            }
+
+            return 0.2126 * Linearize(color.R)
+                 + 0.7152 * Linearize(color.G)
+                 + 0.0722 * Linearize(color.B);
         }
 
         private void CollapseNote(bool collapse)

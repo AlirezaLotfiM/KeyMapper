@@ -300,14 +300,15 @@
                 </Border>
 
                 <!-- FOOTER / STATUS BAR (Fades in on hover) -->
-                <Grid Grid.Row="4" x:Name="FooterBar" Margin="6,2,6,4" Opacity="0">
+                <!-- Keep the footer clear of the resize grip in the lower-right corner. -->
+                <Grid Grid.Row="4" x:Name="FooterBar" Margin="8,2,22,7" Opacity="0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
                     <TextBlock x:Name="StatusLabel" Text="Double-click to edit" FontSize="10" Foreground="#666666" VerticalAlignment="Center"/>
-                    <TextBlock x:Name="PinBadgeLabel" Grid.Column="1" Text="Pinned" FontSize="10" FontWeight="SemiBold" Foreground="#666666" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="PinBadgeLabel" Grid.Column="1" Text="Pinned" FontSize="10" FontWeight="SemiBold" Foreground="#666666" Margin="8,0,0,0" VerticalAlignment="Center"/>
                 </Grid>
 
                 <!-- RESIZE GRIP THUMB INSIDE NOTE CARD BOTTOM-RIGHT CORNER -->
