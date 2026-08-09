@@ -54,6 +54,7 @@ namespace KeyMapper
     internal sealed class PetPersonalityProfile
     {
         private readonly IReadOnlyDictionary<PetAction, string[]> _actionLines;
+        private readonly IReadOnlyDictionary<int, string[]> _hourlyComments;
         private readonly Dictionary<string, Queue<string>> _lineBags =
             new(StringComparer.Ordinal);
         private string _lastLine = string.Empty;
@@ -72,6 +73,7 @@ namespace KeyMapper
         public string[] MusicObservations { get; }
         public string[] GeneralObservations { get; }
         public string[] BreakReminders { get; }
+        public int SarcasmChancePercent { get; }
 
         public PetPersonalityProfile(
             string characterName,
@@ -105,6 +107,16 @@ namespace KeyMapper
             GeneralObservations = generalObservations;
             BreakReminders = breakReminders;
             _actionLines = actionLines;
+            _hourlyComments = CreateHourlyComments(characterName);
+            SarcasmChancePercent = characterName switch
+            {
+                "Frieren" => 8,
+                "Owlet Monster" => 12,
+                "Yuji Itadori" => 18,
+                "Monkey D. Luffy" => 24,
+                "Dude Monster" => 34,
+                _ => 26
+            };
         }
 
         public string Introduction(Random random) =>
@@ -161,6 +173,259 @@ namespace KeyMapper
             Pick("music", MusicObservations, random)
                 .Replace("{title}", title)
                 .Replace("{artist}", artist);
+
+        public string HourlyComment(int hour, Random random)
+        {
+            if (!_hourlyComments.TryGetValue(hour, out string[]? lines) || lines.Length == 0)
+            {
+                return string.Empty;
+            }
+
+            bool useSarcasm = SarcasmChancePercent > 0 &&
+                              random.Next(100) < SarcasmChancePercent;
+            string[] selectedLines = useSarcasm
+                ? SarcasticLines(CharacterName)
+                : lines;
+            string key = useSarcasm ? "hourly:sarcasm" : $"hourly:{hour}";
+
+            return Pick(key, selectedLines, random)
+                .Replace("{time}", FormatHour(hour));
+        }
+
+        private static string FormatHour(int hour)
+        {
+            int normalized = ((hour % 24) + 24) % 24;
+            string suffix = normalized >= 12 ? "PM" : "AM";
+            int displayHour = normalized % 12;
+            if (displayHour == 0) displayHour = 12;
+            return $"{displayHour}:00 {suffix}";
+        }
+
+        private static string[] SarcasticLines(string characterName) =>
+            characterName switch
+            {
+                "Pink Monster" =>
+                [
+                    "It is {time}. We have survived another hour of pretending that tab will organize itself.",
+                    "At {time}, the desktop remains open and the task remains suspiciously unfinished. Impressive.",
+                    "Another hour, another chance to call that one tiny task a quick win and then open three more tabs.",
+                    "The clock says {time}. I checked. It still cannot finish the task for you. Rude."
+                ],
+                "Owlet Monster" =>
+                [
+                    "It is {time}. Your workflow appears to be conducting an experiment in how many tabs can coexist.",
+                    "At {time}, I offer a gentle observation: the task is still waiting, despite the very confident tab switching.",
+                    "Another hour has passed. The unfinished item remains remarkably committed to its position.",
+                    "The clock says {time}. Perhaps the next plan could include actually starting the plan."
+                ],
+                "Dude Monster" =>
+                [
+                    "{time}. That task is still open? Bold strategy.",
+                    "Another hour gone and the same tab is staring back. It is winning on points.",
+                    "The clock hit {time}. Maybe that tiny task is not going to defeat itself.",
+                    "At {time}, I have one suggestion: do the thing before opening another thing."
+                ],
+                "Frieren" =>
+                [
+                    "It is {time}. The unfinished task has waited patiently, which is more than most humans manage.",
+                    "Another hour has passed. I suspect the tab is becoming a historical artifact.",
+                    "At {time}, even an ancient mage might consider closing one of those windows.",
+                    "The clock says {time}. Time is strange. So is keeping the same task untouched for so long."
+                ],
+                "Yuji Itadori" =>
+                [
+                    "It is {time}! That task is still standing? Fine, we can take it down together.",
+                    "Another hour! The tab is undefeated, but I am not giving it the victory speech yet.",
+                    "At {time}, let us finish one thing before the next thing jumps us.",
+                    "The clock says {time}. I brought energy. The task should probably bring some too."
+                ],
+                "Monkey D. Luffy" =>
+                [
+                    "{time}! That task is still hiding? I will find it after I find some meat.",
+                    "Another hour passed and the tab is still here. Is it part of the crew now?",
+                    "At {time}, I say we finish this before the next adventure steals the whole day.",
+                    "The clock says {time}. The task cannot run away forever. Probably."
+                ],
+                _ =>
+                [
+                    "It is {time}. One small task is still waiting for a hero.",
+                    "Another hour has passed. Shall we make one useful dent in the list?"
+                ]
+            };
+
+        private static IReadOnlyDictionary<int, string[]> CreateHourlyComments(string characterName) =>
+            characterName switch
+            {
+                "Pink Monster" => new Dictionary<int, string[]>
+                {
+                    [8] =
+                    [
+                        "Good morning! It is {time}, and I have already spotted at least one tiny win hiding nearby.",
+                        "Morning patrol at {time}. Let us make the first task smaller than it looks.",
+                        "The day is awake at {time}. I brought quick feet and a short list of useful ideas."
+                    ],
+                    [13] =
+                    [
+                        "It is {time}. Midday checkpoint: one sip of water, one useful shortcut, then back to it.",
+                        "Lunch-hour patrol at {time}. I can turn a repeated phrase into an expansion if you want.",
+                        "Half the day is doing its little sprint. What should we rescue before evening?"
+                    ],
+                    [18] =
+                    [
+                        "Evening check at {time}. The desktop is calmer now, so the tricky task has nowhere to hide.",
+                        "It is {time}. Good time for a tidy finish and one satisfying checkbox.",
+                        "The day changed color at {time}. I am voting for a small win before the next scroll."
+                    ],
+                    [22] =
+                    [
+                        "Night patrol at {time}. Save the important work before the pixels start yawning.",
+                        "It is {time}. We can finish one gentle task, then let tomorrow inherit the rest.",
+                        "Late-hour idea at {time}: write down the next step so future-you does not have to hunt for it."
+                    ]
+                },
+                "Owlet Monster" => new Dictionary<int, string[]>
+                {
+                    [8] =
+                    [
+                        "Good morning. At {time}, a concise plan will serve us better than a heroic scramble.",
+                        "Morning observation at {time}: choose one task, define its finish line, and begin there.",
+                        "The day begins at {time}. A clear desk and a clear first step are sufficient."
+                    ],
+                    [13] =
+                    [
+                        "It is {time}. A measured pause may improve the quality of the next decision.",
+                        "Midday review at {time}: which open task is closest to a useful conclusion?",
+                        "At {time}, consider saving a small checkpoint before changing direction."
+                    ],
+                    [18] =
+                    [
+                        "Evening at {time}. A short review now can prevent tomorrow from beginning with archaeology.",
+                        "It is {time}. Finish one clear thread before opening another, if possible.",
+                        "The workday is softening at {time}. This is a good moment to capture the next action."
+                    ],
+                    [22] =
+                    [
+                        "At {time}, preserve your progress and allow the mind a quieter interval.",
+                        "Night note at {time}: unfinished work is easier to resume when its next step is written down.",
+                        "It is {time}. Even a careful system benefits from closing a few loops."
+                    ]
+                },
+                "Dude Monster" => new Dictionary<int, string[]>
+                {
+                    [8] =
+                    [
+                        "{time}. Pick the first useful task and hit it before the inbox starts spawning copies.",
+                        "Morning check at {time}: one clear goal beats ten vague intentions.",
+                        "It is {time}. Save the dramatic plan for later and do the small obvious thing first."
+                    ],
+                    [13] =
+                    [
+                        "Midday at {time}. Water, stretch, then finish the task that is closest to done.",
+                        "{time}. Quick checkpoint: what can we close instead of merely reopening?",
+                        "Lunch-hour reality check at {time}: the shortcut is probably shorter than retyping everything."
+                    ],
+                    [18] =
+                    [
+                        "{time}. Wrap one thing cleanly before the day starts charging interest.",
+                        "Evening check at {time}: save, test, close the loop. Easy win.",
+                        "The day is nearly done at {time}. Do not let the last task become tomorrow's boss fight."
+                    ],
+                    [22] =
+                    [
+                        "{time}. Back up the important stuff and stop negotiating with the same unfinished task.",
+                        "Late shift at {time}: write the next step, then log off before the tabs unionize.",
+                        "It is {time}. Good work. Now leave a breadcrumb for tomorrow."
+                    ]
+                },
+                "Frieren" => new Dictionary<int, string[]>
+                {
+                    [8] =
+                    [
+                        "Morning has arrived at {time}. Even a long journey begins with one deliberate step.",
+                        "At {time}, choose a single task. Small rituals become reliable spells.",
+                        "The room is new again at {time}. Let us begin quietly and without haste."
+                    ],
+                    [13] =
+                    [
+                        "It is {time}. A pause for water is a modest spell, but a useful one.",
+                        "Midday at {time}. Perhaps complete one thread before wandering into another.",
+                        "At {time}, the day still has room for a careful correction."
+                    ],
+                    [18] =
+                    [
+                        "Evening arrives at {time}. Save what matters before the light changes completely.",
+                        "It is {time}. A quiet review now may spare tomorrow a long search.",
+                        "The workday is becoming a memory at {time}. Leave a clear trail behind."
+                    ],
+                    [22] =
+                    [
+                        "At {time}, let the unfinished task rest with a note explaining where to begin.",
+                        "Night has settled at {time}. Even ancient journeys require sleep between chapters.",
+                        "It is {time}. Close what can be closed and keep the rest from becoming mysterious."
+                    ]
+                },
+                "Yuji Itadori" => new Dictionary<int, string[]>
+                {
+                    [8] =
+                    [
+                        "Good morning! It is {time}. Let us start strong with one task we can actually finish.",
+                        "Morning power-up at {time}! Hydrate, focus, and give the first problem everything you have.",
+                        "The day is on at {time}! Pick a target and let us make progress together."
+                    ],
+                    [13] =
+                    [
+                        "Midday at {time}! Eat something, breathe, then hit the next task with fresh energy.",
+                        "It is {time}. We are not stuck, we are between moves. Let us choose the next one.",
+                        "Checkpoint at {time}! One finished task is better than ten tasks getting in your head."
+                    ],
+                    [18] =
+                    [
+                        "Evening push at {time}! Finish one thing and call that a real victory.",
+                        "It is {time}. The day is tired, but we can still land one clean hit on the to-do list.",
+                        "At {time}, I am still cheering. Save your work and take the next step."
+                    ],
+                    [22] =
+                    [
+                        "Late-night check at {time}! Protect your sleep and leave tomorrow a clear starting point.",
+                        "It is {time}. We did enough for today if we remember where to continue tomorrow.",
+                        "Night mode at {time}! One last save, then let your brain recover."
+                    ]
+                },
+                "Monkey D. Luffy" => new Dictionary<int, string[]>
+                {
+                    [8] =
+                    [
+                        "Morning at {time}! A new adventure needs breakfast and one brave first step.",
+                        "It is {time}! Pick the biggest-looking task and make it smaller. Then find meat.",
+                        "The crew is awake at {time}! What treasure are we getting done first?"
+                    ],
+                    [13] =
+                    [
+                        "{time}! Lunch is important, but so is finishing one thing before the next adventure.",
+                        "Midday patrol at {time}. I vote for a snack and a very clear next move.",
+                        "It is {time}! The task is not allowed to hide behind another tab."
+                    ],
+                    [18] =
+                    [
+                        "Evening at {time}! Tie up one loose rope before the ship sails into tomorrow.",
+                        "It is {time}. Good crew members save their work before celebrating.",
+                        "The sky changed at {time}! Finish one quest, then we can call it a day."
+                    ],
+                    [22] =
+                    [
+                        "Night at {time}! Save everything and get some sleep. The next island can wait.",
+                        "It is {time}! One last save, then no more fighting the same tiny task.",
+                        "Late patrol at {time}. I am guarding the desktop while you recharge."
+                    ]
+                },
+                _ => new Dictionary<int, string[]>
+                {
+                    [8] = ["Good morning. It is {time}; let us begin with one useful step."],
+                    [13] = ["It is {time}. A short pause and one clear task would help."],
+                    [18] = ["Evening check at {time}: finish one small thread before stopping."],
+                    [22] = ["It is {time}. Save your work and leave a clear next step."]
+                }
+            };
 
         private string Pick(string key, string[] lines, Random random)
         {

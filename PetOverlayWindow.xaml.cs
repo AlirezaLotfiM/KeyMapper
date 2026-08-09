@@ -238,9 +238,23 @@ namespace KeyMapper
             {
                 Dispatcher.BeginInvoke(new Action(() =>
                 {
+                    if (!_commentsEnabled ||
+                        !IsVisible ||
+                        _isContextMenuOpen ||
+                        SpeechBubble.Visibility == Visibility.Visible ||
+                        (_commentFrequency == "Quiet" && _random.Next(100) >= 45))
+                    {
+                        return;
+                    }
+
+                    string comment = _personality.HourlyComment(hour, _random);
+                    if (string.IsNullOrWhiteSpace(comment))
+                    {
+                        return;
+                    }
+
                     SoundManager.PlayHourlyChime();
-                    string timeStr = hour == 0 ? "12:00 AM (Midnight)" : hour == 12 ? "12:00 PM (Noon)" : $"{hour}:00";
-                    ShowSpeechBubble(_personality.SpeakerName, $"⏰ Top of the hour! It's {timeStr}", 8);
+                    ShowSpeechBubble(_personality.SpeakerName, comment, 8);
                 }));
             };
 

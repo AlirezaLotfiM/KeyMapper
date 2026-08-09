@@ -94,6 +94,7 @@ The local music player is part of the companion experience, not a separate skin:
 - The writing toolbar has generous wrapping and vertical scrolling, plus a Word-style pin button. Its pinned state is saved per note and survives a restart.
 - Notes are saved locally as formatted RTF plus plain text after edits and again when the window closes, so content, formatting, title, position, and preferences return on the next launch.
 - Delete confirmation uses a compact themed dialog with a clear cancel action instead of the default Windows message box.
+- Scheduled character comments run at selected daily checkpoints such as morning, midday, evening, and night. Each character has several lines per checkpoint, a no-immediate-repeat selection bag, and a small personality-specific chance of gentle sarcasm.
 
 ### Conversation and computer actions
 
