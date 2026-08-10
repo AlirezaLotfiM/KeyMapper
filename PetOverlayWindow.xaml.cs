@@ -8,7 +8,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
@@ -2134,6 +2133,21 @@ namespace KeyMapper
             }
         }
 
+        private void PetContextMenu_Opened(object sender, RoutedEventArgs e)
+        {
+            if (sender is not ContextMenu contextMenu)
+            {
+                return;
+            }
+
+            // Set every arrow as soon as the root menu appears. Waiting for an
+            // individual hover made previously opened items remember a different
+            // direction from the rest of the menu.
+            Dispatcher.BeginInvoke(
+                new Action(() => UpdatePetMenuArrows(contextMenu)),
+                DispatcherPriority.ContextIdle);
+        }
+
         private void PetMenuItem_SubmenuOpened(object sender, RoutedEventArgs e)
         {
             if (sender is not MenuItem menuItem)
@@ -2141,19 +2155,28 @@ namespace KeyMapper
                 return;
             }
 
-            // WPF can flip a submenu to the left when the pet is near the right
-            // edge of the screen. Update the glyph after layout so it follows the
-            // actual popup direction instead of always pointing right.
+            // Recheck nested menus after WPF has completed the popup placement.
             Dispatcher.BeginInvoke(
                 new Action(() => UpdatePetMenuArrow(menuItem)),
-                DispatcherPriority.Loaded);
+                DispatcherPriority.ContextIdle);
+        }
+
+        private static void UpdatePetMenuArrows(ItemsControl parent)
+        {
+            foreach (object item in parent.Items)
+            {
+                if (item is MenuItem menuItem)
+                {
+                    UpdatePetMenuArrow(menuItem);
+                    UpdatePetMenuArrows(menuItem);
+                }
+            }
         }
 
         private static void UpdatePetMenuArrow(MenuItem menuItem)
         {
-            if (menuItem.Template.FindName("Arrow", menuItem) is not TextBlock arrow ||
-                menuItem.Template.FindName("PART_Popup", menuItem) is not Popup popup ||
-                popup.Child is not Visual popupVisual)
+            if (!menuItem.HasItems ||
+                menuItem.Template.FindName("Arrow", menuItem) is not TextBlock arrow)
             {
                 return;
             }
@@ -2161,8 +2184,12 @@ namespace KeyMapper
             try
             {
                 Point targetPoint = menuItem.PointToScreen(new Point(0, 0));
-                Point popupPoint = popupVisual.PointToScreen(new Point(0, 0));
-                arrow.Text = popupPoint.X < targetPoint.X ? "‹" : "›";
+                double itemWidth = menuItem.ActualWidth > 0 ? menuItem.ActualWidth : 220;
+                double rightSpace = SystemParameters.WorkArea.Right - (targetPoint.X + itemWidth);
+                double leftSpace = targetPoint.X - SystemParameters.WorkArea.Left;
+                const double estimatedSubmenuWidth = 230;
+                bool openLeft = rightSpace < estimatedSubmenuWidth && leftSpace > rightSpace;
+                arrow.Text = openLeft ? "‹" : "›";
             }
             catch
             {

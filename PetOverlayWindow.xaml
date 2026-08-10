@@ -141,7 +141,7 @@
     </Grid>
 
     <Window.ContextMenu>
-        <ContextMenu Background="{DynamicResource AppBackgroundBrush}" Foreground="{DynamicResource AppTextBrush}" BorderBrush="{DynamicResource AppTextBrush}" BorderThickness="2" Padding="2" FontFamily="Segoe UI" FontSize="12">
+        <ContextMenu Background="{DynamicResource AppBackgroundBrush}" Foreground="{DynamicResource AppTextBrush}" BorderBrush="{DynamicResource AppTextBrush}" BorderThickness="2" Padding="2" FontFamily="Segoe UI" FontSize="12" Opened="PetContextMenu_Opened">
             <ContextMenu.Resources>
                 <Style TargetType="{x:Type MenuItem}">
                     <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}"/>

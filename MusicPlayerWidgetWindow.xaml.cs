@@ -560,6 +560,7 @@ namespace KeyMapper
                     TotalTimeTxt.Text = track.DurationText;
                     MiniTotalTimeTxt.Text = track.DurationText;
                     if (MiniTotalTimeTxtH != null) MiniTotalTimeTxtH.Text = track.DurationText;
+                    UpdateMiniTimeRail(0, track.Duration.TotalSeconds);
                     UpdateLikeButtonUI(track);
 
                     if (track.AlbumArt == null)
@@ -925,6 +926,7 @@ namespace KeyMapper
                     MiniTotalTimeTxt.Text = totText;
                     if (MiniCurrentTimeTxtH != null) MiniCurrentTimeTxtH.Text = curText;
                     if (MiniTotalTimeTxtH != null) MiniTotalTimeTxtH.Text = totText;
+                    UpdateMiniTimeRail(pos.TotalSeconds, total.TotalSeconds);
 
                     double maxSec = total.TotalSeconds > 0 ? total.TotalSeconds : 100;
                     PositionSlider.Maximum = maxSec;
@@ -936,6 +938,23 @@ namespace KeyMapper
                     if (MiniPositionSliderH != null) MiniPositionSliderH.Value = pos.TotalSeconds;
                 }
             });
+        }
+
+        private void UpdateMiniTimeRail(double positionSeconds, double totalSeconds)
+        {
+            double progress = totalSeconds > 0
+                ? Math.Clamp(positionSeconds / totalSeconds, 0, 1)
+                : 0;
+
+            if (MiniTimeRail != null && MiniElapsedRail != null && MiniTimeRail.ActualWidth > 0)
+            {
+                MiniElapsedRail.Width = Math.Max(0, MiniTimeRail.ActualWidth - 8) * progress;
+            }
+
+            if (MiniTimeRailH != null && MiniElapsedRailH != null && MiniTimeRailH.ActualWidth > 0)
+            {
+                MiniElapsedRailH.Width = Math.Max(0, MiniTimeRailH.ActualWidth - 8) * progress;
+            }
         }
 
         private void PositionSlider_PreviewMouseDown(object sender, MouseButtonEventArgs e)

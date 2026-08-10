@@ -247,7 +247,7 @@
         <SolidColorBrush x:Key="MiniMutedBrush" Color="#FFD8E1EC"/>
         <SolidColorBrush x:Key="MiniGlassBrush" Color="#4DFFFFFF"/>
         <SolidColorBrush x:Key="MiniGlassBorderBrush" Color="#A6FFFFFF"/>
-        <SolidColorBrush x:Key="MiniTimeLabelBrush" Color="#B20A1320"/>
+        <SolidColorBrush x:Key="MiniTimeRailBrush" Color="#66FFFFFF"/>
 
         <Style x:Key="MiniHeaderIconButton"
                TargetType="{x:Type Button}">
@@ -689,13 +689,18 @@
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
                         <Slider Grid.Row="0" x:Name="MiniPositionSlider" Style="{StaticResource CyberNeonSlider}" Minimum="0" Maximum="100" ValueChanged="PositionSlider_ValueChanged" PreviewMouseDown="PositionSlider_PreviewMouseDown" PreviewMouseUp="PositionSlider_PreviewMouseUp" Cursor="Hand"/>
-                        <Grid Grid.Row="1" Margin="0,1,0,0">
-                            <Border HorizontalAlignment="Left" Background="{StaticResource MiniTimeLabelBrush}" CornerRadius="3" Padding="3,1">
-                                <TextBlock x:Name="MiniCurrentTimeTxt" Text="00:00" Foreground="{StaticResource MiniForegroundBrush}" FontSize="9" FontWeight="Bold"/>
-                            </Border>
-                            <Border HorizontalAlignment="Right" Background="{StaticResource MiniTimeLabelBrush}" CornerRadius="3" Padding="3,1">
-                                <TextBlock x:Name="MiniTotalTimeTxt" Text="00:00" Foreground="{StaticResource MiniForegroundBrush}" FontSize="9" FontWeight="SemiBold"/>
-                            </Border>
+                        <Grid x:Name="MiniTimeRail" Grid.Row="1" Height="20" Margin="0,1,0,0">
+                            <Border Height="2" Margin="4,0" VerticalAlignment="Bottom" Background="{StaticResource MiniTimeRailBrush}" CornerRadius="1"/>
+                            <Border x:Name="MiniElapsedRail" Width="0" Height="2" Margin="4,0" HorizontalAlignment="Left" VerticalAlignment="Bottom" Background="{DynamicResource AppAccentBrush}" CornerRadius="1"/>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Top">
+                                <Ellipse Width="4" Height="4" Margin="0,5,4,0" Fill="{DynamicResource AppAccentBrush}"/>
+                                <TextBlock x:Name="MiniCurrentTimeTxt" Text="00:00" Foreground="{StaticResource MiniForegroundBrush}" FontSize="9" FontWeight="Bold">
+                                    <TextBlock.Effect><DropShadowEffect BlurRadius="2" ShadowDepth="1" Color="#000000" Opacity="0.8"/></TextBlock.Effect>
+                                </TextBlock>
+                            </StackPanel>
+                            <TextBlock x:Name="MiniTotalTimeTxt" Text="00:00" HorizontalAlignment="Right" VerticalAlignment="Top" Foreground="{StaticResource MiniMutedBrush}" FontSize="9" FontWeight="SemiBold">
+                                <TextBlock.Effect><DropShadowEffect BlurRadius="2" ShadowDepth="1" Color="#000000" Opacity="0.8"/></TextBlock.Effect>
+                            </TextBlock>
                         </Grid>
                     </Grid>
 
@@ -786,13 +791,18 @@
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
                             <Slider Grid.Row="0" x:Name="MiniPositionSliderH" Style="{StaticResource CyberNeonSlider}" Minimum="0" Maximum="100" ValueChanged="PositionSlider_ValueChanged" PreviewMouseDown="PositionSlider_PreviewMouseDown" PreviewMouseUp="PositionSlider_PreviewMouseUp" VerticalAlignment="Center" Cursor="Hand"/>
-                            <Grid Grid.Row="1" Margin="0,1,0,0">
-                                <Border HorizontalAlignment="Left" Background="{StaticResource MiniTimeLabelBrush}" CornerRadius="3" Padding="3,1">
-                                    <TextBlock x:Name="MiniCurrentTimeTxtH" Text="00:00" Foreground="{StaticResource MiniForegroundBrush}" FontSize="9" FontWeight="Bold"/>
-                                </Border>
-                                <Border HorizontalAlignment="Right" Background="{StaticResource MiniTimeLabelBrush}" CornerRadius="3" Padding="3,1">
-                                    <TextBlock x:Name="MiniTotalTimeTxtH" Text="00:00" Foreground="{StaticResource MiniForegroundBrush}" FontSize="9" FontWeight="SemiBold"/>
-                                </Border>
+                            <Grid x:Name="MiniTimeRailH" Grid.Row="1" Height="20" Margin="0,1,0,0">
+                                <Border Height="2" Margin="4,0" VerticalAlignment="Bottom" Background="{StaticResource MiniTimeRailBrush}" CornerRadius="1"/>
+                                <Border x:Name="MiniElapsedRailH" Width="0" Height="2" Margin="4,0" HorizontalAlignment="Left" VerticalAlignment="Bottom" Background="{DynamicResource AppAccentBrush}" CornerRadius="1"/>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Top">
+                                    <Ellipse Width="4" Height="4" Margin="0,5,4,0" Fill="{DynamicResource AppAccentBrush}"/>
+                                    <TextBlock x:Name="MiniCurrentTimeTxtH" Text="00:00" Foreground="{StaticResource MiniForegroundBrush}" FontSize="9" FontWeight="Bold">
+                                        <TextBlock.Effect><DropShadowEffect BlurRadius="2" ShadowDepth="1" Color="#000000" Opacity="0.8"/></TextBlock.Effect>
+                                    </TextBlock>
+                                </StackPanel>
+                                <TextBlock x:Name="MiniTotalTimeTxtH" Text="00:00" HorizontalAlignment="Right" VerticalAlignment="Top" Foreground="{StaticResource MiniMutedBrush}" FontSize="9" FontWeight="SemiBold">
+                                    <TextBlock.Effect><DropShadowEffect BlurRadius="2" ShadowDepth="1" Color="#000000" Opacity="0.8"/></TextBlock.Effect>
+                                </TextBlock>
                             </Grid>
                         </Grid>
 
