@@ -141,13 +141,12 @@
     </Grid>
 
     <Window.ContextMenu>
-        <ContextMenu Background="{DynamicResource AppBackgroundBrush}" Foreground="{DynamicResource AppTextBrush}" BorderBrush="{DynamicResource AppTextBrush}" BorderThickness="2" Padding="2" FontFamily="Segoe UI" FontSize="12" Opened="PetContextMenu_Opened">
+        <ContextMenu Background="{DynamicResource AppBackgroundBrush}" Foreground="{DynamicResource AppTextBrush}" BorderBrush="{DynamicResource AppTextBrush}" BorderThickness="2" Padding="2" FontFamily="Segoe UI" FontSize="12">
             <ContextMenu.Resources>
                 <Style TargetType="{x:Type MenuItem}">
                     <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}"/>
                     <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}"/>
                     <Setter Property="MinWidth" Value="220"/>
-                    <EventSetter Event="SubmenuOpened" Handler="PetMenuItem_SubmenuOpened"/>
                     <Setter Property="Template">
                         <Setter.Value>
                             <ControlTemplate TargetType="{x:Type MenuItem}">
@@ -163,10 +162,12 @@
                                             <Rectangle x:Name="PixelMarker" Grid.Column="0" Fill="{DynamicResource AppAccentBrush}" Visibility="Collapsed"/>
                                             <ContentPresenter Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" ContentSource="Icon"/>
                                             <ContentPresenter Grid.Column="2" Margin="5,0,4,0" VerticalAlignment="Center" ContentSource="Header" RecognizesAccessKey="True"/>
-                                            <TextBlock x:Name="Arrow" Grid.Column="3" Text="›" FontSize="17" Foreground="{DynamicResource AppAccentBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed"/>
+                                            <Border x:Name="SubmenuBadge" Grid.Column="3" Width="18" Height="18" CornerRadius="6" Background="{DynamicResource AppAccentSoftBrush}" BorderBrush="{DynamicResource AppAccentBrush}" BorderThickness="1" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed">
+                                                <TextBlock x:Name="Arrow" Text="⋯" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource AppAccentBrush}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                            </Border>
                                         </Grid>
                                     </Border>
-                                    <Popup x:Name="PART_Popup" Placement="Right" HorizontalOffset="-2" VerticalOffset="-2" AllowsTransparency="True" Focusable="False" Opened="PetSubmenuPopup_Opened" IsOpen="{Binding IsSubmenuOpen, RelativeSource={RelativeSource TemplatedParent}}">
+                                    <Popup x:Name="PART_Popup" Placement="Right" HorizontalOffset="-2" VerticalOffset="-2" AllowsTransparency="True" Focusable="False" IsOpen="{Binding IsSubmenuOpen, RelativeSource={RelativeSource TemplatedParent}}">
                                         <Border Background="{DynamicResource AppBackgroundBrush}" BorderBrush="{DynamicResource AppTextBrush}" BorderThickness="2" Padding="2" SnapsToDevicePixels="True">
                                             <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Cycle"/>
                                         </Border>
@@ -174,7 +175,7 @@
                                 </Grid>
                                 <ControlTemplate.Triggers>
                                     <Trigger Property="HasItems" Value="True">
-                                        <Setter TargetName="Arrow" Property="Visibility" Value="Visible"/>
+                                        <Setter TargetName="SubmenuBadge" Property="Visibility" Value="Visible"/>
                                     </Trigger>
                                     <Trigger Property="IsHighlighted" Value="True">
                                         <Setter TargetName="PixelCell" Property="Background" Value="{DynamicResource AppAccentSoftBrush}"/>

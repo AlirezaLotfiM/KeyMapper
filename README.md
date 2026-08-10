@@ -224,7 +224,7 @@ Theme location:
 Settings → Appearance
 ```
 
-The selected theme is saved locally and applies immediately to the control center, conversation window, translator, OCR results, music player, pet mini-player, speech bubble, and pixel-style context menu. Every submenu arrow is calculated when the menu appears and follows the side with enough screen space, including nested menus. The Settings page uses eased mouse-wheel scrolling, equal-width palette previews, and two-column AI model cards with clear download and RAM labels.
+The selected theme is saved locally and applies immediately to the control center, conversation window, translator, OCR results, music player, pet mini-player, speech bubble, and pixel-style context menu. Submenus use a direction-neutral three-dot badge, so the menu stays consistent whether WPF opens a nested panel to the left or right. The Settings page uses eased mouse-wheel scrolling, equal-width palette previews, and two-column AI model cards with clear download and RAM labels.
 
 The interface uses a shared icon set for tabs, settings sections, model actions, and the pet context menu. The Windows application and tray icon use the purple desktop-pet mark rather than the old gray placeholder. The character also uses a compact two-layer contact shadow positioned directly beneath its feet. Form connectors are centered precisely between their related input fields.
 
