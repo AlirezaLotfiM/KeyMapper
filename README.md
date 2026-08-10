@@ -224,13 +224,13 @@ The selected theme is saved locally and applies immediately to the control cente
 
 The interface uses a shared icon set for tabs, settings sections, model actions, and the pet context menu. The Windows application and tray icon use the purple desktop-pet mark rather than the old gray placeholder. The character also uses a compact two-layer contact shadow positioned directly beneath its feet. Form connectors are centered precisely between their related input fields.
 
-The control center keeps a safe minimum size of 760 by 560 pixels. Its header and sticky-note actions wrap instead of overlapping, so resizing within the supported range remains readable and usable. Support and donations are placed at the end of the tab strip, keeping the daily workflow focused on mappings, settings, and notes.
+The control center keeps a safe minimum size of 760 by 560 pixels. Its header and sticky-note actions wrap instead of overlapping, so resizing within the supported range remains readable and usable. The header uses four compact icon actions for status, conversation, KeyMapper power, and support, with clear tooltips instead of persistent labels.
 
 Sticky-note deletion uses the same rounded, theme-aware confirmation surface as the rest of the app instead of a Windows system message box. The dialog follows the note palette and supports Escape to cancel and Enter to confirm.
 
 ### Support the project
 
-KeyMapper Desktop Pet is free to use. The **Support & Donate** tab is intentionally placed after the main tools and includes optional donation details with one-click address copying for anyone who wants to help fund continued development. Donations do not unlock features, change support priority, or send information from the app.
+KeyMapper Desktop Pet is free to use. The **Support & Donate** header action opens an independent, theme-aware donation window with one-click address copying. Donations do not unlock features, change support priority, or send information from the app.
 
 | Asset | Network | Address |
 | --- | --- | --- |

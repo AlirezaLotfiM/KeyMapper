@@ -39,7 +39,7 @@ namespace KeyMapper
         public ObservableCollection<ShortcutMapping> Actions { get; } = new ObservableCollection<ShortcutMapping>();
         public ObservableCollection<string> Exclusions { get; } = new ObservableCollection<string>();
 
-        private static readonly DonationWalletOption[] DonationWallets =
+        public static readonly DonationWalletOption[] DonationWallets =
         [
             new(
                 "Bitcoin (BTC)",
@@ -76,15 +76,11 @@ namespace KeyMapper
         private bool _isShuttingDown = false;
         private bool _isInitializing = true;
         private SystemMediaControlsManager? _smtcManager;
+        private SupportDonationWindow? _supportWindow;
 
         public MainWindow()
         {
             InitializeComponent();
-
-            // Keep the working tools together. Support is still easy to find, but it
-            // belongs at the end of the navigation instead of interrupting the main flow.
-            MainTabs.Items.Remove(SupportTab);
-            MainTabs.Items.Add(SupportTab);
 
             // Load settings
             _settings = ConfigManager.Load();
@@ -412,6 +408,19 @@ namespace KeyMapper
 
         private void OpenConversation_Click(object sender, RoutedEventArgs e) =>
             _petOverlayWindow.OpenConversation(this);
+
+        private void OpenSupport_Click(object sender, RoutedEventArgs e)
+        {
+            if (_supportWindow != null)
+            {
+                _supportWindow.Activate();
+                return;
+            }
+
+            _supportWindow = new SupportDonationWindow(this);
+            _supportWindow.Closed += (_, _) => _supportWindow = null;
+            _supportWindow.Show();
+        }
 
         private void CopyDonationAddress_Click(object sender, RoutedEventArgs e)
         {
@@ -1367,25 +1376,34 @@ namespace KeyMapper
             {
                 StatusBadge.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(243, 241, 234));
                 StatusBadge.BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(200, 185, 145));
-                StatusText.Text = "KeyMapper is off";
-                StatusText.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(107, 123, 143));
-                ToggleHookBtn.Content = "Turn on KeyMapper";
+                StatusIcon.Text = "○";
+                StatusIcon.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(107, 123, 143));
+                StatusBadge.ToolTip = "KeyMapper is off";
+                ToggleHookIcon.Text = "▶";
+                ToggleHookIcon.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(49, 141, 153));
+                ToggleHookBtn.ToolTip = "Turn on KeyMapper";
             }
             else if (_hook.IsPaused)
             {
                 StatusBadge.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 240, 201));
                 StatusBadge.BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(214, 169, 75));
-                StatusText.Text = "KeyMapper is paused";
-                StatusText.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(138, 100, 26));
-                ToggleHookBtn.Content = "Turn off KeyMapper";
+                StatusIcon.Text = "Ⅱ";
+                StatusIcon.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(138, 100, 26));
+                StatusBadge.ToolTip = "KeyMapper is paused";
+                ToggleHookIcon.Text = "⏻";
+                ToggleHookIcon.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(49, 141, 153));
+                ToggleHookBtn.ToolTip = "Turn off KeyMapper";
             }
             else
             {
                 StatusBadge.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(225, 244, 234));
                 StatusBadge.BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(83, 167, 125));
-                StatusText.Text = "KeyMapper is on";
-                StatusText.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(36, 101, 72));
-                ToggleHookBtn.Content = "Turn off KeyMapper";
+                StatusIcon.Text = "●";
+                StatusIcon.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(36, 101, 72));
+                StatusBadge.ToolTip = "KeyMapper is on";
+                ToggleHookIcon.Text = "⏻";
+                ToggleHookIcon.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(49, 141, 153));
+                ToggleHookBtn.ToolTip = "Turn off KeyMapper";
             }
         }
 

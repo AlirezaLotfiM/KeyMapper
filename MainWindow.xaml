@@ -216,6 +216,44 @@
             </Setter>
         </Style>
 
+        <!-- Compact header controls keep the title area calm while preserving tooltips. -->
+        <Style x:Key="HeaderIconButton" TargetType="Button">
+            <Setter Property="Width" Value="42"/>
+            <Setter Property="Height" Value="42"/>
+            <Setter Property="Margin" Value="0,0,8,0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1.5"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="HeaderButtonBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="11">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="HeaderButtonBorder" Property="Background" Value="{DynamicResource AppAccentSoftBrush}"/>
+                                <Setter TargetName="HeaderButtonBorder" Property="BorderBrush" Value="{DynamicResource AppAccentBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="HeaderButtonBorder" Property="Background" Value="{DynamicResource AppSurfaceAltBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="HeaderButtonBorder" Property="Opacity" Value="0.45"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <Style x:Key="ChoiceCardItem" TargetType="ListBoxItem">
             <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}"/>
             <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}"/>
@@ -278,35 +316,78 @@
         </Grid.RowDefinitions>
 
         <!-- Header -->
-        <WrapPanel Grid.Row="0" Margin="0,0,0,20">
-            <StackPanel Orientation="Horizontal" Margin="0,0,18,10">
-                <TextBlock Text="Desktop Pet Control Center" FontFamily="Segoe UI" FontSize="22" FontWeight="SemiBold" Foreground="{DynamicResource AppTextBrush}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
-                <!-- Status Badge -->
-                <Border x:Name="StatusBadge" Margin="14,0,0,0" Padding="10,5" BorderBrush="#53A77D" BorderThickness="1" Background="#E1F4EA" VerticalAlignment="Center">
-                    <TextBlock x:Name="StatusText" Text="KeyMapper is on" Foreground="#246548" FontFamily="Segoe UI" FontSize="11" FontWeight="SemiBold"/>
-                </Border>
-            </StackPanel>
+        <Grid Grid.Row="0" Margin="0,0,0,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
 
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                <Button Style="{StaticResource SecondaryButton}"
-                        Margin="0,0,10,0"
-                        Click="OpenConversation_Click"
-                        ToolTip="Talk naturally with the selected character">
-                    <StackPanel Orientation="Horizontal">
-                        <Rectangle Width="16" Height="16"
-                                   Fill="{DynamicResource AppAccentBrush}"
-                                   Margin="0,0,8,0">
-                            <Rectangle.OpacityMask>
-                                <ImageBrush ImageSource="Resources/Icons/chat.png"/>
-                            </Rectangle.OpacityMask>
-                        </Rectangle>
-                        <TextBlock Text="Talk with character" VerticalAlignment="Center"/>
-                    </StackPanel>
+            <TextBlock Grid.Column="0"
+                       Text="Desktop Pet Control Center"
+                       FontFamily="Segoe UI"
+                       FontSize="22"
+                       FontWeight="SemiBold"
+                       Foreground="{DynamicResource AppTextBrush}"
+                       VerticalAlignment="Center"
+                       TextTrimming="CharacterEllipsis"
+                       Margin="0,0,18,0"/>
+
+            <!-- Four compact actions. Their names and state are available through tooltips. -->
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <Button x:Name="StatusBadge"
+                        Style="{StaticResource HeaderIconButton}"
+                        AutomationProperties.Name="KeyMapper status"
+                        ToolTip="KeyMapper is on">
+                    <TextBlock x:Name="StatusIcon"
+                               Text="●"
+                               FontFamily="Segoe UI Symbol"
+                               FontSize="18"
+                               FontWeight="Bold"
+                               Foreground="#246548"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"/>
                 </Button>
-                <!-- Disable / Enable Button -->
-                <Button x:Name="ToggleHookBtn" Content="Disable KeyMapper" Style="{StaticResource SecondaryButton}" Click="ToggleHook_Click" Margin="0,0,10,0"/>
+
+                <Button Style="{StaticResource HeaderIconButton}"
+                        Click="OpenConversation_Click"
+                        AutomationProperties.Name="Talk with character"
+                        ToolTip="Talk with character">
+                    <Rectangle Width="18" Height="18"
+                               Fill="{DynamicResource AppAccentBrush}">
+                        <Rectangle.OpacityMask>
+                            <ImageBrush ImageSource="Resources/Icons/chat.png"/>
+                        </Rectangle.OpacityMask>
+                    </Rectangle>
+                </Button>
+
+                <Button x:Name="ToggleHookBtn"
+                        Style="{StaticResource HeaderIconButton}"
+                        Click="ToggleHook_Click"
+                        AutomationProperties.Name="Turn KeyMapper on or off"
+                        ToolTip="Turn off KeyMapper">
+                    <TextBlock x:Name="ToggleHookIcon"
+                               Text="⏻"
+                               FontFamily="Segoe UI Symbol"
+                               FontSize="19"
+                               Foreground="{DynamicResource AppAccentBrush}"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"/>
+                </Button>
+
+                <Button x:Name="SupportButton"
+                        Style="{StaticResource HeaderIconButton}"
+                        Click="OpenSupport_Click"
+                        AutomationProperties.Name="Support and donate"
+                        ToolTip="Support and donate">
+                    <Rectangle Width="18" Height="18"
+                               Fill="{DynamicResource AppAccentBrush}">
+                        <Rectangle.OpacityMask>
+                            <ImageBrush ImageSource="Resources/Icons/donate.png"/>
+                        </Rectangle.OpacityMask>
+                    </Rectangle>
+                </Button>
             </StackPanel>
-        </WrapPanel>
+        </Grid>
 
         <!-- Content Area -->
         <TabControl x:Name="MainTabs" Grid.Row="1" Background="Transparent" BorderThickness="0" Margin="0">
@@ -1348,6 +1429,7 @@
 
             <!-- Support and donations. MainWindow places this tab after the daily tools. -->
             <TabItem x:Name="SupportTab"
+                     Visibility="Collapsed"
                      PreviewMouseLeftButtonDown="SupportTab_PreviewMouseLeftButtonDown">
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
