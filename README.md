@@ -189,7 +189,36 @@ The feature has its own on/off control.
 - Disable mappings in excluded applications.
 - Launch configured programs and utility actions.
 - Search actions through the command palette.
-- Choose the command palette trigger in Settings. Double Left Ctrl is only the default; you can record a custom combination such as Ctrl+Alt+Space, use a function key, or disable it completely.
+
+#### Configurable keyboard triggers
+
+The complete interception workflow can be customized from:
+
+```text
+Settings → Everyday Settings → Shortcut trigger keys
+```
+
+| Role | Default | What it does |
+| --- | --- | --- |
+| Start recording | `Left Ctrl` | Tap once, then type the abbreviation or action name. |
+| Text Expansion | `Right Ctrl` | Submits the recorded text as a replacement shortcut. |
+| App Action | `Right Shift` | Submits the recorded text as an application or utility action. |
+| Assistant command palette | `Double Left Ctrl` | Opens searchable expansions, actions, clipboard history, and assistant commands. |
+
+The three recording roles use independent drop-down lists. Available choices
+include left/right Ctrl, left/right Shift, left/right Alt, Caps Lock, and
+function keys F6–F12. KeyMapper rejects duplicate role assignments so one key
+cannot ambiguously start recording and submit two different operations.
+
+The Assistant command palette has a preset list for double-tap modifiers,
+common key combinations, function keys, and disabling the trigger. The
+read-only capture field remains available for custom combinations such as
+`Ctrl+Alt+Space` or `Ctrl+Shift+C`. Conflicting command-palette and mapping
+triggers are rejected before they are saved.
+
+Existing configurations remain compatible. When the new settings are absent,
+KeyMapper uses the original `Left Ctrl`, `Right Ctrl`, `Right Shift`, and
+`Double Left Ctrl` behavior.
 
 ### System tray and startup
 
@@ -205,7 +234,7 @@ Uncheck it at any time to opt out. The setting affects only the current Windows 
 
 ### Preferences that survive restart
 
-Durable choices are restored the next time PixelYar starts. This includes whether KeyMapper is enabled or paused, whether the pet is visible and walking, its manually chosen desktop position, horizontal-only movement, movement and idle speeds, character, comments, AI ambience, theme, startup behavior, command palette trigger, translator target and settings panel, and music-player layout.
+Durable choices are restored the next time PixelYar starts. This includes whether KeyMapper is enabled or paused, whether the pet is visible and walking, its manually chosen desktop position, horizontal-only movement, movement and idle speeds, character, comments, AI ambience, theme, startup behavior, recording/Text Expansion/App Action trigger keys, command palette trigger, translator target and settings panel, and music-player layout.
 
 Music preferences are also retained: volume, shuffle, repeat mode, current track position, queue, mini-player mode, library visibility, active tab, and sorting. Preferences share one synchronized in-memory configuration and are written through an atomic file replacement, so one window cannot overwrite a newer choice saved by another window.
 

@@ -710,7 +710,7 @@
                                     </DockPanel>
                                     
                                     <CheckBox x:Name="SuppressKeysChk" Content="Keep shortcut keystrokes out of the active app" Foreground="{DynamicResource AppTextBrush}" Margin="0,0,0,12" Checked="SettingChanged" Unchecked="SettingChanged"/>
-                                    <TextBlock Text="If checked, the keys you type after Left Ctrl will not be sent to the active application until you cancel or submit." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="11" Margin="20,0,0,15"/>
+                                    <TextBlock Text="If checked, keys typed after the configured recording trigger will not be sent to the active application until you cancel or submit." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="11" Margin="20,0,0,15"/>
 
                                     <CheckBox x:Name="ShowOverlayChk" Content="Show what I am typing for a shortcut" Foreground="{DynamicResource AppTextBrush}" Margin="0,0,0,12" Checked="SettingChanged" Unchecked="SettingChanged"/>
                                     <TextBlock Text="Displays a small overlay at the bottom right showing current typed trigger." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="11" Margin="20,0,0,15"/>
@@ -722,12 +722,61 @@
                                     <TextBlock Text="Plays mechanical click sounds when recording, and a chime when a shortcut triggers." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="11" Margin="20,0,0,15"/>
 
                                     <StackPanel Margin="0,5,0,15">
+                                        <TextBlock Text="Shortcut trigger keys" Foreground="{DynamicResource AppTextBrush}" FontWeight="SemiBold" FontSize="13" Margin="0,0,0,5"/>
+                                        <TextBlock Text="Choose a different key for starting a recording, submitting a Text Expansion, and submitting an App Action." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,8"/>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="180"/>
+                                                <ColumnDefinition Width="220"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+
+                                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Start recording" Foreground="{DynamicResource AppTextBrush}" VerticalAlignment="Center" Margin="0,0,8,8"/>
+                                            <ComboBox x:Name="RecordingTriggerKeyCombo"
+                                                      Grid.Row="0"
+                                                      Grid.Column="1"
+                                                      Height="32"
+                                                      Margin="0,0,8,8"
+                                                      SelectionChanged="TriggerKeySelectionChanged"/>
+                                            <TextBlock Grid.Row="0" Grid.Column="2" Text="Tap once, then type the shortcut name." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="11" VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,0,0,8"/>
+
+                                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Text Expansion" Foreground="{DynamicResource AppTextBrush}" VerticalAlignment="Center" Margin="0,0,8,8"/>
+                                            <ComboBox x:Name="TextExpansionTriggerKeyCombo"
+                                                      Grid.Row="1"
+                                                      Grid.Column="1"
+                                                      Height="32"
+                                                      Margin="0,0,8,8"
+                                                      SelectionChanged="TriggerKeySelectionChanged"/>
+                                            <TextBlock Grid.Row="1" Grid.Column="2" Text="Submits the typed shortcut as a text replacement." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="11" VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,0,0,8"/>
+
+                                            <TextBlock Grid.Row="2" Grid.Column="0" Text="App Action" Foreground="{DynamicResource AppTextBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                            <ComboBox x:Name="AppActionTriggerKeyCombo"
+                                                      Grid.Row="2"
+                                                      Grid.Column="1"
+                                                      Height="32"
+                                                      Margin="0,0,8,0"
+                                                      SelectionChanged="TriggerKeySelectionChanged"/>
+                                            <TextBlock Grid.Row="2" Grid.Column="2" Text="Submits the typed shortcut as an application action." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="11" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                                        </Grid>
+                                        <TextBlock Text="The three roles must use different keys. Defaults remain Left Ctrl, Right Ctrl, and Right Shift." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="11" Margin="0,6,0,0" TextWrapping="Wrap"/>
+                                    </StackPanel>
+
+                                    <StackPanel Margin="0,5,0,15">
                                         <TextBlock Text="Assistant command trigger" Foreground="{DynamicResource AppTextBrush}" FontWeight="SemiBold" FontSize="13" Margin="0,0,0,5"/>
-                                        <TextBlock Text="Choose what opens the command palette. Click the field, then press any key combination you want." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,8"/>
+                                        <TextBlock Text="Choose a preset from the list, or click the field and press a custom key combination." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,8"/>
+                                        <ComboBox x:Name="CommandPalettePresetCombo"
+                                                  Height="32"
+                                                  Margin="0,0,0,8"
+                                                  ToolTip="Choose a command-palette trigger preset"
+                                                  SelectionChanged="CommandPalettePresetCombo_SelectionChanged"/>
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="Auto"/>
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
                                             <TextBox x:Name="CommandPaletteHotkeyTxt"
@@ -739,11 +788,6 @@
                                                      LostFocus="CommandPaletteHotkeyTxt_LostFocus"
                                                      PreviewKeyDown="CommandPaletteHotkeyTxt_PreviewKeyDown"/>
                                             <Button Grid.Column="1"
-                                                    Content="Double Left Ctrl"
-                                                    Style="{StaticResource SecondaryButton}"
-                                                    Margin="8,0,0,0"
-                                                    Click="UseDoubleLeftCtrlCommandPalette_Click"/>
-                                            <Button Grid.Column="2"
                                                     Content="Disable"
                                                     Style="{StaticResource SecondaryButton}"
                                                     Margin="8,0,0,0"
@@ -1330,7 +1374,7 @@
                                     <TextBlock Text="Type your abbreviation followed by a semicolon (e.g. typing 'mail;' where 'mail' is mapped). The abbreviation is instantly erased and replaced by your expanded text. Perfect for fast, uninterrupted typing." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="12" TextWrapping="Wrap" Margin="10,0,0,12" LineHeight="16"/>
 
                                     <TextBlock Text="• Standard Mode (Interception Buffer)" FontWeight="SemiBold" Foreground="#30D158" FontSize="13" Margin="0,0,0,4"/>
-                                    <TextBlock Text="Tap Left Ctrl (starts recording a mechanical click sound) → Type your abbreviation (e.g. 'mail') → Tap Right Ctrl (submits). The text is replaced. To cancel recording, tap Left Ctrl again." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="12" TextWrapping="Wrap" Margin="10,0,0,0" LineHeight="16"/>
+                                    <TextBlock Text="Tap the configured Start Recording key → Type your abbreviation (e.g. 'mail') → Tap the configured Text Expansion key to replace text, or the App Action key to run an action. Tap Start Recording again to restart or clear the current buffer." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="12" TextWrapping="Wrap" Margin="10,0,0,0" LineHeight="16"/>
                                 </StackPanel>
                             </Border>
 

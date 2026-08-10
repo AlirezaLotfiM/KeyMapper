@@ -131,7 +131,8 @@ namespace KeyMapper
                 }
                 else
                 {
-                    _notifyIcon.Text = "KeyMapper - Active (Tap Left Ctrl to record)";
+                    _notifyIcon.Text =
+                        $"KeyMapper - Active (Tap {_hook.RecordingTriggerKey} to record)";
                 }
             }
             catch (Exception ex)

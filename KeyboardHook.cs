@@ -18,7 +18,11 @@ namespace KeyMapper
 
         private const int VK_LCONTROL = 0xA2;
         private const int VK_RCONTROL = 0xA3;
+        private const int VK_LSHIFT = 0xA0;
         private const int VK_RSHIFT = 0xA1;
+        private const int VK_LMENU = 0xA4;
+        private const int VK_RMENU = 0xA5;
+        private const int VK_CAPITAL = 0x14;
         private const int VK_ESCAPE = 0x1B;
         private const int VK_BACK = 0x08;
         private const int VK_RETURN = 0x0D;
@@ -29,16 +33,25 @@ namespace KeyMapper
         private IntPtr _hookId = IntPtr.Zero;
 
         // Recording state
-        private bool _lCtrlDown = false;
-        private bool _lCtrlUsed = false;
+        private bool _recordingTriggerDown;
+        private bool _recordingTriggerUsed;
+        private bool _doubleTapKeyDown;
+        private bool _doubleTapKeyUsed;
         private bool _deGibberishChordDown;
         private bool _musicPlayerChordDown;
         private bool _commandPaletteChordDown;
-        private bool _isRecording = false;
-        private StringBuilder _buffer = new StringBuilder();
-        private DateTime _lastLCtrlReleaseTime = DateTime.MinValue;
+        private bool _isRecording;
+        private readonly StringBuilder _buffer = new StringBuilder();
+        private DateTime _lastDoubleTapReleaseTime = DateTime.MinValue;
         private readonly StringBuilder _rollingBuffer = new StringBuilder();
+        private readonly HashSet<int> _suppressedKeyUps = new HashSet<int>();
         private IntPtr _lastActiveHwnd = IntPtr.Zero;
+        private int _recordingTriggerVirtualKey = VK_LCONTROL;
+        private int _textExpansionTriggerVirtualKey = VK_RCONTROL;
+        private int _appActionTriggerVirtualKey = VK_RSHIFT;
+        private string _recordingTriggerKey = "Left Ctrl";
+        private string _textExpansionTriggerKey = "Right Ctrl";
+        private string _appActionTriggerKey = "Right Shift";
 
         // Settings / Callbacks
         public bool IsEnabled { get; set; } = true;
@@ -47,6 +60,51 @@ namespace KeyMapper
         public Func<string, bool>? IsShortcutAllowed { get; set; }
         public bool IsPaused { get; set; } = false;
         public bool IsCapturingCommandPaletteHotkey { get; set; }
+        public static IReadOnlyList<string> TriggerKeyOptions { get; } =
+        [
+            "Left Ctrl",
+            "Right Ctrl",
+            "Left Shift",
+            "Right Shift",
+            "Left Alt",
+            "Right Alt",
+            "Caps Lock",
+            "F6",
+            "F7",
+            "F8",
+            "F9",
+            "F10",
+            "F11",
+            "F12"
+        ];
+
+        public string RecordingTriggerKey
+        {
+            get => _recordingTriggerKey;
+            set => SetTriggerKey(
+                value,
+                ref _recordingTriggerKey,
+                ref _recordingTriggerVirtualKey);
+        }
+
+        public string TextExpansionTriggerKey
+        {
+            get => _textExpansionTriggerKey;
+            set => SetTriggerKey(
+                value,
+                ref _textExpansionTriggerKey,
+                ref _textExpansionTriggerVirtualKey);
+        }
+
+        public string AppActionTriggerKey
+        {
+            get => _appActionTriggerKey;
+            set => SetTriggerKey(
+                value,
+                ref _appActionTriggerKey,
+                ref _appActionTriggerVirtualKey);
+        }
+
         public string CommandPaletteHotkey
         {
             get => _commandPaletteGesture.Display;
@@ -63,8 +121,8 @@ namespace KeyMapper
         public event Action<bool>? OnPauseToggled;
 
         public event Action<string>? OnBufferChanged;
-        public event Action<string>? OnReplacementTriggered; // Triggers on Right Ctrl
-        public event Action<string>? OnActionTriggered;      // Triggers on Right Shift
+        public event Action<string>? OnReplacementTriggered;
+        public event Action<string>? OnActionTriggered;
         public event Action? OnRecordingCancelled;
         public event Action? OnDoubleTapLCtrl;
         public event Action<IntPtr>? OnDeGibberishRequested;
@@ -73,6 +131,62 @@ namespace KeyMapper
 
         private ConfiguredHotkey _commandPaletteGesture =
             ConfiguredHotkey.DoubleLeftCtrl();
+
+        private static void SetTriggerKey(
+            string? value,
+            ref string display,
+            ref int virtualKey)
+        {
+            if (TryParseTriggerKey(value, out string normalized, out int parsedVirtualKey))
+            {
+                display = normalized;
+                virtualKey = parsedVirtualKey;
+            }
+        }
+
+        private static bool TryParseTriggerKey(
+            string? value,
+            out string normalized,
+            out int virtualKey)
+        {
+            string compact = (value ?? string.Empty)
+                .Replace(" ", string.Empty, StringComparison.Ordinal)
+                .Replace("-", string.Empty, StringComparison.Ordinal)
+                .ToUpperInvariant();
+
+            (normalized, virtualKey) = compact switch
+            {
+                "LEFTCTRL" or "LCONTROL" or "LCTRL" =>
+                    ("Left Ctrl", VK_LCONTROL),
+                "RIGHTCTRL" or "RCONTROL" or "RCTRL" =>
+                    ("Right Ctrl", VK_RCONTROL),
+                "LEFTSHIFT" or "LSHIFT" =>
+                    ("Left Shift", VK_LSHIFT),
+                "RIGHTSHIFT" or "RSHIFT" =>
+                    ("Right Shift", VK_RSHIFT),
+                "LEFTALT" or "LMENU" or "LALT" =>
+                    ("Left Alt", VK_LMENU),
+                "RIGHTALT" or "RMENU" or "RALT" =>
+                    ("Right Alt", VK_RMENU),
+                "CAPSLOCK" or "CAPITAL" =>
+                    ("Caps Lock", VK_CAPITAL),
+                "F6" => ("F6", 0x75),
+                "F7" => ("F7", 0x76),
+                "F8" => ("F8", 0x77),
+                "F9" => ("F9", 0x78),
+                "F10" => ("F10", 0x79),
+                "F11" => ("F11", 0x7A),
+                "F12" => ("F12", 0x7B),
+                _ => (string.Empty, 0)
+            };
+
+            return virtualKey != 0;
+        }
+
+        private static bool IsModifierVirtualKey(int virtualKey) =>
+            virtualKey is VK_LCONTROL or VK_RCONTROL or
+                VK_LSHIFT or VK_RSHIFT or
+                VK_LMENU or VK_RMENU;
 
         private sealed class ConfiguredHotkey
         {
@@ -84,7 +198,7 @@ namespace KeyMapper
                 bool shift,
                 bool windows,
                 bool isDisabled,
-                bool isDoubleLeftCtrl)
+                bool isDoubleTap)
             {
                 Display = display;
                 VirtualKey = virtualKey;
@@ -93,7 +207,7 @@ namespace KeyMapper
                 Shift = shift;
                 Windows = windows;
                 IsDisabled = isDisabled;
-                IsDoubleLeftCtrl = isDoubleLeftCtrl;
+                IsDoubleTap = isDoubleTap;
             }
 
             public string Display { get; }
@@ -103,10 +217,23 @@ namespace KeyMapper
             public bool Shift { get; }
             public bool Windows { get; }
             public bool IsDisabled { get; }
-            public bool IsDoubleLeftCtrl { get; }
+            public bool IsDoubleTap { get; }
 
             public static ConfiguredHotkey DoubleLeftCtrl() =>
-                new("Double Left Ctrl", VK_LCONTROL, false, false, false, false, false, true);
+                DoubleTap("Left Ctrl", VK_LCONTROL);
+
+            private static ConfiguredHotkey DoubleTap(
+                string keyDisplay,
+                int virtualKey) =>
+                new(
+                    $"Double {keyDisplay}",
+                    virtualKey,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    true);
 
             private static ConfiguredHotkey Disabled() =>
                 new("Disabled", 0, false, false, false, false, true, false);
@@ -139,10 +266,21 @@ namespace KeyMapper
                     return true;
                 }
 
-                if (text.Equals("Double Left Ctrl", StringComparison.OrdinalIgnoreCase) ||
-                    text.Equals("Double Ctrl", StringComparison.OrdinalIgnoreCase))
+                if (text.Equals("Double Ctrl", StringComparison.OrdinalIgnoreCase))
                 {
                     parsed = DoubleLeftCtrl();
+                    return true;
+                }
+
+                const string doublePrefix = "Double ";
+                if (text.StartsWith(doublePrefix, StringComparison.OrdinalIgnoreCase) &&
+                    TryParseTriggerKey(
+                        text[doublePrefix.Length..],
+                        out string doubleKeyDisplay,
+                        out int doubleVirtualKey) &&
+                    IsModifierVirtualKey(doubleVirtualKey))
+                {
+                    parsed = DoubleTap(doubleKeyDisplay, doubleVirtualKey);
                     return true;
                 }
 
@@ -365,7 +503,23 @@ namespace KeyMapper
                 int vkCode = Marshal.ReadInt32(lParam);
                 int message = wParam.ToInt32();
 
-                if (!_commandPaletteGesture.IsDoubleLeftCtrl &&
+                bool isKeyDown =
+                    message == WM_KEYDOWN || message == WM_SYSKEYDOWN;
+                bool isKeyUp =
+                    message == WM_KEYUP || message == WM_SYSKEYUP;
+
+                if (isKeyUp && _suppressedKeyUps.Remove(vkCode))
+                {
+                    return (IntPtr)1;
+                }
+
+                if (_commandPaletteGesture.IsDoubleTap &&
+                    TryHandleDoubleTapCommandPalette(vkCode, message))
+                {
+                    return CallNextHookEx(_hookId, nCode, wParam, lParam);
+                }
+
+                if (!_commandPaletteGesture.IsDoubleTap &&
                     TryHandleConfiguredCommandPaletteHotkey(vkCode, message))
                 {
                     return (IntPtr)1;
@@ -496,83 +650,67 @@ namespace KeyMapper
                     }
                 }
 
-                // Track Left Ctrl state
-                if (vkCode == VK_LCONTROL)
+                // Track the configured recording-start key.
+                if (vkCode == _recordingTriggerVirtualKey)
                 {
-                    if (message == WM_KEYDOWN || message == WM_SYSKEYDOWN)
+                    if (isKeyDown)
                     {
-                        if (!_lCtrlDown)
+                        if (!_recordingTriggerDown)
                         {
-                            _lCtrlDown = true;
-                            _lCtrlUsed = false;
+                            _recordingTriggerDown = true;
+                            _recordingTriggerUsed = false;
                         }
                     }
-                    else if (message == WM_KEYUP || message == WM_SYSKEYUP)
+                    else if (isKeyUp)
                     {
-                        _lCtrlDown = false;
-                        if (!_lCtrlUsed)
+                        _recordingTriggerDown = false;
+                        if (!_recordingTriggerUsed)
                         {
-                            // Left Ctrl was tapped!
-                            var now = DateTime.Now;
-                            var elapsed = now - _lastLCtrlReleaseTime;
-                            _lastLCtrlReleaseTime = now;
+                            _isRecording = true;
+                            _buffer.Clear();
+                            OnBufferChanged?.Invoke(string.Empty);
+                            SoundManager.PlayTick();
+                        }
+                    }
 
-                            if (elapsed.TotalMilliseconds < 300)
-                            {
-                                _isRecording = false;
-                                _buffer.Clear();
-                                if (_commandPaletteGesture.IsDoubleLeftCtrl)
-                                {
-                                    OnDoubleTapLCtrl?.Invoke();
-                                }
-                                OnBufferChanged?.Invoke(string.Empty);
-                            }
-                            else
-                            {
-                                // Single tap -> Toggle recording mode
-                                _isRecording = true;
-                                _buffer.Clear();
-                                OnBufferChanged?.Invoke(string.Empty);
-                                SoundManager.PlayTick();
-                            }
-                        }
-                    }
-                    return CallNextHookEx(_hookId, nCode, wParam, lParam);
+                    return IsModifierVirtualKey(_recordingTriggerVirtualKey)
+                        ? CallNextHookEx(_hookId, nCode, wParam, lParam)
+                        : (IntPtr)1;
                 }
 
-                // If Left Ctrl is held down, track that it was used in combination
-                if (_lCtrlDown && (message == WM_KEYDOWN || message == WM_SYSKEYDOWN))
+                // If the recording key is held in a combination, preserve the normal
+                // shortcut and do not enter recording mode on release.
+                if (_recordingTriggerDown && isKeyDown)
                 {
-                    _lCtrlUsed = true;
-                    // Standard shortcuts like Ctrl+C should cancel recording
+                    _recordingTriggerUsed = true;
                     CancelRecording();
                     return CallNextHookEx(_hookId, nCode, wParam, lParam);
                 }
 
                 if (_isRecording)
                 {
-                    if (message == WM_KEYDOWN || message == WM_SYSKEYDOWN)
+                    if (isKeyDown)
                     {
-                        // Right Ctrl -> Trigger Text Replacement
-                        if (vkCode == VK_RCONTROL)
+                        if (vkCode == _textExpansionTriggerVirtualKey)
                         {
                             string keyword = _buffer.ToString();
                             _isRecording = false;
                             _buffer.Clear();
                             OnBufferChanged?.Invoke(string.Empty);
                             OnReplacementTriggered?.Invoke(keyword);
-                            return (IntPtr)1; // Suppress Right Ctrl
+                            _suppressedKeyUps.Add(vkCode);
+                            return (IntPtr)1;
                         }
 
-                        // Right Shift -> Trigger App Action
-                        if (vkCode == VK_RSHIFT)
+                        if (vkCode == _appActionTriggerVirtualKey)
                         {
                             string keyword = _buffer.ToString();
                             _isRecording = false;
                             _buffer.Clear();
                             OnBufferChanged?.Invoke(string.Empty);
                             OnActionTriggered?.Invoke(keyword);
-                            return (IntPtr)1; // Suppress Right Shift
+                            _suppressedKeyUps.Add(vkCode);
+                            return (IntPtr)1;
                         }
 
                         // Escape -> Cancel recording
@@ -618,7 +756,7 @@ namespace KeyMapper
                             CancelRecording();
                         }
                     }
-                    else if (message == WM_KEYUP || message == WM_SYSKEYUP)
+                    else if (isKeyUp)
                     {
                         // Suppress keyups of recorded characters if suppressing down events
                         char ch = GetCharFromKey(vkCode);
@@ -631,6 +769,60 @@ namespace KeyMapper
             }
 
             return CallNextHookEx(_hookId, nCode, wParam, lParam);
+        }
+
+        private bool TryHandleDoubleTapCommandPalette(
+            int vkCode,
+            int message)
+        {
+            if (IsCapturingCommandPaletteHotkey ||
+                _commandPaletteGesture.IsDisabled ||
+                !_commandPaletteGesture.IsDoubleTap)
+            {
+                return false;
+            }
+
+            bool isKeyDown = message == WM_KEYDOWN || message == WM_SYSKEYDOWN;
+            bool isKeyUp = message == WM_KEYUP || message == WM_SYSKEYUP;
+            if (vkCode == _commandPaletteGesture.VirtualKey)
+            {
+                if (isKeyDown && !_doubleTapKeyDown)
+                {
+                    _doubleTapKeyDown = true;
+                    _doubleTapKeyUsed = false;
+                }
+                else if (isKeyUp)
+                {
+                    _doubleTapKeyDown = false;
+                    if (!_doubleTapKeyUsed)
+                    {
+                        DateTime now = DateTime.Now;
+                        TimeSpan elapsed = now - _lastDoubleTapReleaseTime;
+                        _lastDoubleTapReleaseTime = now;
+                        if (elapsed.TotalMilliseconds < 300)
+                        {
+                            _lastDoubleTapReleaseTime = DateTime.MinValue;
+                            _recordingTriggerDown = false;
+                            _recordingTriggerUsed = false;
+                            CancelRecording();
+                            _rollingBuffer.Clear();
+                            OnDoubleTapLCtrl?.Invoke();
+                            OnBufferChanged?.Invoke(string.Empty);
+                            return true;
+                        }
+                    }
+                    else
+                    {
+                        _lastDoubleTapReleaseTime = DateTime.MinValue;
+                    }
+                }
+            }
+            else if (_doubleTapKeyDown && isKeyDown)
+            {
+                _doubleTapKeyUsed = true;
+            }
+
+            return false;
         }
 
         private bool TryHandleConfiguredCommandPaletteHotkey(

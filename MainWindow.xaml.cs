@@ -33,6 +33,24 @@ namespace KeyMapper
         private AppSettings _settings;
         private string _lastClipboardText = string.Empty;
         private bool? _hookStateBeforeTemporaryDisable;
+        private static readonly string[] CommandPaletteTriggerOptions =
+        [
+            "Disabled",
+            "Double Left Ctrl",
+            "Double Right Ctrl",
+            "Double Left Shift",
+            "Double Right Shift",
+            "Double Left Alt",
+            "Double Right Alt",
+            "Ctrl+Alt+Space",
+            "Ctrl+Shift+C",
+            "Alt+Space",
+            "F8",
+            "F9",
+            "F10",
+            "F11",
+            "F12"
+        ];
 
         public static List<string> ClipboardHistory { get; } = new List<string>();
         public ObservableCollection<ShortcutMapping> Replacements { get; } = new ObservableCollection<ShortcutMapping>();
@@ -100,10 +118,45 @@ namespace KeyMapper
                 IsPaused = _settings.KeyMapperPaused,
                 SuppressKeysDuringRecording = _settings.SuppressKeysDuringRecording,
                 AutoExpandShortcuts = _settings.AutoExpandShortcuts ?? new List<string>(),
+                RecordingTriggerKey = string.IsNullOrWhiteSpace(_settings.RecordingTriggerKey)
+                    ? "Left Ctrl"
+                    : _settings.RecordingTriggerKey,
+                TextExpansionTriggerKey = string.IsNullOrWhiteSpace(_settings.TextExpansionTriggerKey)
+                    ? "Right Ctrl"
+                    : _settings.TextExpansionTriggerKey,
+                AppActionTriggerKey = string.IsNullOrWhiteSpace(_settings.AppActionTriggerKey)
+                    ? "Right Shift"
+                    : _settings.AppActionTriggerKey,
                 CommandPaletteHotkey = string.IsNullOrWhiteSpace(_settings.CommandPaletteHotkey)
                     ? "Double Left Ctrl"
                     : _settings.CommandPaletteHotkey
             };
+            string[] configuredTriggerKeys =
+            [
+                _hook.RecordingTriggerKey,
+                _hook.TextExpansionTriggerKey,
+                _hook.AppActionTriggerKey
+            ];
+            if (configuredTriggerKeys
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Count() != configuredTriggerKeys.Length)
+            {
+                _hook.RecordingTriggerKey = "Left Ctrl";
+                _hook.TextExpansionTriggerKey = "Right Ctrl";
+                _hook.AppActionTriggerKey = "Right Shift";
+            }
+            if (HasCommandPaletteConflict(
+                _hook.CommandPaletteHotkey,
+                _hook.RecordingTriggerKey,
+                _hook.TextExpansionTriggerKey,
+                _hook.AppActionTriggerKey))
+            {
+                _hook.CommandPaletteHotkey = "Ctrl+Alt+Space";
+            }
+            _settings.RecordingTriggerKey = _hook.RecordingTriggerKey;
+            _settings.TextExpansionTriggerKey = _hook.TextExpansionTriggerKey;
+            _settings.AppActionTriggerKey = _hook.AppActionTriggerKey;
+            _settings.CommandPaletteHotkey = _hook.CommandPaletteHotkey;
 
             _overlayWindow = new OverlayWindow();
             _petOverlayWindow = new PetOverlayWindow();
@@ -163,6 +216,22 @@ namespace KeyMapper
             ShowOverlayChk.IsChecked = _settings.ShowOverlay;
             RunAtStartupChk.IsChecked = _settings.RunAtStartup;
             PlaySoundsChk.IsChecked = _settings.PlaySounds;
+            RecordingTriggerKeyCombo.ItemsSource = KeyboardHook.TriggerKeyOptions;
+            TextExpansionTriggerKeyCombo.ItemsSource = KeyboardHook.TriggerKeyOptions;
+            AppActionTriggerKeyCombo.ItemsSource = KeyboardHook.TriggerKeyOptions;
+            RecordingTriggerKeyCombo.SelectedItem = _hook.RecordingTriggerKey;
+            TextExpansionTriggerKeyCombo.SelectedItem = _hook.TextExpansionTriggerKey;
+            AppActionTriggerKeyCombo.SelectedItem = _hook.AppActionTriggerKey;
+            CommandPalettePresetCombo.ItemsSource = CommandPaletteTriggerOptions;
+            CommandPalettePresetCombo.SelectedItem =
+                CommandPaletteTriggerOptions.Contains(
+                    _hook.CommandPaletteHotkey,
+                    StringComparer.OrdinalIgnoreCase)
+                    ? CommandPaletteTriggerOptions.First(
+                        value => value.Equals(
+                            _hook.CommandPaletteHotkey,
+                            StringComparison.OrdinalIgnoreCase))
+                    : null;
             CommandPaletteHotkeyTxt.Text = _hook.CommandPaletteHotkey;
             UserNameTxt.Text = _settings.UserName ?? string.Empty;
             AiEndpointTxt.Text = _settings.AiApiEndpoint;
@@ -272,6 +341,25 @@ namespace KeyMapper
             _settings.AiModel = string.IsNullOrWhiteSpace(AiModelTxt.Text)
                 ? "gpt-4o-mini"
                 : AiModelTxt.Text.Trim();
+            if (_hook != null &&
+                RecordingTriggerKeyCombo != null &&
+                TextExpansionTriggerKeyCombo != null &&
+                AppActionTriggerKeyCombo != null)
+            {
+                _hook.RecordingTriggerKey =
+                    RecordingTriggerKeyCombo.SelectedItem as string ??
+                    _hook.RecordingTriggerKey;
+                _hook.TextExpansionTriggerKey =
+                    TextExpansionTriggerKeyCombo.SelectedItem as string ??
+                    _hook.TextExpansionTriggerKey;
+                _hook.AppActionTriggerKey =
+                    AppActionTriggerKeyCombo.SelectedItem as string ??
+                    _hook.AppActionTriggerKey;
+                _settings.RecordingTriggerKey = _hook.RecordingTriggerKey;
+                _settings.TextExpansionTriggerKey =
+                    _hook.TextExpansionTriggerKey;
+                _settings.AppActionTriggerKey = _hook.AppActionTriggerKey;
+            }
             if (_hook != null && CommandPaletteHotkeyTxt != null)
             {
                 _hook.CommandPaletteHotkey = CommandPaletteHotkeyTxt.Text;
@@ -1647,6 +1735,146 @@ namespace KeyMapper
             SaveSettings();
         }
 
+        private void TriggerKeySelectionChanged(
+            object sender,
+            SelectionChangedEventArgs e)
+        {
+            if (_isInitializing ||
+                RecordingTriggerKeyCombo.SelectedItem is not string recordingKey ||
+                TextExpansionTriggerKeyCombo.SelectedItem is not string expansionKey ||
+                AppActionTriggerKeyCombo.SelectedItem is not string actionKey)
+            {
+                return;
+            }
+
+            string[] selectedKeys = [recordingKey, expansionKey, actionKey];
+            if (selectedKeys.Distinct(StringComparer.OrdinalIgnoreCase).Count() !=
+                selectedKeys.Length)
+            {
+                RestoreTriggerKeySelections();
+                MessageBox.Show(
+                    "Recording, Text Expansion, and App Action must use different keys.",
+                    "Choose distinct trigger keys",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                return;
+            }
+
+            if (HasCommandPaletteConflict(
+                _hook.CommandPaletteHotkey,
+                recordingKey,
+                expansionKey,
+                actionKey))
+            {
+                RestoreTriggerKeySelections();
+                MessageBox.Show(
+                    "That key conflicts with the current Assistant command trigger. Choose a different key or change the Assistant trigger first.",
+                    "Trigger conflict",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                return;
+            }
+
+            SaveSettings();
+        }
+
+        private void RestoreTriggerKeySelections()
+        {
+            _isInitializing = true;
+            RecordingTriggerKeyCombo.SelectedItem = _hook.RecordingTriggerKey;
+            TextExpansionTriggerKeyCombo.SelectedItem =
+                _hook.TextExpansionTriggerKey;
+            AppActionTriggerKeyCombo.SelectedItem =
+                _hook.AppActionTriggerKey;
+            _isInitializing = false;
+        }
+
+        private void CommandPalettePresetCombo_SelectionChanged(
+            object sender,
+            SelectionChangedEventArgs e)
+        {
+            if (_isInitializing ||
+                CommandPalettePresetCombo.SelectedItem is not string selected)
+            {
+                return;
+            }
+
+            if (HasCommandPaletteConflict(
+                selected,
+                RecordingTriggerKeyCombo.SelectedItem as string ??
+                    _hook.RecordingTriggerKey,
+                TextExpansionTriggerKeyCombo.SelectedItem as string ??
+                    _hook.TextExpansionTriggerKey,
+                AppActionTriggerKeyCombo.SelectedItem as string ??
+                    _hook.AppActionTriggerKey))
+            {
+                _isInitializing = true;
+                CommandPalettePresetCombo.SelectedItem =
+                    CommandPaletteTriggerOptions.FirstOrDefault(
+                        value => value.Equals(
+                            _hook.CommandPaletteHotkey,
+                            StringComparison.OrdinalIgnoreCase));
+                _isInitializing = false;
+                MessageBox.Show(
+                    "That Assistant trigger conflicts with one of the shortcut trigger keys.",
+                    "Trigger conflict",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                return;
+            }
+
+            _hook.CommandPaletteHotkey = selected;
+            CommandPaletteHotkeyTxt.Text = _hook.CommandPaletteHotkey;
+            SaveSettings();
+        }
+
+        private static bool HasCommandPaletteConflict(
+            string commandHotkey,
+            string recordingKey,
+            string expansionKey,
+            string actionKey)
+        {
+            if (string.IsNullOrWhiteSpace(commandHotkey) ||
+                commandHotkey.Equals(
+                    "Disabled",
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            const string doublePrefix = "Double ";
+            if (commandHotkey.StartsWith(
+                doublePrefix,
+                StringComparison.OrdinalIgnoreCase))
+            {
+                string doubleTapKey =
+                    commandHotkey[doublePrefix.Length..].Trim();
+                return doubleTapKey.Equals(
+                           expansionKey,
+                           StringComparison.OrdinalIgnoreCase) ||
+                       doubleTapKey.Equals(
+                           actionKey,
+                           StringComparison.OrdinalIgnoreCase);
+            }
+
+            if (commandHotkey.Contains(
+                '+',
+                StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            return commandHotkey.Equals(
+                       recordingKey,
+                       StringComparison.OrdinalIgnoreCase) ||
+                   commandHotkey.Equals(
+                       expansionKey,
+                       StringComparison.OrdinalIgnoreCase) ||
+                   commandHotkey.Equals(
+                       actionKey,
+                       StringComparison.OrdinalIgnoreCase);
+        }
+
         private void CommandPaletteHotkeyTxt_GotFocus(
             object sender,
             RoutedEventArgs e)
@@ -1701,8 +1929,32 @@ namespace KeyMapper
             }
             parts.Add(keyName);
 
-            _hook.CommandPaletteHotkey = string.Join("+", parts);
+            string candidate = string.Join("+", parts);
+            if (HasCommandPaletteConflict(
+                candidate,
+                RecordingTriggerKeyCombo.SelectedItem as string ??
+                    _hook.RecordingTriggerKey,
+                TextExpansionTriggerKeyCombo.SelectedItem as string ??
+                    _hook.TextExpansionTriggerKey,
+                AppActionTriggerKeyCombo.SelectedItem as string ??
+                    _hook.AppActionTriggerKey))
+            {
+                MessageBox.Show(
+                    "That Assistant trigger conflicts with one of the shortcut trigger keys.",
+                    "Trigger conflict",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                e.Handled = true;
+                return;
+            }
+
+            _hook.CommandPaletteHotkey = candidate;
             CommandPaletteHotkeyTxt.Text = _hook.CommandPaletteHotkey;
+            CommandPalettePresetCombo.SelectedItem =
+                CommandPaletteTriggerOptions.FirstOrDefault(
+                    value => value.Equals(
+                        _hook.CommandPaletteHotkey,
+                        StringComparison.OrdinalIgnoreCase));
             SaveSettings();
             e.Handled = true;
         }
@@ -1713,6 +1965,7 @@ namespace KeyMapper
         {
             _hook.CommandPaletteHotkey = "Double Left Ctrl";
             CommandPaletteHotkeyTxt.Text = _hook.CommandPaletteHotkey;
+            CommandPalettePresetCombo.SelectedItem = _hook.CommandPaletteHotkey;
             SaveSettings();
         }
 
@@ -1722,6 +1975,7 @@ namespace KeyMapper
         {
             _hook.CommandPaletteHotkey = "Disabled";
             CommandPaletteHotkeyTxt.Text = _hook.CommandPaletteHotkey;
+            CommandPalettePresetCombo.SelectedItem = _hook.CommandPaletteHotkey;
             SaveSettings();
         }
 

@@ -33,12 +33,28 @@ The assistant acts as a natural language command interface for local operating s
   * Translates commands like `"open amazon"` into default browser navigation directed to the appropriate URL.
   * When a requested application or game is **not installed**, the assistant alerts the user and opens the official verification or store page (e.g., navigating to the Steam store page for downloading), guiding them through installation.
 
-### 2.4. Conversational AI, Translation & Persistent Memory
+### 2.4. Configurable Global Mapping Triggers
+The low-level keyboard hook separates the text-mapping workflow into four
+persisted trigger roles:
+
+1. **Start Recording:** Begins the interception buffer before an abbreviation
+   or action name is typed.
+2. **Text Expansion:** Submits the buffer to the replacement engine.
+3. **App Action:** Submits the buffer to the application-action engine.
+4. **Command Palette:** Opens the searchable palette through a double-tap
+   modifier, a preset chord, a function key, or a custom captured chord.
+
+The first three roles are selected from explicit key lists and must remain
+distinct. The command-palette setting is validated against them to prevent an
+ambiguous key from being consumed by two handlers. Missing settings retain the
+legacy defaults: Left Ctrl, Right Ctrl, Right Shift, and Double Left Ctrl.
+
+### 2.5. Conversational AI, Translation & Persistent Memory
 * **LLM Tool Calling / Function Calling:** The backend integrates with large language models (via API or local runtimes like Ollama) utilizing structured Function Calling. Commands such as `"open Cyberpunk"` or `"translate this text to German"` route directly to executable C# or Python functions rather than generating plain text responses.
 * **Contextual Pop-Up Translator:** Can be summoned to translate selected text strings (e.g., `"Ich hoffe, dass es dir besser geht. Gute Besserung!"`) into the user's desired language, displaying results in an interactive XAML-styled speech bubble next to the character sprite.
 * **User Preference Persistence:** Uses a lightweight local SQLite database or JSON config store to retain user preferences, default languages, frequently used commands, and historical interactions across system reboots.
 
-### 2.5. On-Screen Optical Character Recognition (OCR)
+### 2.6. On-Screen Optical Character Recognition (OCR)
 * **Visual Screen Snipping:** Allows the user to command the pet to "read" non-selectable text (e.g., inside an image, a video game cutscene, or a system error dialog).
 * **Text Extraction & Routing:** Captures a bounded screen region using high-speed screen grabbing tools, processes the image through OCR (Windows Native OCR via `Windows.Media.Ocr` or Tesseract), and routes the extracted text to the translation or summarization pipeline.
 
