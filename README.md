@@ -84,6 +84,7 @@ The local music player is part of the companion experience, not a separate skin:
 - Mini-player elapsed and total times use compact high-contrast labels, so the position remains readable over bright cover art.
 - The mini-player now uses a compact glass time capsule with a live elapsed/total readout, without a second line under the seek bar.
 - Mini-player volume controls use a slow animated cyan, violet, pink, and gold gradient so the compact control feels alive without distracting from the music.
+- Clicking the mini volume icon opens a compact Samsung-inspired vertical volume panel with a live percentage and a filled pill slider; the quick horizontal control remains available beside the player.
 - Favorites use a solid heart whose fill follows the selected theme.
 - Song titles use the active theme's text color, so the library remains readable in both light and dark palettes.
 - Repeat clearly cycles through three supplied icons: Off, Repeat all, and Repeat one.
@@ -96,6 +97,7 @@ The local music player is part of the companion experience, not a separate skin:
 - Dark palettes switch the footer, pin badge, audio label, and action icons to readable companion colors instead of leaving low-contrast gray text behind.
 - The `Pinned` badge keeps a safe inset from the lower-right resize grip, so it never collides with the grip or card edge.
 - The color palette uses a clipped rounded surface and stays open while colors are previewed or applied. It closes when the user clicks outside the palette.
+- Sticky-note translation choices use a clipped, rounded, theme-aware flyout with readable language rows and no exposed black popup edges.
 - Starting a text selection closes the note palette so it cannot cover the writing surface.
 - The writing toolbar has generous wrapping and vertical scrolling, plus a Word-style pin button. Its pinned state is saved per note and survives a restart.
 - Table Tools uses the active palette, rounded controls, grouped actions, and a scrollable surface instead of the old flat gray popup.

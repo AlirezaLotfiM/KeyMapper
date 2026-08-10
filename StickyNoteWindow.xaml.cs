@@ -1088,9 +1088,9 @@ namespace KeyMapper
 
                 var btn = new Button
                 {
-                    Style = (Style)FindResource("SidebarIconButton"),
-                    Width = 155,
-                    Height = 28,
+                    Style = (Style)FindResource("TranslateLanguageButton"),
+                    Width = 185,
+                    Height = 32,
                     Margin = new Thickness(0, 2, 0, 2),
                     HorizontalContentAlignment = HorizontalAlignment.Left,
                     Padding = new Thickness(8, 2, 8, 2),
@@ -1099,7 +1099,14 @@ namespace KeyMapper
                 };
                 var panel = new StackPanel { Orientation = Orientation.Horizontal };
                 panel.Children.Add(new TextBlock { Text = flag, FontSize = 13, Margin = new Thickness(0, 0, 8, 0) });
-                panel.Children.Add(new TextBlock { Text = name, FontSize = 11, FontWeight = FontWeights.SemiBold, Foreground = new SolidColorBrush(Color.FromRgb(0x33, 0x33, 0x33)), VerticalAlignment = VerticalAlignment.Center });
+                panel.Children.Add(new TextBlock
+                {
+                    Text = name,
+                    FontSize = 11,
+                    FontWeight = FontWeights.SemiBold,
+                    Foreground = TryFindResource("AppTextBrush") as Brush ?? Brushes.Black,
+                    VerticalAlignment = VerticalAlignment.Center
+                });
                 btn.Content = panel;
                 btn.Click += TranslateLanguageOption_Click;
                 TranslateLangList.Children.Add(btn);

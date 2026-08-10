@@ -714,9 +714,9 @@
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <Border Grid.Column="0" Width="18" Height="18" CornerRadius="9" Background="{DynamicResource AppAccentSoftBrush}" BorderBrush="{DynamicResource AppAccentBrush}" BorderThickness="1" Margin="0,0,5,0">
-                            <Rectangle Width="11" Height="11" Fill="{StaticResource MiniForegroundBrush}"><Rectangle.OpacityMask><ImageBrush ImageSource="/Resources/Icons/music-volume-loud-svgrepo-com.png"/></Rectangle.OpacityMask></Rectangle>
-                        </Border>
+                        <Button x:Name="MiniVolumeButtonV" Grid.Column="0" Width="18" Height="18" Padding="0" Margin="0,0,5,0" Style="{StaticResource MiniGlassCircleButton}" Background="{DynamicResource AppAccentSoftBrush}" BorderBrush="{DynamicResource AppAccentBrush}" Click="MiniVolumeButton_Click" ToolTip="Open volume panel">
+                            <Rectangle Width="11" Height="11" Fill="{DynamicResource AppTextBrush}"><Rectangle.OpacityMask><ImageBrush ImageSource="/Resources/Icons/music-volume-loud-svgrepo-com.png"/></Rectangle.OpacityMask></Rectangle>
+                        </Button>
                         <Slider Grid.Column="1" x:Name="MiniVolumeSlider" Style="{StaticResource CyberNeonSlider}" Minimum="0" Maximum="100" Value="80" ValueChanged="VolumeSlider_ValueChanged" VerticalAlignment="Center" Cursor="Hand"/>
                         </Grid>
                     </Border>
@@ -841,9 +841,9 @@
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <Border Grid.Column="0" Width="17" Height="17" CornerRadius="9" Background="{DynamicResource AppAccentSoftBrush}" BorderBrush="{DynamicResource AppAccentBrush}" BorderThickness="1" Margin="0,0,4,0">
-                                    <Rectangle Width="10" Height="10" Fill="{StaticResource MiniForegroundBrush}"><Rectangle.OpacityMask><ImageBrush ImageSource="/Resources/Icons/music-volume-loud-svgrepo-com.png"/></Rectangle.OpacityMask></Rectangle>
-                                </Border>
+                                <Button x:Name="MiniVolumeButtonH" Grid.Column="0" Width="17" Height="17" Padding="0" Margin="0,0,4,0" Style="{StaticResource MiniGlassCircleButton}" Background="{DynamicResource AppAccentSoftBrush}" BorderBrush="{DynamicResource AppAccentBrush}" Click="MiniVolumeButton_Click" ToolTip="Open volume panel">
+                                    <Rectangle Width="10" Height="10" Fill="{DynamicResource AppTextBrush}"><Rectangle.OpacityMask><ImageBrush ImageSource="/Resources/Icons/music-volume-loud-svgrepo-com.png"/></Rectangle.OpacityMask></Rectangle>
+                                </Button>
                                 <Slider Grid.Column="1" x:Name="MiniVolumeSliderH" Style="{StaticResource CyberNeonSlider}" Minimum="0" Maximum="100" Value="80" ValueChanged="VolumeSlider_ValueChanged" VerticalAlignment="Center" Cursor="Hand"/>
                                 </Grid>
                             </Border>
@@ -852,6 +852,49 @@
                     </Grid>
                 </Grid>
             </Grid>
+
+            <!-- Samsung-inspired compact volume panel for the mini player. -->
+            <Popup x:Name="MiniVolumePopup"
+                   PlacementTarget="{Binding ElementName=MiniVolumeButtonV}"
+                   Placement="Top"
+                   StaysOpen="False"
+                   AllowsTransparency="True"
+                   PopupAnimation="Fade">
+                <Border Width="112"
+                        Padding="10"
+                        Background="{DynamicResource AppSurfaceBrush}"
+                        BorderBrush="{DynamicResource AppAccentBrush}"
+                        BorderThickness="1.5"
+                        CornerRadius="18"
+                        ClipToBounds="True"
+                        SnapsToDevicePixels="True">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="18" ShadowDepth="5" Direction="270" Color="#000000" Opacity="0.28"/>
+                    </Border.Effect>
+                    <StackPanel>
+                        <Grid Margin="0,0,0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="24"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Width="22" Height="22" CornerRadius="8" Background="{DynamicResource AppAccentSoftBrush}" BorderBrush="{DynamicResource AppAccentBrush}" BorderThickness="1">
+                                <Rectangle Width="12" Height="12" Fill="{DynamicResource AppTextBrush}"><Rectangle.OpacityMask><ImageBrush ImageSource="/Resources/Icons/music-volume-loud-svgrepo-com.png"/></Rectangle.OpacityMask></Rectangle>
+                            </Border>
+                            <TextBlock Grid.Column="1" Text="Music" Margin="7,0,0,0" VerticalAlignment="Center" Foreground="{DynamicResource AppTextBrush}" FontWeight="SemiBold" FontSize="11"/>
+                            <TextBlock x:Name="MiniPopupVolumeText" Grid.Column="2" Text="80%" VerticalAlignment="Center" Foreground="{DynamicResource AppAccentBrush}" FontWeight="Bold" FontSize="10"/>
+                        </Grid>
+                        <Border Width="38" Height="132" HorizontalAlignment="Center" CornerRadius="19" Background="{DynamicResource AppSurfaceAltBrush}" BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="1" Padding="7,8">
+                            <Grid>
+                                <Border Width="12" CornerRadius="6" Background="{DynamicResource AppBackgroundBrush}" HorizontalAlignment="Center"/>
+                                <Border x:Name="MiniPopupVolumeFill" Width="12" Height="0" VerticalAlignment="Bottom" CornerRadius="6" Background="{DynamicResource AppAccentFillBrush}" HorizontalAlignment="Center"/>
+                                <Slider x:Name="MiniVolumePopupSlider" Orientation="Vertical" Minimum="0" Maximum="100" Value="80" Width="30" Height="116" Opacity="0.02" ValueChanged="VolumePopupSlider_ValueChanged" Cursor="Hand"/>
+                            </Grid>
+                        </Border>
+                        <TextBlock Text="Drag to adjust" HorizontalAlignment="Center" Foreground="{DynamicResource AppMutedTextBrush}" FontSize="9" Margin="0,8,0,0"/>
+                    </StackPanel>
+                </Border>
+            </Popup>
 
             <!-- Main Player Content Card (Reverted to Standard Original View) -->
             <Border Grid.Row="1" x:Name="PlayerMainView" Background="{DynamicResource AppSurfaceBrush}" BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="1" CornerRadius="14" Padding="14" Margin="0,0,0,12">

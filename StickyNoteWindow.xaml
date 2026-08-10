@@ -51,7 +51,7 @@
         <!-- Floating Sidebar Icon Button Style -->
         <Style x:Key="SidebarIconButton" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="#333333"/>
+            <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="Width" Value="24"/>
@@ -61,12 +61,13 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="4" Padding="{TemplateBinding Padding}">
+                        <Border x:Name="bd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="4" Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="bd" Property="Background" Value="#30000000"/>
+                                <Setter TargetName="bd" Property="Background" Value="{DynamicResource AppAccentSoftBrush}"/>
+                                <Setter TargetName="bd" Property="BorderBrush" Value="{DynamicResource AppAccentBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -118,6 +119,43 @@
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="bd" Property="Opacity" Value="0.85"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Theme-aware language choices keep the translation flyout readable in every palette. -->
+        <Style x:Key="TranslateLanguageButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Padding" Value="8,3"/>
+            <Setter Property="Margin" Value="0,2"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="LanguageButtonBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="LanguageButtonBorder" Property="Background" Value="{DynamicResource AppAccentSoftBrush}"/>
+                                <Setter TargetName="LanguageButtonBorder" Property="BorderBrush" Value="{DynamicResource AppAccentBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="LanguageButtonBorder" Property="Opacity" Value="0.78"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -369,7 +407,7 @@
                 </Grid>
 
                 <!-- VOICE MEMO BAR -->
-                <Border Grid.Row="3" x:Name="AudioBar" Background="#20000000" CornerRadius="6" Margin="6,2" Padding="6,3" Visibility="Collapsed">
+                <Border Grid.Row="3" x:Name="AudioBar" Background="{DynamicResource AppSurfaceAltBrush}" BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="1" CornerRadius="8" Margin="6,2" Padding="6,3" Visibility="Collapsed">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
@@ -564,18 +602,32 @@
         </Popup>
 
         <!-- Modern Styled Target Language Selector Flyout -->
-        <Popup x:Name="TranslatePopup" StaysOpen="False" PlacementTarget="{Binding ElementName=FormatToolbar}" Placement="Bottom" Opened="TranslatePopup_Opened">
-            <Border Background="#FFFFFF" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="10" Padding="8">
+        <Popup x:Name="TranslatePopup" StaysOpen="False" AllowsTransparency="True" PopupAnimation="Fade" PlacementTarget="{Binding ElementName=FormatToolbar}" Placement="Bottom" Opened="TranslatePopup_Opened">
+            <Border Background="{DynamicResource AppSurfaceBrush}" BorderBrush="{DynamicResource AppAccentBrush}" BorderThickness="1.5" CornerRadius="12" Padding="10" ClipToBounds="True" SnapsToDevicePixels="True" UseLayoutRounding="True" Margin="3">
                 <Border.Effect>
-                    <DropShadowEffect BlurRadius="12" ShadowDepth="3" Direction="270" Color="#000000" Opacity="0.18"/>
+                    <DropShadowEffect BlurRadius="16" ShadowDepth="4" Direction="270" Color="#000000" Opacity="0.20"/>
                 </Border.Effect>
-                <StackPanel Width="165">
-                    <TextBlock Text="🌐 Target Language" FontWeight="Bold" FontSize="11" Foreground="#333333" Margin="4,2,4,8"/>
+                <StackPanel Width="190">
+                    <Border Background="{DynamicResource AppAccentSoftBrush}" BorderBrush="{DynamicResource AppAccentBrush}" BorderThickness="1" CornerRadius="8" Padding="7,5" Margin="0,0,0,7">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="26"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Width="22" Height="22" CornerRadius="7" Background="{DynamicResource AppAccentBrush}" VerticalAlignment="Center">
+                                <Image Source="/Resources/Icons/translate.png" Width="14" Height="14"/>
+                            </Border>
+                            <StackPanel Grid.Column="1" Margin="7,0,0,0" VerticalAlignment="Center">
+                                <TextBlock Text="Target language" FontWeight="Bold" FontSize="11" Foreground="{DynamicResource AppTextBrush}"/>
+                                <TextBlock Text="Choose the translation output" FontSize="9" Foreground="{DynamicResource AppMutedTextBrush}" Margin="0,1,0,0"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
                     <!-- Populated dynamically from installed LibreTranslate languages -->
                     <StackPanel x:Name="TranslateLangList"/>
                     <TextBlock x:Name="TranslateLangEmptyHint"
                                Text="No languages installed.&#x0a;Open Settings → Translation&#x0a;to download language packs."
-                               FontSize="10" Foreground="#888888"
+                               FontSize="10" Foreground="{DynamicResource AppMutedTextBrush}"
                                TextWrapping="Wrap" Margin="4,4,4,4"
                                Visibility="Collapsed"/>
                 </StackPanel>

@@ -79,6 +79,8 @@ namespace KeyMapper
             if (VolumeSlider != null) VolumeSlider.Value = currentVol;
             if (MiniVolumeSlider != null) MiniVolumeSlider.Value = currentVol;
             if (MiniVolumeSliderH != null) MiniVolumeSliderH.Value = currentVol;
+            if (MiniVolumePopupSlider != null) MiniVolumePopupSlider.Value = currentVol;
+            UpdateMiniPopupVolume(currentVol);
 
             UpdateTabStyles();
             _isRestoringPreferences = false;
@@ -556,6 +558,44 @@ namespace KeyMapper
             LocalAudioPlayerService.Instance.SetVolume(e.NewValue);
         }
 
+        private void MiniVolumeButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is UIElement target)
+            {
+                MiniVolumePopup.PlacementTarget = target;
+            }
+
+            MiniVolumePopup.IsOpen = !MiniVolumePopup.IsOpen;
+            if (MiniVolumePopup.IsOpen)
+            {
+                double current = LocalAudioPlayerService.Instance.CurrentVolume * 100.0;
+                if (Math.Abs(MiniVolumePopupSlider.Value - current) > 0.5)
+                {
+                    MiniVolumePopupSlider.Value = current;
+                }
+                UpdateMiniPopupVolume(current);
+            }
+        }
+
+        private void VolumePopupSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            LocalAudioPlayerService.Instance.SetVolume(e.NewValue);
+            UpdateMiniPopupVolume(e.NewValue);
+        }
+
+        private void UpdateMiniPopupVolume(double volumePercent)
+        {
+            double clamped = Math.Clamp(volumePercent, 0, 100);
+            if (MiniPopupVolumeFill != null)
+            {
+                MiniPopupVolumeFill.Height = 112 * clamped / 100.0;
+            }
+            if (MiniPopupVolumeText != null)
+            {
+                MiniPopupVolumeText.Text = $"{Math.Round(clamped):0}%";
+            }
+        }
+
         private void Instance_OnVolumeChanged(double volumePercent)
         {
             Dispatcher.Invoke(() =>
@@ -568,6 +608,15 @@ namespace KeyMapper
                 {
                     MiniVolumeSlider.Value = volumePercent;
                 }
+                if (MiniVolumeSliderH != null && Math.Abs(MiniVolumeSliderH.Value - volumePercent) > 0.5)
+                {
+                    MiniVolumeSliderH.Value = volumePercent;
+                }
+                if (MiniVolumePopupSlider != null && Math.Abs(MiniVolumePopupSlider.Value - volumePercent) > 0.5)
+                {
+                    MiniVolumePopupSlider.Value = volumePercent;
+                }
+                UpdateMiniPopupVolume(volumePercent);
             });
         }
 
