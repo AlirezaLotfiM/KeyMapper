@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
@@ -2130,6 +2131,43 @@ namespace KeyMapper
             {
                 WalkingToggleMenuItem.Header =
                     _walkingEnabled ? "Walking: On" : "Walking: Off";
+            }
+        }
+
+        private void PetMenuItem_SubmenuOpened(object sender, RoutedEventArgs e)
+        {
+            if (sender is not MenuItem menuItem)
+            {
+                return;
+            }
+
+            // WPF can flip a submenu to the left when the pet is near the right
+            // edge of the screen. Update the glyph after layout so it follows the
+            // actual popup direction instead of always pointing right.
+            Dispatcher.BeginInvoke(
+                new Action(() => UpdatePetMenuArrow(menuItem)),
+                DispatcherPriority.Loaded);
+        }
+
+        private static void UpdatePetMenuArrow(MenuItem menuItem)
+        {
+            if (menuItem.Template.FindName("Arrow", menuItem) is not TextBlock arrow ||
+                menuItem.Template.FindName("PART_Popup", menuItem) is not Popup popup ||
+                popup.Child is not Visual popupVisual)
+            {
+                return;
+            }
+
+            try
+            {
+                Point targetPoint = menuItem.PointToScreen(new Point(0, 0));
+                Point popupPoint = popupVisual.PointToScreen(new Point(0, 0));
+                arrow.Text = popupPoint.X < targetPoint.X ? "‹" : "›";
+            }
+            catch
+            {
+                // The right-facing glyph is the safe fallback until layout is ready.
+                arrow.Text = "›";
             }
         }
 

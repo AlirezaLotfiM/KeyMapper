@@ -247,6 +247,7 @@
         <SolidColorBrush x:Key="MiniMutedBrush" Color="#FFD8E1EC"/>
         <SolidColorBrush x:Key="MiniGlassBrush" Color="#4DFFFFFF"/>
         <SolidColorBrush x:Key="MiniGlassBorderBrush" Color="#A6FFFFFF"/>
+        <SolidColorBrush x:Key="MiniTimeLabelBrush" Color="#B20A1320"/>
 
         <Style x:Key="MiniHeaderIconButton"
                TargetType="{x:Type Button}">
@@ -689,8 +690,12 @@
                         </Grid.RowDefinitions>
                         <Slider Grid.Row="0" x:Name="MiniPositionSlider" Style="{StaticResource CyberNeonSlider}" Minimum="0" Maximum="100" ValueChanged="PositionSlider_ValueChanged" PreviewMouseDown="PositionSlider_PreviewMouseDown" PreviewMouseUp="PositionSlider_PreviewMouseUp" Cursor="Hand"/>
                         <Grid Grid.Row="1" Margin="0,1,0,0">
-                            <TextBlock x:Name="MiniCurrentTimeTxt" Text="00:00" Foreground="{DynamicResource AppAccentBrush}" FontSize="8.5" FontWeight="Bold" HorizontalAlignment="Left"/>
-                            <TextBlock x:Name="MiniTotalTimeTxt" Text="00:00" Foreground="{StaticResource MiniMutedBrush}" FontSize="8.5" HorizontalAlignment="Right"/>
+                            <Border HorizontalAlignment="Left" Background="{StaticResource MiniTimeLabelBrush}" CornerRadius="3" Padding="3,1">
+                                <TextBlock x:Name="MiniCurrentTimeTxt" Text="00:00" Foreground="{StaticResource MiniForegroundBrush}" FontSize="9" FontWeight="Bold"/>
+                            </Border>
+                            <Border HorizontalAlignment="Right" Background="{StaticResource MiniTimeLabelBrush}" CornerRadius="3" Padding="3,1">
+                                <TextBlock x:Name="MiniTotalTimeTxt" Text="00:00" Foreground="{StaticResource MiniForegroundBrush}" FontSize="9" FontWeight="SemiBold"/>
+                            </Border>
                         </Grid>
                     </Grid>
 
@@ -782,8 +787,12 @@
                             </Grid.RowDefinitions>
                             <Slider Grid.Row="0" x:Name="MiniPositionSliderH" Style="{StaticResource CyberNeonSlider}" Minimum="0" Maximum="100" ValueChanged="PositionSlider_ValueChanged" PreviewMouseDown="PositionSlider_PreviewMouseDown" PreviewMouseUp="PositionSlider_PreviewMouseUp" VerticalAlignment="Center" Cursor="Hand"/>
                             <Grid Grid.Row="1" Margin="0,1,0,0">
-                                <TextBlock x:Name="MiniCurrentTimeTxtH" Text="00:00" Foreground="{DynamicResource AppAccentBrush}" FontSize="8.5" FontWeight="Bold" HorizontalAlignment="Left"/>
-                                <TextBlock x:Name="MiniTotalTimeTxtH" Text="00:00" Foreground="{DynamicResource MiniMutedBrush}" FontSize="8.5" HorizontalAlignment="Right"/>
+                                <Border HorizontalAlignment="Left" Background="{StaticResource MiniTimeLabelBrush}" CornerRadius="3" Padding="3,1">
+                                    <TextBlock x:Name="MiniCurrentTimeTxtH" Text="00:00" Foreground="{StaticResource MiniForegroundBrush}" FontSize="9" FontWeight="Bold"/>
+                                </Border>
+                                <Border HorizontalAlignment="Right" Background="{StaticResource MiniTimeLabelBrush}" CornerRadius="3" Padding="3,1">
+                                    <TextBlock x:Name="MiniTotalTimeTxtH" Text="00:00" Foreground="{StaticResource MiniForegroundBrush}" FontSize="9" FontWeight="SemiBold"/>
+                                </Border>
                             </Grid>
                         </Grid>
 

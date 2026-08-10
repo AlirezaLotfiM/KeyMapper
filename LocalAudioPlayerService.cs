@@ -8,6 +8,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
@@ -360,7 +361,7 @@ namespace KeyMapper
                 bitmap.StreamSource = fs;
                 bitmap.EndInit();
                 bitmap.Freeze();
-                return bitmap;
+                return TrimLightArtworkBorder(bitmap);
             }
             catch { }
             return null;
@@ -1252,7 +1253,7 @@ namespace KeyMapper
                     bitmap.StreamSource = ms;
                     bitmap.EndInit();
                     bitmap.Freeze();
-                    return bitmap;
+                    return TrimLightArtworkBorder(bitmap);
                 }
             }
             catch { }
@@ -1265,6 +1266,100 @@ namespace KeyMapper
             }
 
             return null;
+        }
+
+        private static BitmapSource TrimLightArtworkBorder(BitmapSource bitmap)
+        {
+            if (bitmap.PixelWidth < 24 || bitmap.PixelHeight < 24)
+            {
+                return bitmap;
+            }
+
+            try
+            {
+                var converted = new FormatConvertedBitmap(
+                    bitmap,
+                    PixelFormats.Bgra32,
+                    null,
+                    0);
+                int width = converted.PixelWidth;
+                int height = converted.PixelHeight;
+                int stride = width * 4;
+                byte[] pixels = new byte[stride * height];
+                converted.CopyPixels(pixels, stride, 0);
+
+                bool IsNearWhite(int x, int y)
+                {
+                    int offset = (y * stride) + (x * 4);
+                    byte blue = pixels[offset];
+                    byte green = pixels[offset + 1];
+                    byte red = pixels[offset + 2];
+                    byte alpha = pixels[offset + 3];
+                    byte darkest = Math.Min(red, Math.Min(green, blue));
+                    byte brightest = Math.Max(red, Math.Max(green, blue));
+                    return alpha >= 220 && darkest >= 232 && brightest - darkest <= 24;
+                }
+
+                bool LightRow(int y)
+                {
+                    int light = 0;
+                    int samples = 0;
+                    int step = Math.Max(1, width / 96);
+                    for (int x = 0; x < width; x += step)
+                    {
+                        samples++;
+                        if (IsNearWhite(x, y)) light++;
+                    }
+                    return samples > 0 && light / (double)samples >= 0.82;
+                }
+
+                bool LightColumn(int x)
+                {
+                    int light = 0;
+                    int samples = 0;
+                    int step = Math.Max(1, height / 96);
+                    for (int y = 0; y < height; y += step)
+                    {
+                        samples++;
+                        if (IsNearWhite(x, y)) light++;
+                    }
+                    return samples > 0 && light / (double)samples >= 0.82;
+                }
+
+                int maxTrim = Math.Max(1, Math.Min(width, height) / 8);
+                int left = 0;
+                int top = 0;
+                int right = width - 1;
+                int bottom = height - 1;
+
+                while (left < maxTrim && left < right && LightColumn(left)) left++;
+                while (right >= width - maxTrim && right > left && LightColumn(right)) right--;
+                while (top < maxTrim && top < bottom && LightRow(top)) top++;
+                while (bottom >= height - maxTrim && bottom > top && LightRow(bottom)) bottom--;
+
+                int cropWidth = right - left + 1;
+                int cropHeight = bottom - top + 1;
+                if (left == 0 && top == 0 && right == width - 1 && bottom == height - 1)
+                {
+                    return bitmap;
+                }
+
+                // Do not turn a deliberately white cover into a tiny sliver.
+                if (cropWidth < width * 0.70 || cropHeight < height * 0.70)
+                {
+                    return bitmap;
+                }
+
+                var cropped = new CroppedBitmap(
+                    bitmap,
+                    new Int32Rect(left, top, cropWidth, cropHeight));
+                cropped.Freeze();
+                return cropped;
+            }
+            catch
+            {
+                return bitmap;
+            }
         }
 
         private AudioTrackItem ParseNativeId3v2Tags(string filePath)

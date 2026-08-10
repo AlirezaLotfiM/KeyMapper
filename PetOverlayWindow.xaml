@@ -147,6 +147,7 @@
                     <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}"/>
                     <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}"/>
                     <Setter Property="MinWidth" Value="220"/>
+                    <EventSetter Event="SubmenuOpened" Handler="PetMenuItem_SubmenuOpened"/>
                     <Setter Property="Template">
                         <Setter.Value>
                             <ControlTemplate TargetType="{x:Type MenuItem}">

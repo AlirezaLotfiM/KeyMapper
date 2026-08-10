@@ -64,7 +64,9 @@
             Background="{DynamicResource AppBackgroundBrush}"
             BorderBrush="{DynamicResource AppAccentBrush}"
             BorderThickness="2"
-            CornerRadius="16">
+            CornerRadius="16"
+            ClipToBounds="True"
+            SnapsToDevicePixels="True">
         <Border.Effect>
             <DropShadowEffect BlurRadius="22" ShadowDepth="7" Direction="270" Color="#000000" Opacity="0.28"/>
         </Border.Effect>

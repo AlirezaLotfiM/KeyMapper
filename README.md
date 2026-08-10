@@ -80,6 +80,8 @@ The local music player is part of the companion experience, not a separate skin:
 - Overlapping music folders and repeated metadata no longer create duplicate library rows.
 - Refreshing music folders preserves the current stream, position, play/pause state, and groove animation.
 - Library rows show a clean duration column without play counters or scrollbar clipping.
+- Cover art is normalized at load time: accidental white capture borders are trimmed without cropping intentionally white artwork.
+- Mini-player elapsed and total times use compact high-contrast badges, so the position remains readable over bright cover art.
 - Favorites use a solid heart whose fill follows the selected theme.
 - Song titles use the active theme's text color, so the library remains readable in both light and dark palettes.
 - Repeat clearly cycles through three supplied icons: Off, Repeat all, and Repeat one.
@@ -94,6 +96,7 @@ The local music player is part of the companion experience, not a separate skin:
 - The color palette uses a clipped rounded surface and stays open while colors are previewed or applied. It closes when the user clicks outside the palette.
 - Starting a text selection closes the note palette so it cannot cover the writing surface.
 - The writing toolbar has generous wrapping and vertical scrolling, plus a Word-style pin button. Its pinned state is saved per note and survives a restart.
+- Table Tools uses the active palette, rounded controls, grouped actions, and a scrollable surface instead of the old flat gray popup.
 - Notes are saved locally as formatted RTF plus plain text after edits and again when the window closes, so content, formatting, title, position, and preferences return on the next launch.
 - Delete confirmation uses a compact themed dialog with a clear cancel action instead of the default Windows message box.
 - Scheduled character comments run at selected daily checkpoints such as morning, midday, evening, and night. Each character has several lines per checkpoint, a no-immediate-repeat selection bag, and a small personality-specific chance of gentle sarcasm.
@@ -220,7 +223,7 @@ Theme location:
 Settings → Appearance
 ```
 
-The selected theme is saved locally and applies immediately to the control center, conversation window, translator, OCR results, music player, pet mini-player, speech bubble, and pixel-style context menu. The Settings page uses eased mouse-wheel scrolling, equal-width palette previews, and two-column AI model cards with clear download and RAM labels.
+The selected theme is saved locally and applies immediately to the control center, conversation window, translator, OCR results, music player, pet mini-player, speech bubble, and pixel-style context menu. Submenu arrows follow the actual popup direction when WPF opens a menu toward the left edge. The Settings page uses eased mouse-wheel scrolling, equal-width palette previews, and two-column AI model cards with clear download and RAM labels.
 
 The interface uses a shared icon set for tabs, settings sections, model actions, and the pet context menu. The Windows application and tray icon use the purple desktop-pet mark rather than the old gray placeholder. The character also uses a compact two-layer contact shadow positioned directly beneath its feet. Form connectors are centered precisely between their related input fields.
 
@@ -230,7 +233,7 @@ Sticky-note deletion uses the same rounded, theme-aware confirmation surface as 
 
 ### Support the project
 
-KeyMapper Desktop Pet is free to use. The **Support & Donate** header action opens an independent, theme-aware donation window with one-click address copying. Donations do not unlock features, change support priority, or send information from the app.
+KeyMapper Desktop Pet is free to use. The **Support & Donate** header action opens an independent, theme-aware donation window with one-click address copying. Its decorative header stripe is clipped to the rounded window surface on every theme. Donations do not unlock features, change support priority, or send information from the app.
 
 | Asset | Network | Address |
 | --- | --- | --- |

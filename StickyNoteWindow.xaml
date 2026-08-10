@@ -124,6 +124,74 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <!-- Spacious, theme-aware table controls. These replace the old flat gray form buttons. -->
+        <Style x:Key="TablePopupButton" TargetType="Button">
+            <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Margin" Value="0,2"/>
+            <Setter Property="Padding" Value="9,4"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="10.5"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="TableButtonBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="7"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="TableButtonBorder" Property="Background" Value="{DynamicResource AppAccentSoftBrush}"/>
+                                <Setter TargetName="TableButtonBorder" Property="BorderBrush" Value="{DynamicResource AppAccentBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="TableButtonBorder" Property="Opacity" Value="0.78"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="TableSwatchButton" TargetType="Button">
+            <Setter Property="Width" Value="28"/>
+            <Setter Property="Height" Value="28"/>
+            <Setter Property="Margin" Value="3"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="SwatchBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="SwatchBorder" Property="BorderBrush" Value="{DynamicResource AppAccentBrush}"/>
+                                <Setter TargetName="SwatchBorder" Property="BorderThickness" Value="2"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
 
     <Grid x:Name="WindowRootGrid" Margin="8" 
@@ -516,38 +584,61 @@
 
         <!-- Table Management & Styling Tools Popup -->
         <Popup x:Name="TablePopup" StaysOpen="False" PlacementTarget="{Binding ElementName=FormatToolbar}" Placement="Bottom">
-            <Border Background="#FFFFFF" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="6" Padding="6">
-                <ScrollViewer MaxHeight="280" VerticalScrollBarVisibility="Auto">
-                    <StackPanel Width="170">
-                        <TextBlock Text="📊 Table Tools" FontWeight="Bold" FontSize="11" Margin="4,2,4,6" Foreground="#444444"/>
-                        <Button Content="➕ Insert New Table" Margin="2" Click="TableInsertNew_Click"/>
-                        <Button Content="⬆️ Add Row Above" Margin="2" Click="TableRowAbove_Click"/>
-                        <Button Content="⬇️ Add Row Below" Margin="2" Click="TableRowBelow_Click"/>
-                        <Button Content="❌ Delete Row" Margin="2" Click="TableRowDelete_Click"/>
-                        <Separator Margin="2,4"/>
-                        <Button Content="⬅️ Add Column Left" Margin="2" Click="TableColLeft_Click"/>
-                        <Button Content="➡️ Add Column Right" Margin="2" Click="TableColRight_Click"/>
-                        <Button Content="❌ Delete Column" Margin="2" Click="TableColDelete_Click"/>
-                        
-                        <Separator Margin="2,6"/>
-                        <TextBlock Text="🎨 Cell Background Color" FontWeight="Bold" FontSize="10" Foreground="#555555" Margin="4,0,4,4"/>
-                        <WrapPanel Width="160" Margin="2">
-                            <Button Width="22" Height="22" Margin="2" Background="Transparent" Content="❌" Click="TableCellBgOption_Click" Tag="Transparent" ToolTip="Transparent / Default"/>
-                            <Button Width="22" Height="22" Margin="2" Background="#FFF59D" Click="TableCellBgOption_Click" Tag="#FFF59D" ToolTip="Yellow"/>
-                            <Button Width="22" Height="22" Margin="2" Background="#E1BEE7" Click="TableCellBgOption_Click" Tag="#E1BEE7" ToolTip="Lavender"/>
-                            <Button Width="22" Height="22" Margin="2" Background="#A5D6A7" Click="TableCellBgOption_Click" Tag="#A5D6A7" ToolTip="Mint"/>
-                            <Button Width="22" Height="22" Margin="2" Background="#80DEEA" Click="TableCellBgOption_Click" Tag="#80DEEA" ToolTip="Sky Blue"/>
-                            <Button Width="22" Height="22" Margin="2" Background="#F8BBD0" Click="TableCellBgOption_Click" Tag="#F8BBD0" ToolTip="Pink"/>
-                            <Button Width="22" Height="22" Margin="2" Background="#F5F5F5" Click="TableCellBgOption_Click" Tag="#F5F5F5" ToolTip="Gray"/>
-                            <Button Width="22" Height="22" Margin="2" Background="#FFE0B2" Click="TableCellBgOption_Click" Tag="#FFE0B2" ToolTip="Peach"/>
+            <Border Background="{DynamicResource AppBackgroundBrush}"
+                    BorderBrush="{DynamicResource AppAccentBrush}"
+                    BorderThickness="1.5"
+                    CornerRadius="12"
+                    Padding="10">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="14" ShadowDepth="4" Direction="270" Color="#000000" Opacity="0.24"/>
+                </Border.Effect>
+                <ScrollViewer MaxHeight="360" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Width="220">
+                        <Grid Margin="2,0,2,9">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="32"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Width="28" Height="28" CornerRadius="8" Background="{DynamicResource AppAccentSoftBrush}" BorderBrush="{DynamicResource AppAccentBrush}" BorderThickness="1">
+                                <TextBlock Text="▦" FontSize="17" Foreground="{DynamicResource AppAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <StackPanel Grid.Column="1" Margin="8,0,0,0" VerticalAlignment="Center">
+                                <TextBlock Text="Table Tools" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource AppTextBrush}"/>
+                                <TextBlock Text="Insert and style your table" FontSize="9.5" Foreground="{DynamicResource AppMutedTextBrush}" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <TextBlock Text="TABLE STRUCTURE" FontWeight="SemiBold" FontSize="9" Foreground="{DynamicResource AppAccentBrush}" Margin="2,2,2,4"/>
+                        <Button Style="{StaticResource TablePopupButton}" Content="Insert new table" Click="TableInsertNew_Click"/>
+                        <Button Style="{StaticResource TablePopupButton}" Content="Add row above" Click="TableRowAbove_Click"/>
+                        <Button Style="{StaticResource TablePopupButton}" Content="Add row below" Click="TableRowBelow_Click"/>
+                        <Button Style="{StaticResource TablePopupButton}" Content="Delete row" Click="TableRowDelete_Click"/>
+
+                        <Separator Margin="2,8"/>
+                        <TextBlock Text="COLUMNS" FontWeight="SemiBold" FontSize="9" Foreground="{DynamicResource AppAccentBrush}" Margin="2,0,2,4"/>
+                        <Button Style="{StaticResource TablePopupButton}" Content="Add column left" Click="TableColLeft_Click"/>
+                        <Button Style="{StaticResource TablePopupButton}" Content="Add column right" Click="TableColRight_Click"/>
+                        <Button Style="{StaticResource TablePopupButton}" Content="Delete column" Click="TableColDelete_Click"/>
+
+                        <Separator Margin="2,8"/>
+                        <TextBlock Text="CELL BACKGROUND" FontWeight="SemiBold" FontSize="9" Foreground="{DynamicResource AppAccentBrush}" Margin="2,0,2,4"/>
+                        <WrapPanel Width="210" Margin="0,0,0,2">
+                            <Button Style="{StaticResource TableSwatchButton}" Background="Transparent" Content="×" Foreground="{DynamicResource AppTextBrush}" Click="TableCellBgOption_Click" Tag="Transparent" ToolTip="Transparent / Default"/>
+                            <Button Style="{StaticResource TableSwatchButton}" Background="#FFF59D" Click="TableCellBgOption_Click" Tag="#FFF59D" ToolTip="Yellow"/>
+                            <Button Style="{StaticResource TableSwatchButton}" Background="#E1BEE7" Click="TableCellBgOption_Click" Tag="#E1BEE7" ToolTip="Lavender"/>
+                            <Button Style="{StaticResource TableSwatchButton}" Background="#A5D6A7" Click="TableCellBgOption_Click" Tag="#A5D6A7" ToolTip="Mint"/>
+                            <Button Style="{StaticResource TableSwatchButton}" Background="#80DEEA" Click="TableCellBgOption_Click" Tag="#80DEEA" ToolTip="Sky Blue"/>
+                            <Button Style="{StaticResource TableSwatchButton}" Background="#F8BBD0" Click="TableCellBgOption_Click" Tag="#F8BBD0" ToolTip="Pink"/>
+                            <Button Style="{StaticResource TableSwatchButton}" Background="#F5F5F5" Click="TableCellBgOption_Click" Tag="#F5F5F5" ToolTip="Gray"/>
+                            <Button Style="{StaticResource TableSwatchButton}" Background="#FFE0B2" Click="TableCellBgOption_Click" Tag="#FFE0B2" ToolTip="Peach"/>
                         </WrapPanel>
 
-                        <Separator Margin="2,6"/>
-                        <TextBlock Text="🖼️ Table Border Style" FontWeight="Bold" FontSize="10" Foreground="#555555" Margin="4,0,4,4"/>
-                        <Button Content="Thin Gray Border" Margin="2" Click="TableBorderOption_Click" Tag="1;#CCCCCC"/>
-                        <Button Content="Medium Dark Border" Margin="2" Click="TableBorderOption_Click" Tag="1.5;#444444"/>
-                        <Button Content="Thick Accent Border" Margin="2" Click="TableBorderOption_Click" Tag="2;#1E88E5"/>
-                        <Button Content="No Border" Margin="2" Click="TableBorderOption_Click" Tag="0;Transparent"/>
+                        <Separator Margin="2,8"/>
+                        <TextBlock Text="TABLE BORDER" FontWeight="SemiBold" FontSize="9" Foreground="{DynamicResource AppAccentBrush}" Margin="2,0,2,4"/>
+                        <Button Style="{StaticResource TablePopupButton}" Content="Thin gray border" Click="TableBorderOption_Click" Tag="1;#CCCCCC"/>
+                        <Button Style="{StaticResource TablePopupButton}" Content="Medium dark border" Click="TableBorderOption_Click" Tag="1.5;#444444"/>
+                        <Button Style="{StaticResource TablePopupButton}" Content="Thick accent border" Click="TableBorderOption_Click" Tag="2;#1E88E5"/>
+                        <Button Style="{StaticResource TablePopupButton}" Content="No border" Click="TableBorderOption_Click" Tag="0;Transparent"/>
                     </StackPanel>
                 </ScrollViewer>
             </Border>
