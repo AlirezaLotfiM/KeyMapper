@@ -309,7 +309,7 @@
         </WrapPanel>
 
         <!-- Content Area -->
-        <TabControl Grid.Row="1" Background="Transparent" BorderThickness="0" Margin="0">
+        <TabControl x:Name="MainTabs" Grid.Row="1" Background="Transparent" BorderThickness="0" Margin="0">
             
             <!-- Tab 1: Text Replacements -->
             <TabItem>
@@ -1346,7 +1346,7 @@
                 </Grid>
             </TabItem>
 
-            <!-- Tab 5: Support -->
+            <!-- Support and donations. MainWindow places this tab after the daily tools. -->
             <TabItem x:Name="SupportTab"
                      PreviewMouseLeftButtonDown="SupportTab_PreviewMouseLeftButtonDown">
                 <TabItem.Header>
@@ -1358,7 +1358,7 @@
                                 <ImageBrush ImageSource="Resources/Icons/donate.png"/>
                             </Rectangle.OpacityMask>
                         </Rectangle>
-                        <TextBlock Text="Support"/>
+                        <TextBlock Text="Support &amp; Donate"/>
                     </StackPanel>
                 </TabItem.Header>
 
@@ -1575,7 +1575,13 @@
             <TabItem x:Name="StickyNotesTabItem">
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="📝" Margin="0,0,6,0"/>
+                        <Rectangle Width="14" Height="14"
+                                   Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=TabItem}}"
+                                   Margin="0,0,7,0">
+                            <Rectangle.OpacityMask>
+                                <ImageBrush ImageSource="Resources/Icons/chat.png"/>
+                            </Rectangle.OpacityMask>
+                        </Rectangle>
                         <TextBlock Text="Sticky Notes &amp; Comments"/>
                     </StackPanel>
                 </TabItem.Header>

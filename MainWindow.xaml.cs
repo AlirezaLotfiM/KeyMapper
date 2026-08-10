@@ -81,6 +81,11 @@ namespace KeyMapper
         {
             InitializeComponent();
 
+            // Keep the working tools together. Support is still easy to find, but it
+            // belongs at the end of the navigation instead of interrupting the main flow.
+            MainTabs.Items.Remove(SupportTab);
+            MainTabs.Items.Add(SupportTab);
+
             // Load settings
             _settings = ConfigManager.Load();
             PopulateCollections();
@@ -2441,8 +2446,8 @@ namespace KeyMapper
         {
             if (sender is Button btn && btn.Tag is StickyNoteModel note)
             {
-                var result = MessageBox.Show($"Delete note '{note.Title}'?", "KeyMapper", MessageBoxButton.YesNo, MessageBoxImage.Question);
-                if (result == MessageBoxResult.Yes)
+                var dialog = new StickyNoteConfirmDialog(note.Title, note.ColorTheme, this);
+                if (dialog.ShowDialog() == true)
                 {
                     StickyNoteManager.Instance.DeleteNote(note.Id);
                     RefreshStickyNotesList();
