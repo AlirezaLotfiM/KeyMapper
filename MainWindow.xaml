@@ -6,6 +6,8 @@
         Icon="Resources/app_icon.ico"
         Height="680" 
         Width="920"
+        MinWidth="760"
+        MinHeight="560"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource AppBackgroundBrush}"
         Foreground="{DynamicResource AppTextBrush}"
@@ -92,7 +94,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TabItem">
-                        <Border x:Name="Border" Padding="16,10" Background="Transparent" BorderBrush="Transparent" BorderThickness="0,0,0,2">
+                        <Border x:Name="Border" Padding="12,9" Background="Transparent" BorderBrush="Transparent" BorderThickness="0,0,0,2">
                             <ContentPresenter x:Name="ContentSite" ContentSource="Header" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
@@ -276,21 +278,16 @@
         </Grid.RowDefinitions>
 
         <!-- Header -->
-        <Grid Grid.Row="0" Margin="0,0,0,20">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-            
-            <StackPanel Grid.Column="0" Orientation="Horizontal">
-                <TextBlock Text="Desktop Pet Control Center" FontFamily="Segoe UI" FontSize="22" FontWeight="SemiBold" Foreground="{DynamicResource AppTextBrush}" VerticalAlignment="Center"/>
+        <WrapPanel Grid.Row="0" Margin="0,0,0,20">
+            <StackPanel Orientation="Horizontal" Margin="0,0,18,10">
+                <TextBlock Text="Desktop Pet Control Center" FontFamily="Segoe UI" FontSize="22" FontWeight="SemiBold" Foreground="{DynamicResource AppTextBrush}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
                 <!-- Status Badge -->
                 <Border x:Name="StatusBadge" Margin="14,0,0,0" Padding="10,5" BorderBrush="#53A77D" BorderThickness="1" Background="#E1F4EA" VerticalAlignment="Center">
                     <TextBlock x:Name="StatusText" Text="KeyMapper is on" Foreground="#246548" FontFamily="Segoe UI" FontSize="11" FontWeight="SemiBold"/>
                 </Border>
             </StackPanel>
 
-            <StackPanel Grid.Column="1" Orientation="Horizontal">
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                 <Button Style="{StaticResource SecondaryButton}"
                         Margin="0,0,10,0"
                         Click="OpenConversation_Click"
@@ -309,7 +306,7 @@
                 <!-- Disable / Enable Button -->
                 <Button x:Name="ToggleHookBtn" Content="Disable KeyMapper" Style="{StaticResource SecondaryButton}" Click="ToggleHook_Click" Margin="0,0,10,0"/>
             </StackPanel>
-        </Grid>
+        </WrapPanel>
 
         <!-- Content Area -->
         <TabControl Grid.Row="1" Background="Transparent" BorderThickness="0" Margin="0">
@@ -1590,34 +1587,26 @@
 
                     <!-- Sticky Notes Action Bar & Filter Chips -->
                     <Border Grid.Row="0" Background="{DynamicResource AppSurfaceBrush}" BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="2" Padding="14,10" Margin="0,0,0,12">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="Sticky Notes &amp; Comments Manager" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource AppTextBrush}"/>
+                            <TextBlock Text="Manage all desktop notes &amp; comments in one place" FontSize="11" Foreground="{DynamicResource AppMutedTextBrush}" Margin="0,4,0,0" TextWrapping="Wrap"/>
 
-                            <StackPanel Orientation="Vertical">
-                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                    <TextBlock Text="Sticky Notes &amp; Comments Manager" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource AppTextBrush}" VerticalAlignment="Center"/>
-                                    <TextBlock Text="• Manage all desktop notes &amp; comments in one place" FontSize="11" Foreground="{DynamicResource AppMutedTextBrush}" VerticalAlignment="Center" Margin="10,0,0,0"/>
-                                </StackPanel>
+                            <!-- Filter Chips -->
+                            <WrapPanel Margin="0,10,0,0">
+                                <Button x:Name="FilterAllBtn" Content="All Notes" Style="{StaticResource SecondaryButton}" Padding="10,3" Margin="0,0,6,6" Click="FilterNotes_Click" Tag="All"/>
+                                <Button x:Name="FilterVisibleBtn" Content="Visible Desktop" Style="{StaticResource SecondaryButton}" Padding="10,3" Margin="0,0,6,6" Click="FilterNotes_Click" Tag="Visible"/>
+                                <Button x:Name="FilterHiddenBtn" Content="Hidden" Style="{StaticResource SecondaryButton}" Padding="10,3" Margin="0,0,6,6" Click="FilterNotes_Click" Tag="Hidden"/>
+                            </WrapPanel>
 
-                                <!-- Filter Chips -->
-                                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                                    <Button x:Name="FilterAllBtn" Content="All Notes" Style="{StaticResource SecondaryButton}" Padding="10,3" Margin="0,0,6,0" Click="FilterNotes_Click" Tag="All"/>
-                                    <Button x:Name="FilterVisibleBtn" Content="Visible Desktop" Style="{StaticResource SecondaryButton}" Padding="10,3" Margin="0,0,6,0" Click="FilterNotes_Click" Tag="Visible"/>
-                                    <Button x:Name="FilterHiddenBtn" Content="Hidden 👁️" Style="{StaticResource SecondaryButton}" Padding="10,3" Click="FilterNotes_Click" Tag="Hidden"/>
-                                </StackPanel>
-                            </StackPanel>
-
-                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                <Button Content="➕ New Note" Style="{StaticResource PrimaryButton}" Click="BtnNewStickyNote_Click" Margin="0,0,6,0"/>
-                                <Button Content="👁️ Show All" Style="{StaticResource SecondaryButton}" Click="BtnShowAllStickyNotes_Click" Margin="0,0,6,0"/>
-                                <Button Content="🙈 Hide All" Style="{StaticResource SecondaryButton}" Click="BtnHideAllStickyNotes_Click" Margin="0,0,6,0"/>
-                                <Button Content="📌 Pin All" Style="{StaticResource SecondaryButton}" Click="BtnPinAllStickyNotes_Click" Margin="0,0,6,0"/>
-                                <Button Content="📍 Desktop All" Style="{StaticResource SecondaryButton}" Click="BtnUnpinAllStickyNotes_Click"/>
-                            </StackPanel>
-                        </Grid>
+                            <!-- Bulk Actions -->
+                            <WrapPanel Margin="0,4,0,0">
+                                <Button Content="New Note" Style="{StaticResource PrimaryButton}" Click="BtnNewStickyNote_Click" Margin="0,0,6,6"/>
+                                <Button Content="Show All" Style="{StaticResource SecondaryButton}" Click="BtnShowAllStickyNotes_Click" Margin="0,0,6,6"/>
+                                <Button Content="Hide All" Style="{StaticResource SecondaryButton}" Click="BtnHideAllStickyNotes_Click" Margin="0,0,6,6"/>
+                                <Button Content="Pin All" Style="{StaticResource SecondaryButton}" Click="BtnPinAllStickyNotes_Click" Margin="0,0,6,6"/>
+                                <Button Content="Desktop All" Style="{StaticResource SecondaryButton}" Click="BtnUnpinAllStickyNotes_Click" Margin="0,0,6,6"/>
+                            </WrapPanel>
+                        </StackPanel>
                     </Border>
 
                     <!-- Sticky Notes Manager List (Title Only View) -->

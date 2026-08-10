@@ -224,6 +224,8 @@ The selected theme is saved locally and applies immediately to the control cente
 
 The interface uses a shared icon set for tabs, settings sections, model actions, and the pet context menu. The Windows application and tray icon use the purple desktop-pet mark rather than the old gray placeholder. The character also uses a compact two-layer contact shadow positioned directly beneath its feet. Form connectors are centered precisely between their related input fields.
 
+The control center keeps a safe minimum size of 760 by 560 pixels. Its header and sticky-note actions wrap instead of overlapping, so resizing within the supported range remains readable and usable.
+
 ### Support the project
 
 KeyMapper Desktop Pet is free to use. The **Support** tab includes optional donation details and one-click address copying for anyone who wants to help fund continued development. Donations do not unlock features, change support priority, or send information from the app.
