@@ -33,6 +33,7 @@ namespace KeyMapper
         private bool _lCtrlUsed = false;
         private bool _deGibberishChordDown;
         private bool _musicPlayerChordDown;
+        private bool _commandPaletteChordDown;
         private bool _isRecording = false;
         private StringBuilder _buffer = new StringBuilder();
         private DateTime _lastLCtrlReleaseTime = DateTime.MinValue;
@@ -45,6 +46,19 @@ namespace KeyMapper
         public List<string> AutoExpandShortcuts { get; set; } = new List<string>();
         public Func<string, bool>? IsShortcutAllowed { get; set; }
         public bool IsPaused { get; set; } = false;
+        public bool IsCapturingCommandPaletteHotkey { get; set; }
+        public string CommandPaletteHotkey
+        {
+            get => _commandPaletteGesture.Display;
+            set
+            {
+                if (ConfiguredHotkey.TryParse(value, out ConfiguredHotkey? parsed) &&
+                    parsed != null)
+                {
+                    _commandPaletteGesture = parsed;
+                }
+            }
+        }
 
         public event Action<bool>? OnPauseToggled;
 
@@ -56,6 +70,232 @@ namespace KeyMapper
         public event Action<IntPtr>? OnDeGibberishRequested;
         public event Action? OnMusicPlayerRequested;
         public event Action<string, string>? OnAutoExpandTriggered;
+
+        private ConfiguredHotkey _commandPaletteGesture =
+            ConfiguredHotkey.DoubleLeftCtrl();
+
+        private sealed class ConfiguredHotkey
+        {
+            private ConfiguredHotkey(
+                string display,
+                int virtualKey,
+                bool control,
+                bool alt,
+                bool shift,
+                bool windows,
+                bool isDisabled,
+                bool isDoubleLeftCtrl)
+            {
+                Display = display;
+                VirtualKey = virtualKey;
+                Control = control;
+                Alt = alt;
+                Shift = shift;
+                Windows = windows;
+                IsDisabled = isDisabled;
+                IsDoubleLeftCtrl = isDoubleLeftCtrl;
+            }
+
+            public string Display { get; }
+            public int VirtualKey { get; }
+            public bool Control { get; }
+            public bool Alt { get; }
+            public bool Shift { get; }
+            public bool Windows { get; }
+            public bool IsDisabled { get; }
+            public bool IsDoubleLeftCtrl { get; }
+
+            public static ConfiguredHotkey DoubleLeftCtrl() =>
+                new("Double Left Ctrl", VK_LCONTROL, false, false, false, false, false, true);
+
+            private static ConfiguredHotkey Disabled() =>
+                new("Disabled", 0, false, false, false, false, true, false);
+
+            public bool ModifiersMatch()
+            {
+                bool control = IsControlPressed();
+                bool alt = IsAltPressed();
+                bool shift = IsShiftPressed();
+                bool windows =
+                    (GetKeyState(0x5B) & 0x8000) != 0 ||
+                    (GetKeyState(0x5C) & 0x8000) != 0;
+                return control == Control &&
+                       alt == Alt &&
+                       shift == Shift &&
+                       windows == Windows;
+            }
+
+            public static bool TryParse(
+                string? value,
+                out ConfiguredHotkey? parsed)
+            {
+                string text = value?.Trim() ?? string.Empty;
+                if (string.IsNullOrWhiteSpace(text) ||
+                    text.Equals("Disabled", StringComparison.OrdinalIgnoreCase) ||
+                    text.Equals("Off", StringComparison.OrdinalIgnoreCase) ||
+                    text.Equals("None", StringComparison.OrdinalIgnoreCase))
+                {
+                    parsed = Disabled();
+                    return true;
+                }
+
+                if (text.Equals("Double Left Ctrl", StringComparison.OrdinalIgnoreCase) ||
+                    text.Equals("Double Ctrl", StringComparison.OrdinalIgnoreCase))
+                {
+                    parsed = DoubleLeftCtrl();
+                    return true;
+                }
+
+                string[] tokens = text.Split(
+                    '+',
+                    StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                if (tokens.Length == 0)
+                {
+                    parsed = null;
+                    return false;
+                }
+
+                bool control = false;
+                bool alt = false;
+                bool shift = false;
+                bool windows = false;
+                int virtualKey = 0;
+                for (int index = 0; index < tokens.Length; index++)
+                {
+                    string compact = tokens[index]
+                        .Replace(" ", string.Empty, StringComparison.Ordinal)
+                        .Replace("-", string.Empty, StringComparison.Ordinal)
+                        .ToUpperInvariant();
+                    if (index < tokens.Length - 1)
+                    {
+                        switch (compact)
+                        {
+                            case "CTRL":
+                            case "CONTROL":
+                                if (control) { parsed = null; return false; }
+                                control = true;
+                                break;
+                            case "ALT":
+                                if (alt) { parsed = null; return false; }
+                                alt = true;
+                                break;
+                            case "SHIFT":
+                                if (shift) { parsed = null; return false; }
+                                shift = true;
+                                break;
+                            case "WIN":
+                            case "WINDOWS":
+                            case "META":
+                                if (windows) { parsed = null; return false; }
+                                windows = true;
+                                break;
+                            default:
+                                parsed = null;
+                                return false;
+                        }
+                    }
+                    else if (!TryParseVirtualKey(compact, out virtualKey))
+                    {
+                        parsed = null;
+                        return false;
+                    }
+                }
+
+                parsed = new ConfiguredHotkey(
+                    FormatDisplay(virtualKey, control, alt, shift, windows),
+                    virtualKey,
+                    control,
+                    alt,
+                    shift,
+                    windows,
+                    false,
+                    false);
+                return true;
+            }
+
+            private static bool TryParseVirtualKey(
+                string token,
+                out int virtualKey)
+            {
+                if (token.Length == 1 &&
+                    ((token[0] >= 'A' && token[0] <= 'Z') ||
+                     (token[0] >= '0' && token[0] <= '9')))
+                {
+                    virtualKey = token[0];
+                    return true;
+                }
+
+                if (token.StartsWith("F", StringComparison.Ordinal) &&
+                    int.TryParse(token[1..], out int functionNumber) &&
+                    functionNumber is >= 1 and <= 24)
+                {
+                    virtualKey = 0x70 + functionNumber - 1;
+                    return true;
+                }
+
+                virtualKey = token switch
+                {
+                    "SPACE" => 0x20,
+                    "TAB" => 0x09,
+                    "ENTER" or "RETURN" => 0x0D,
+                    "ESC" or "ESCAPE" => 0x1B,
+                    "BACKSPACE" => 0x08,
+                    "INSERT" => 0x2D,
+                    "DELETE" or "DEL" => 0x2E,
+                    "HOME" => 0x24,
+                    "END" => 0x23,
+                    "PAGEUP" => 0x21,
+                    "PAGEDOWN" => 0x22,
+                    "LEFT" => 0x25,
+                    "UP" => 0x26,
+                    "RIGHT" => 0x27,
+                    "DOWN" => 0x28,
+                    "PRINTSCREEN" or "PRTSC" => 0x2C,
+                    "SCROLLLOCK" => 0x91,
+                    "PAUSE" => 0x13,
+                    _ => 0
+                };
+                return virtualKey != 0;
+            }
+
+            private static string FormatDisplay(
+                int virtualKey,
+                bool control,
+                bool alt,
+                bool shift,
+                bool windows)
+            {
+                var parts = new List<string>();
+                if (control) parts.Add("Ctrl");
+                if (alt) parts.Add("Alt");
+                if (shift) parts.Add("Shift");
+                if (windows) parts.Add("Win");
+                parts.Add(virtualKey switch
+                {
+                    0x20 => "Space",
+                    0x09 => "Tab",
+                    0x0D => "Enter",
+                    0x1B => "Esc",
+                    0x08 => "Backspace",
+                    0x2D => "Insert",
+                    0x2E => "Delete",
+                    0x24 => "Home",
+                    0x23 => "End",
+                    0x21 => "PageUp",
+                    0x22 => "PageDown",
+                    0x25 => "Left",
+                    0x26 => "Up",
+                    0x27 => "Right",
+                    0x28 => "Down",
+                    0x2C => "PrintScreen",
+                    0x91 => "ScrollLock",
+                    0x13 => "Pause",
+                    >= 0x70 and <= 0x87 => $"F{virtualKey - 0x70 + 1}",
+                    _ => ((char)virtualKey).ToString()
+                });
+                return string.Join("+", parts);
+            }
+        }
 
         public KeyboardHook()
         {
@@ -124,6 +364,12 @@ namespace KeyMapper
 
                 int vkCode = Marshal.ReadInt32(lParam);
                 int message = wParam.ToInt32();
+
+                if (!_commandPaletteGesture.IsDoubleLeftCtrl &&
+                    TryHandleConfiguredCommandPaletteHotkey(vkCode, message))
+                {
+                    return (IntPtr)1;
+                }
 
                 // Ctrl+Alt+K: reverse text typed under the wrong physical keyboard
                 // layout. The foreground handle is captured before our UI appears.
@@ -273,10 +519,12 @@ namespace KeyMapper
 
                             if (elapsed.TotalMilliseconds < 300)
                             {
-                                // Double-tap detected!
                                 _isRecording = false;
                                 _buffer.Clear();
-                                OnDoubleTapLCtrl?.Invoke();
+                                if (_commandPaletteGesture.IsDoubleLeftCtrl)
+                                {
+                                    OnDoubleTapLCtrl?.Invoke();
+                                }
                                 OnBufferChanged?.Invoke(string.Empty);
                             }
                             else
@@ -383,6 +631,47 @@ namespace KeyMapper
             }
 
             return CallNextHookEx(_hookId, nCode, wParam, lParam);
+        }
+
+        private bool TryHandleConfiguredCommandPaletteHotkey(
+            int vkCode,
+            int message)
+        {
+            if (IsCapturingCommandPaletteHotkey)
+            {
+                return false;
+            }
+
+            bool isKeyDown = message == WM_KEYDOWN || message == WM_SYSKEYDOWN;
+            bool isKeyUp = message == WM_KEYUP || message == WM_SYSKEYUP;
+            if (_commandPaletteGesture.IsDisabled ||
+                vkCode != _commandPaletteGesture.VirtualKey)
+            {
+                return false;
+            }
+
+            if (isKeyDown && _commandPaletteGesture.ModifiersMatch())
+            {
+                if (!_commandPaletteChordDown)
+                {
+                    _commandPaletteChordDown = true;
+                    _isRecording = false;
+                    _buffer.Clear();
+                    _rollingBuffer.Clear();
+                    OnDoubleTapLCtrl?.Invoke();
+                    OnBufferChanged?.Invoke(string.Empty);
+                }
+
+                return true;
+            }
+
+            if (isKeyUp && _commandPaletteChordDown)
+            {
+                _commandPaletteChordDown = false;
+                return true;
+            }
+
+            return false;
         }
 
         private static bool IsShiftPressed()

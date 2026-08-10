@@ -643,6 +643,37 @@
                                     <CheckBox x:Name="PlaySoundsChk" Content="Play sounds when an action succeeds" Foreground="{DynamicResource AppTextBrush}" Checked="SettingChanged" Unchecked="SettingChanged"/>
                                     <TextBlock Text="Plays mechanical click sounds when recording, and a chime when a shortcut triggers." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="11" Margin="20,0,0,15"/>
 
+                                    <StackPanel Margin="0,5,0,15">
+                                        <TextBlock Text="Assistant command trigger" Foreground="{DynamicResource AppTextBrush}" FontWeight="SemiBold" FontSize="13" Margin="0,0,0,5"/>
+                                        <TextBlock Text="Choose what opens the command palette. Click the field, then press any key combination you want." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,8"/>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBox x:Name="CommandPaletteHotkeyTxt"
+                                                     Height="32"
+                                                     IsReadOnly="True"
+                                                     Padding="8,4"
+                                                     ToolTip="Click here and press a key combination"
+                                                     GotFocus="CommandPaletteHotkeyTxt_GotFocus"
+                                                     LostFocus="CommandPaletteHotkeyTxt_LostFocus"
+                                                     PreviewKeyDown="CommandPaletteHotkeyTxt_PreviewKeyDown"/>
+                                            <Button Grid.Column="1"
+                                                    Content="Double Left Ctrl"
+                                                    Style="{StaticResource SecondaryButton}"
+                                                    Margin="8,0,0,0"
+                                                    Click="UseDoubleLeftCtrlCommandPalette_Click"/>
+                                            <Button Grid.Column="2"
+                                                    Content="Disable"
+                                                    Style="{StaticResource SecondaryButton}"
+                                                    Margin="8,0,0,0"
+                                                    Click="DisableCommandPalette_Click"/>
+                                        </Grid>
+                                        <TextBlock Text="Examples: Ctrl+Alt+Space, Ctrl+Shift+C, F8, or any other supported key combination." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="11" Margin="0,5,0,0"/>
+                                    </StackPanel>
+
                                     <StackPanel Margin="0,5,0,0">
                                         <TextBlock Text="Your Name / نام شما (Optional)" Foreground="{DynamicResource AppTextBrush}" FontWeight="SemiBold" FontSize="13" Margin="0,0,0,5"/>
                                         <TextBox x:Name="UserNameTxt" Height="32" Padding="8,4" TextChanged="SettingChanged"/>
@@ -1305,6 +1336,7 @@
                             <Border Background="{DynamicResource AppSurfaceAltBrush}" BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="2" Padding="20">
                                 <StackPanel>
                                     <TextBlock Text="5. Keyboard Controls" FontFamily="Segoe UI" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource AppTextBrush}" Margin="0,0,0,12"/>
+                                    <TextBlock Text="Command palette: Use the custom trigger from Everyday Settings. Double Left Ctrl is only the default and can be replaced or disabled." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="12" Margin="10,0,0,4" TextWrapping="Wrap"/>
                                     
                                     <TextBlock Text="• Ctrl + Alt + P: Global Pause/Resume shortcut. Swallows keys so it doesn't type." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="12" Margin="10,0,0,4"/>
                                     <TextBlock Text="• Ctrl + Alt + K: De-gibberish selected text. Example: Persian-layout اثممخ becomes hello." Foreground="{DynamicResource AppMutedTextBrush}" FontSize="12" Margin="10,0,0,4" TextWrapping="Wrap"/>

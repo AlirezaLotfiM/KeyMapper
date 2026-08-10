@@ -48,6 +48,7 @@ namespace KeyMapper
         public int LibreTranslateLiveDelayMs { get; set; } = 650;
         public bool LibreTranslateAutoCopy { get; set; } = false;
         public string LayoutFixHotkey { get; set; } = "Ctrl+Alt+K";
+        public string CommandPaletteHotkey { get; set; } = "Double Left Ctrl";
         public string CurrentCharacter { get; set; } = "Pink Monster";
         public bool PetHorizontalOnlyWalking { get; set; } = false;
         public double? PetPositionLeft { get; set; }

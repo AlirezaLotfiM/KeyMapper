@@ -182,6 +182,7 @@ The feature has its own on/off control.
 - Disable mappings in excluded applications.
 - Launch configured programs and utility actions.
 - Search actions through the command palette.
+- Choose the command palette trigger in Settings. Double Left Ctrl is only the default; you can record a custom combination such as Ctrl+Alt+Space, use a function key, or disable it completely.
 
 ### System tray and startup
 
@@ -197,7 +198,7 @@ Uncheck it at any time to opt out. The setting affects only the current Windows 
 
 ### Preferences that survive restart
 
-Durable choices are restored the next time PixelYar starts. This includes whether KeyMapper is enabled or paused, whether the pet is visible and walking, its manually chosen desktop position, horizontal-only movement, movement and idle speeds, character, comments, AI ambience, theme, startup behavior, translator target and settings panel, and music-player layout.
+Durable choices are restored the next time PixelYar starts. This includes whether KeyMapper is enabled or paused, whether the pet is visible and walking, its manually chosen desktop position, horizontal-only movement, movement and idle speeds, character, comments, AI ambience, theme, startup behavior, command palette trigger, translator target and settings panel, and music-player layout.
 
 Music preferences are also retained: volume, shuffle, repeat mode, current track position, queue, mini-player mode, library visibility, active tab, and sorting. Preferences share one synchronized in-memory configuration and are written through an atomic file replacement, so one window cannot overwrite a newer choice saved by another window.
 

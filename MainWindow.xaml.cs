@@ -98,7 +98,10 @@ namespace KeyMapper
                 IsEnabled = _settings.KeyMapperEnabled,
                 IsPaused = _settings.KeyMapperPaused,
                 SuppressKeysDuringRecording = _settings.SuppressKeysDuringRecording,
-                AutoExpandShortcuts = _settings.AutoExpandShortcuts ?? new List<string>()
+                AutoExpandShortcuts = _settings.AutoExpandShortcuts ?? new List<string>(),
+                CommandPaletteHotkey = string.IsNullOrWhiteSpace(_settings.CommandPaletteHotkey)
+                    ? "Double Left Ctrl"
+                    : _settings.CommandPaletteHotkey
             };
 
             _overlayWindow = new OverlayWindow();
@@ -159,6 +162,7 @@ namespace KeyMapper
             ShowOverlayChk.IsChecked = _settings.ShowOverlay;
             RunAtStartupChk.IsChecked = _settings.RunAtStartup;
             PlaySoundsChk.IsChecked = _settings.PlaySounds;
+            CommandPaletteHotkeyTxt.Text = _hook.CommandPaletteHotkey;
             UserNameTxt.Text = _settings.UserName ?? string.Empty;
             AiEndpointTxt.Text = _settings.AiApiEndpoint;
             AiApiKeyTxt.Password = _settings.AiApiKey;
@@ -267,6 +271,12 @@ namespace KeyMapper
             _settings.AiModel = string.IsNullOrWhiteSpace(AiModelTxt.Text)
                 ? "gpt-4o-mini"
                 : AiModelTxt.Text.Trim();
+            if (_hook != null && CommandPaletteHotkeyTxt != null)
+            {
+                _hook.CommandPaletteHotkey = CommandPaletteHotkeyTxt.Text;
+                CommandPaletteHotkeyTxt.Text = _hook.CommandPaletteHotkey;
+                _settings.CommandPaletteHotkey = _hook.CommandPaletteHotkey;
+            }
             _settings.UserName = UserNameTxt != null ? UserNameTxt.Text.Trim() : string.Empty;
 
             ConfigManager.Save(_settings);
@@ -1612,6 +1622,128 @@ namespace KeyMapper
         {
             if (_isInitializing) return;
             SaveSettings();
+        }
+
+        private void CommandPaletteHotkeyTxt_GotFocus(
+            object sender,
+            RoutedEventArgs e)
+        {
+            _hook.IsCapturingCommandPaletteHotkey = true;
+        }
+
+        private void CommandPaletteHotkeyTxt_LostFocus(
+            object sender,
+            RoutedEventArgs e)
+        {
+            _hook.IsCapturingCommandPaletteHotkey = false;
+        }
+
+        private void CommandPaletteHotkeyTxt_PreviewKeyDown(
+            object sender,
+            KeyEventArgs e)
+        {
+            Key key = e.Key == Key.System ? e.SystemKey : e.Key;
+            if (key is Key.LeftCtrl or Key.RightCtrl or
+                Key.LeftAlt or Key.RightAlt or
+                Key.LeftShift or Key.RightShift or
+                Key.LWin or Key.RWin)
+            {
+                e.Handled = true;
+                return;
+            }
+
+            string? keyName = FormatCommandPaletteKey(key);
+            if (string.IsNullOrWhiteSpace(keyName))
+            {
+                e.Handled = true;
+                return;
+            }
+
+            var parts = new List<string>();
+            if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
+            {
+                parts.Add("Ctrl");
+            }
+            if ((Keyboard.Modifiers & ModifierKeys.Alt) != 0)
+            {
+                parts.Add("Alt");
+            }
+            if ((Keyboard.Modifiers & ModifierKeys.Shift) != 0)
+            {
+                parts.Add("Shift");
+            }
+            if ((Keyboard.Modifiers & ModifierKeys.Windows) != 0)
+            {
+                parts.Add("Win");
+            }
+            parts.Add(keyName);
+
+            _hook.CommandPaletteHotkey = string.Join("+", parts);
+            CommandPaletteHotkeyTxt.Text = _hook.CommandPaletteHotkey;
+            SaveSettings();
+            e.Handled = true;
+        }
+
+        private void UseDoubleLeftCtrlCommandPalette_Click(
+            object sender,
+            RoutedEventArgs e)
+        {
+            _hook.CommandPaletteHotkey = "Double Left Ctrl";
+            CommandPaletteHotkeyTxt.Text = _hook.CommandPaletteHotkey;
+            SaveSettings();
+        }
+
+        private void DisableCommandPalette_Click(
+            object sender,
+            RoutedEventArgs e)
+        {
+            _hook.CommandPaletteHotkey = "Disabled";
+            CommandPaletteHotkeyTxt.Text = _hook.CommandPaletteHotkey;
+            SaveSettings();
+        }
+
+        private static string? FormatCommandPaletteKey(Key key)
+        {
+            int value = (int)key;
+            if (key >= Key.A && key <= Key.Z)
+            {
+                return key.ToString();
+            }
+            if (key >= Key.D0 && key <= Key.D9)
+            {
+                return (value - (int)Key.D0).ToString();
+            }
+            if (key >= Key.NumPad0 && key <= Key.NumPad9)
+            {
+                return (value - (int)Key.NumPad0).ToString();
+            }
+            if (key >= Key.F1 && key <= Key.F24)
+            {
+                return key.ToString();
+            }
+
+            return key switch
+            {
+                Key.Space => "Space",
+                Key.Tab => "Tab",
+                Key.Enter => "Enter",
+                Key.Escape => "Esc",
+                Key.Back => "Backspace",
+                Key.Insert => "Insert",
+                Key.Delete => "Delete",
+                Key.Home => "Home",
+                Key.End => "End",
+                Key.PageUp => "PageUp",
+                Key.PageDown => "PageDown",
+                Key.Left => "Left",
+                Key.Up => "Up",
+                Key.Right => "Right",
+                Key.Down => "Down",
+                Key.PrintScreen => "PrintScreen",
+                Key.Scroll => "ScrollLock",
+                Key.Pause => "Pause",
+                _ => null
+            };
         }
 
         private void ThemePicker_SelectionChanged(
