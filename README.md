@@ -82,7 +82,7 @@ The local music player is part of the companion experience, not a separate skin:
 - Library rows show a clean duration column without play counters or scrollbar clipping.
 - Cover art is normalized at load time: accidental white capture borders are trimmed without cropping intentionally white artwork.
 - Mini-player elapsed and total times use compact high-contrast labels, so the position remains readable over bright cover art.
-- The mini-player now uses a clean dynamic time rail: the accent progress trace grows with playback while the labels stay readable without dark boxes.
+- The mini-player now uses a compact glass time capsule with a live elapsed/total readout, without a second line under the seek bar.
 - Favorites use a solid heart whose fill follows the selected theme.
 - Song titles use the active theme's text color, so the library remains readable in both light and dark palettes.
 - Repeat clearly cycles through three supplied icons: Off, Repeat all, and Repeat one.

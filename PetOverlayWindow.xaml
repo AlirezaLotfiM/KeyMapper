@@ -166,7 +166,7 @@
                                             <TextBlock x:Name="Arrow" Grid.Column="3" Text="›" FontSize="17" Foreground="{DynamicResource AppAccentBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed"/>
                                         </Grid>
                                     </Border>
-                                    <Popup x:Name="PART_Popup" Placement="Right" HorizontalOffset="-2" VerticalOffset="-2" AllowsTransparency="True" Focusable="False" IsOpen="{Binding IsSubmenuOpen, RelativeSource={RelativeSource TemplatedParent}}">
+                                    <Popup x:Name="PART_Popup" Placement="Right" HorizontalOffset="-2" VerticalOffset="-2" AllowsTransparency="True" Focusable="False" Opened="PetSubmenuPopup_Opened" IsOpen="{Binding IsSubmenuOpen, RelativeSource={RelativeSource TemplatedParent}}">
                                         <Border Background="{DynamicResource AppBackgroundBrush}" BorderBrush="{DynamicResource AppTextBrush}" BorderThickness="2" Padding="2" SnapsToDevicePixels="True">
                                             <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Cycle"/>
                                         </Border>

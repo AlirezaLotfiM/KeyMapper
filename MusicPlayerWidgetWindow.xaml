@@ -247,7 +247,7 @@
         <SolidColorBrush x:Key="MiniMutedBrush" Color="#FFD8E1EC"/>
         <SolidColorBrush x:Key="MiniGlassBrush" Color="#4DFFFFFF"/>
         <SolidColorBrush x:Key="MiniGlassBorderBrush" Color="#A6FFFFFF"/>
-        <SolidColorBrush x:Key="MiniTimeRailBrush" Color="#66FFFFFF"/>
+        <SolidColorBrush x:Key="MiniTimeCapsuleBrush" Color="#4DFFFFFF"/>
 
         <Style x:Key="MiniHeaderIconButton"
                TargetType="{x:Type Button}">
@@ -689,30 +689,29 @@
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
                         <Slider Grid.Row="0" x:Name="MiniPositionSlider" Style="{StaticResource CyberNeonSlider}" Minimum="0" Maximum="100" ValueChanged="PositionSlider_ValueChanged" PreviewMouseDown="PositionSlider_PreviewMouseDown" PreviewMouseUp="PositionSlider_PreviewMouseUp" Cursor="Hand"/>
-                        <Grid x:Name="MiniTimeRail" Grid.Row="1" Height="20" Margin="0,1,0,0">
-                            <Border Height="2" Margin="4,0" VerticalAlignment="Bottom" Background="{StaticResource MiniTimeRailBrush}" CornerRadius="1"/>
-                            <Border x:Name="MiniElapsedRail" Width="0" Height="2" Margin="4,0" HorizontalAlignment="Left" VerticalAlignment="Bottom" Background="{DynamicResource AppAccentBrush}" CornerRadius="1"/>
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Top">
-                                <Ellipse Width="4" Height="4" Margin="0,5,4,0" Fill="{DynamicResource AppAccentBrush}"/>
-                                <TextBlock x:Name="MiniCurrentTimeTxt" Text="00:00" Foreground="{StaticResource MiniForegroundBrush}" FontSize="9" FontWeight="Bold">
-                                    <TextBlock.Effect><DropShadowEffect BlurRadius="2" ShadowDepth="1" Color="#000000" Opacity="0.8"/></TextBlock.Effect>
-                                </TextBlock>
+                        <Border Grid.Row="1" Height="20" HorizontalAlignment="Center" Background="{StaticResource MiniTimeCapsuleBrush}" BorderBrush="{StaticResource MiniGlassBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="8,1" Margin="0,1,0,0">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Ellipse Width="5" Height="5" Margin="0,0,5,0" Fill="{DynamicResource AppAccentBrush}"/>
+                                <TextBlock x:Name="MiniCurrentTimeTxt" Text="00:00" Foreground="{StaticResource MiniForegroundBrush}" FontSize="9" FontWeight="Bold"/>
+                                <TextBlock Text="  /  " Foreground="{StaticResource MiniMutedBrush}" FontSize="9" FontWeight="SemiBold"/>
+                                <TextBlock x:Name="MiniTotalTimeTxt" Text="00:00" Foreground="{StaticResource MiniMutedBrush}" FontSize="9" FontWeight="SemiBold"/>
                             </StackPanel>
-                            <TextBlock x:Name="MiniTotalTimeTxt" Text="00:00" HorizontalAlignment="Right" VerticalAlignment="Top" Foreground="{StaticResource MiniMutedBrush}" FontSize="9" FontWeight="SemiBold">
-                                <TextBlock.Effect><DropShadowEffect BlurRadius="2" ShadowDepth="1" Color="#000000" Opacity="0.8"/></TextBlock.Effect>
-                            </TextBlock>
-                        </Grid>
+                        </Border>
                     </Grid>
 
                     <!-- Volume Slider -->
-                    <Grid HorizontalAlignment="Center" Width="135" Margin="0,0,0,4">
+                    <Border HorizontalAlignment="Center" Width="135" Height="24" Margin="0,0,0,4" Background="{StaticResource MiniTimeCapsuleBrush}" BorderBrush="{StaticResource MiniGlassBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="5,0">
+                        <Grid VerticalAlignment="Center">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <Rectangle Grid.Column="0" Width="13" Height="13" Fill="{StaticResource MiniForegroundBrush}" Margin="0,0,4,0"><Rectangle.OpacityMask><ImageBrush ImageSource="/Resources/Icons/music-volume-loud-svgrepo-com.png"/></Rectangle.OpacityMask></Rectangle>
+                        <Border Grid.Column="0" Width="18" Height="18" CornerRadius="9" Background="{DynamicResource AppAccentSoftBrush}" BorderBrush="{DynamicResource AppAccentBrush}" BorderThickness="1" Margin="0,0,5,0">
+                            <Rectangle Width="11" Height="11" Fill="{StaticResource MiniForegroundBrush}"><Rectangle.OpacityMask><ImageBrush ImageSource="/Resources/Icons/music-volume-loud-svgrepo-com.png"/></Rectangle.OpacityMask></Rectangle>
+                        </Border>
                         <Slider Grid.Column="1" x:Name="MiniVolumeSlider" Style="{StaticResource CyberNeonSlider}" Minimum="0" Maximum="100" Value="80" ValueChanged="VolumeSlider_ValueChanged" VerticalAlignment="Center" Cursor="Hand"/>
-                    </Grid>
+                        </Grid>
+                    </Border>
                 </StackPanel>
 
                 <!-- Horizontal Mini Deck Layout -->
@@ -791,19 +790,14 @@
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
                             <Slider Grid.Row="0" x:Name="MiniPositionSliderH" Style="{StaticResource CyberNeonSlider}" Minimum="0" Maximum="100" ValueChanged="PositionSlider_ValueChanged" PreviewMouseDown="PositionSlider_PreviewMouseDown" PreviewMouseUp="PositionSlider_PreviewMouseUp" VerticalAlignment="Center" Cursor="Hand"/>
-                            <Grid x:Name="MiniTimeRailH" Grid.Row="1" Height="20" Margin="0,1,0,0">
-                                <Border Height="2" Margin="4,0" VerticalAlignment="Bottom" Background="{StaticResource MiniTimeRailBrush}" CornerRadius="1"/>
-                                <Border x:Name="MiniElapsedRailH" Width="0" Height="2" Margin="4,0" HorizontalAlignment="Left" VerticalAlignment="Bottom" Background="{DynamicResource AppAccentBrush}" CornerRadius="1"/>
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Top">
-                                    <Ellipse Width="4" Height="4" Margin="0,5,4,0" Fill="{DynamicResource AppAccentBrush}"/>
-                                    <TextBlock x:Name="MiniCurrentTimeTxtH" Text="00:00" Foreground="{StaticResource MiniForegroundBrush}" FontSize="9" FontWeight="Bold">
-                                        <TextBlock.Effect><DropShadowEffect BlurRadius="2" ShadowDepth="1" Color="#000000" Opacity="0.8"/></TextBlock.Effect>
-                                    </TextBlock>
+                            <Border Grid.Row="1" Height="20" HorizontalAlignment="Center" Background="{StaticResource MiniTimeCapsuleBrush}" BorderBrush="{StaticResource MiniGlassBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="8,1" Margin="0,1,0,0">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Ellipse Width="5" Height="5" Margin="0,0,5,0" Fill="{DynamicResource AppAccentBrush}"/>
+                                    <TextBlock x:Name="MiniCurrentTimeTxtH" Text="00:00" Foreground="{StaticResource MiniForegroundBrush}" FontSize="9" FontWeight="Bold"/>
+                                    <TextBlock Text="  /  " Foreground="{StaticResource MiniMutedBrush}" FontSize="9" FontWeight="SemiBold"/>
+                                    <TextBlock x:Name="MiniTotalTimeTxtH" Text="00:00" Foreground="{StaticResource MiniMutedBrush}" FontSize="9" FontWeight="SemiBold"/>
                                 </StackPanel>
-                                <TextBlock x:Name="MiniTotalTimeTxtH" Text="00:00" HorizontalAlignment="Right" VerticalAlignment="Top" Foreground="{StaticResource MiniMutedBrush}" FontSize="9" FontWeight="SemiBold">
-                                    <TextBlock.Effect><DropShadowEffect BlurRadius="2" ShadowDepth="1" Color="#000000" Opacity="0.8"/></TextBlock.Effect>
-                                </TextBlock>
-                            </Grid>
+                            </Border>
                         </Grid>
 
                         <Grid Grid.Row="2">
@@ -825,14 +819,18 @@
                                     <Rectangle Width="12" Height="12" Fill="{StaticResource MiniForegroundBrush}"><Rectangle.OpacityMask><ImageBrush ImageSource="/Resources/Icons/music-skip-next-svgrepo-com.png"/></Rectangle.OpacityMask></Rectangle>
                                 </Button>
                             </StackPanel>
-                            <Grid Grid.Column="1" HorizontalAlignment="Right" Width="92" VerticalAlignment="Center" Margin="12,0,0,0">
+                            <Border Grid.Column="1" HorizontalAlignment="Right" Width="92" Height="24" VerticalAlignment="Center" Margin="12,0,0,0" Background="{StaticResource MiniTimeCapsuleBrush}" BorderBrush="{StaticResource MiniGlassBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="4,0">
+                                <Grid VerticalAlignment="Center">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <Rectangle Grid.Column="0" Width="12" Height="12" Fill="{StaticResource MiniForegroundBrush}" Margin="0,0,5,0"><Rectangle.OpacityMask><ImageBrush ImageSource="/Resources/Icons/music-volume-loud-svgrepo-com.png"/></Rectangle.OpacityMask></Rectangle>
+                                <Border Grid.Column="0" Width="17" Height="17" CornerRadius="9" Background="{DynamicResource AppAccentSoftBrush}" BorderBrush="{DynamicResource AppAccentBrush}" BorderThickness="1" Margin="0,0,4,0">
+                                    <Rectangle Width="10" Height="10" Fill="{StaticResource MiniForegroundBrush}"><Rectangle.OpacityMask><ImageBrush ImageSource="/Resources/Icons/music-volume-loud-svgrepo-com.png"/></Rectangle.OpacityMask></Rectangle>
+                                </Border>
                                 <Slider Grid.Column="1" x:Name="MiniVolumeSliderH" Style="{StaticResource CyberNeonSlider}" Minimum="0" Maximum="100" Value="80" ValueChanged="VolumeSlider_ValueChanged" VerticalAlignment="Center" Cursor="Hand"/>
-                            </Grid>
+                                </Grid>
+                            </Border>
                         </Grid>
                     </Grid>
                     </Grid>

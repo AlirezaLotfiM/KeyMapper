@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
@@ -2161,6 +2162,26 @@ namespace KeyMapper
                 DispatcherPriority.ContextIdle);
         }
 
+        private void PetSubmenuPopup_Opened(object sender, EventArgs e)
+        {
+            if (sender is not Popup popup)
+            {
+                return;
+            }
+
+            MenuItem? menuItem = popup.TemplatedParent as MenuItem ?? popup.PlacementTarget as MenuItem;
+            if (menuItem == null)
+            {
+                return;
+            }
+
+            // Popup.Opened fires after WPF has chosen the actual side. Read that
+            // position so nested menus never show a stale or mirrored arrow.
+            Dispatcher.BeginInvoke(
+                new Action(() => UpdatePetMenuArrow(menuItem, popup)),
+                DispatcherPriority.Render);
+        }
+
         private static void UpdatePetMenuArrows(ItemsControl parent)
         {
             foreach (object item in parent.Items)
@@ -2175,6 +2196,18 @@ namespace KeyMapper
 
         private static void UpdatePetMenuArrow(MenuItem menuItem)
         {
+            if (menuItem.Template.FindName("PART_Popup", menuItem) is Popup popup)
+            {
+                UpdatePetMenuArrow(menuItem, popup);
+            }
+            else
+            {
+                UpdatePetMenuArrow(menuItem, null);
+            }
+        }
+
+        private static void UpdatePetMenuArrow(MenuItem menuItem, Popup? popup)
+        {
             if (!menuItem.HasItems ||
                 menuItem.Template.FindName("Arrow", menuItem) is not TextBlock arrow)
             {
@@ -2184,6 +2217,14 @@ namespace KeyMapper
             try
             {
                 Point targetPoint = menuItem.PointToScreen(new Point(0, 0));
+
+                if (popup?.IsOpen == true && popup.Child is Visual popupVisual)
+                {
+                    Point popupPoint = popupVisual.PointToScreen(new Point(0, 0));
+                    arrow.Text = popupPoint.X < targetPoint.X ? "‹" : "›";
+                    return;
+                }
+
                 double itemWidth = menuItem.ActualWidth > 0 ? menuItem.ActualWidth : 220;
                 double rightSpace = SystemParameters.WorkArea.Right - (targetPoint.X + itemWidth);
                 double leftSpace = targetPoint.X - SystemParameters.WorkArea.Left;
