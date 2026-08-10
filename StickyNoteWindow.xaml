@@ -100,6 +100,42 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        <Style x:Key="RibbonIconButton" TargetType="Button">
+            <Setter Property="Width" Value="29"/>
+            <Setter Property="Height" Value="28"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Margin" Value="1"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{Binding ElementName=TitleTextBox, Path=Foreground}"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Chrome" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource AppAccentSoftBrush}"/>
+                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource AppAccentBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True"><Setter TargetName="Chrome" Property="Opacity" Value="0.72"/></Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="RibbonGroup" TargetType="Border">
+            <Setter Property="Background" Value="#0CFFFFFF"/>
+            <Setter Property="BorderBrush" Value="#26000000"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="7"/>
+            <Setter Property="Padding" Value="2"/>
+            <Setter Property="Margin" Value="2"/>
+        </Style>
         <!-- Circle Swatch Button Style -->
         <Style x:Key="PaletteCircleButton" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
@@ -308,14 +344,20 @@
                                       HorizontalScrollBarVisibility="Disabled"
                                       PreviewMouseWheel="FormatToolbarScrollViewer_PreviewMouseWheel">
                             <WrapPanel Orientation="Horizontal" Margin="1,1,3,1">
-                            <!-- AI & Translate Tools -->
-                            <Button Style="{StaticResource FormatToolButton}" Content="🌐 Translate" ToolTip="Translate Note / Selection" Click="TranslateButton_Click"/>
-                            <Button Style="{StaticResource FormatToolButton}" Content="✨ AI Assistant" ToolTip="AI Summarize &amp; Fix" Click="AiButton_Click"/>
+                            <Border Style="{StaticResource RibbonGroup}">
+                                <StackPanel Orientation="Horizontal">
+                                    <Button Style="{StaticResource RibbonIconButton}" ToolTip="Translate note or selection" Click="TranslateButton_Click">
+                                        <Rectangle Width="15" Height="15" Fill="{Binding ElementName=TitleTextBox, Path=Foreground}"><Rectangle.OpacityMask><ImageBrush ImageSource="/Resources/Icons/translate.png"/></Rectangle.OpacityMask></Rectangle>
+                                    </Button>
+                                    <Button Style="{StaticResource RibbonIconButton}" ToolTip="AI tools" Click="AiButton_Click">
+                                        <Rectangle Width="15" Height="15" Fill="{Binding ElementName=TitleTextBox, Path=Foreground}"><Rectangle.OpacityMask><ImageBrush ImageSource="/Resources/Icons/ai.png"/></Rectangle.OpacityMask></Rectangle>
+                                    </Button>
+                                </StackPanel>
+                            </Border>
 
-                            <Rectangle Width="1" Height="14" Fill="#30000000" Margin="4,4"/>
-
-                            <!-- Font Family Selector -->
-                            <ComboBox x:Name="FontFamilyCombo" Width="85" Height="22" FontSize="10" Margin="2,2" SelectionChanged="FontFamilyCombo_SelectionChanged" ToolTip="Font Family">
+                            <Border Style="{StaticResource RibbonGroup}">
+                                <StackPanel Orientation="Horizontal">
+                            <ComboBox x:Name="FontFamilyCombo" Width="92" Height="24" FontSize="10" Margin="1" SelectionChanged="FontFamilyCombo_SelectionChanged" ToolTip="Font family">
                                 <ComboBoxItem Content="Segoe UI" IsSelected="True"/>
                                 <ComboBoxItem Content="Vazirmatn"/>
                                 <ComboBoxItem Content="Arial"/>
@@ -326,7 +368,7 @@
                             </ComboBox>
 
                             <!-- Font Size Selector -->
-                            <ComboBox x:Name="FontSizeCombo" Width="55" Height="22" FontSize="10" Margin="2,2" SelectionChanged="FontSizeCombo_SelectionChanged" ToolTip="Font Size">
+                            <ComboBox x:Name="FontSizeCombo" Width="48" Height="24" FontSize="10" Margin="1" SelectionChanged="FontSizeCombo_SelectionChanged" ToolTip="Font size">
                                 <ComboBoxItem Content="10"/>
                                 <ComboBoxItem Content="12"/>
                                 <ComboBoxItem Content="13" IsSelected="True"/>
@@ -338,49 +380,41 @@
                                 <ComboBoxItem Content="28"/>
                                 <ComboBoxItem Content="32"/>
                             </ComboBox>
+                                </StackPanel>
+                            </Border>
 
-                            <Rectangle Width="1" Height="14" Fill="#30000000" Margin="4,4"/>
+                            <Border Style="{StaticResource RibbonGroup}"><StackPanel Orientation="Horizontal">
+                                <Button Style="{StaticResource RibbonIconButton}" Content="B" FontWeight="Bold" ToolTip="Bold (Ctrl+B)" Click="BtnBold_Click"/>
+                                <Button Style="{StaticResource RibbonIconButton}" Content="I" FontStyle="Italic" ToolTip="Italic (Ctrl+I)" Click="BtnItalic_Click"/>
+                                <Button Style="{StaticResource RibbonIconButton}" Content="U̲" ToolTip="Underline (Ctrl+U)" Click="BtnUnderline_Click"/>
+                                <Button Style="{StaticResource RibbonIconButton}" Content="S̶" ToolTip="Strikethrough" Click="BtnStrikethrough_Click"/>
+                            </StackPanel></Border>
 
-                            <!-- Text Formatting -->
-                            <Button Style="{StaticResource FormatToolButton}" Content="B" FontWeight="Bold" ToolTip="Bold (Ctrl+B)" Click="BtnBold_Click"/>
-                            <Button Style="{StaticResource FormatToolButton}" Content="I" FontStyle="Italic" ToolTip="Italic (Ctrl+I)" Click="BtnItalic_Click"/>
-                            <Button Style="{StaticResource FormatToolButton}" Content="U" ToolTip="Underline (Ctrl+U)" Click="BtnUnderline_Click"/>
-                            <Button Style="{StaticResource FormatToolButton}" Content="S" ToolTip="Strikethrough" Click="BtnStrikethrough_Click"/>
+                            <Border Style="{StaticResource RibbonGroup}"><StackPanel Orientation="Horizontal">
+                                <Button Style="{StaticResource RibbonIconButton}" ToolTip="Text color" Click="BtnTextColor_Click"><Grid Width="18" Height="19"><TextBlock Text="A" FontWeight="SemiBold" HorizontalAlignment="Center"/><Border Height="3" CornerRadius="1.5" Background="#E84B4B" VerticalAlignment="Bottom"/></Grid></Button>
+                                <Button Style="{StaticResource RibbonIconButton}" ToolTip="Text highlight" Click="BtnHighlight_Click"><Grid Width="18" Height="19"><TextBlock Text="ab" FontSize="10" HorizontalAlignment="Center"/><Border Height="5" CornerRadius="1.5" Background="#FFE66D" VerticalAlignment="Bottom"/></Grid></Button>
+                            </StackPanel></Border>
 
-                            <Rectangle Width="1" Height="14" Fill="#30000000" Margin="4,4"/>
+                            <Border Style="{StaticResource RibbonGroup}"><StackPanel Orientation="Horizontal">
+                                <Button Style="{StaticResource RibbonIconButton}" Content="H1" FontWeight="SemiBold" ToolTip="Heading 1" Click="BtnH1_Click"/>
+                                <Button Style="{StaticResource RibbonIconButton}" Content="H2" FontSize="10" FontWeight="SemiBold" ToolTip="Heading 2" Click="BtnH2_Click"/>
+                                <Button Style="{StaticResource RibbonIconButton}" Content="☷" FontSize="17" ToolTip="Bullet list" Click="BtnBullet_Click"/>
+                            </StackPanel></Border>
 
-                            <!-- Text Color & Highlight -->
-                            <Button Style="{StaticResource FormatToolButton}" Content="🎨 Color" ToolTip="Text Color" Click="BtnTextColor_Click"/>
-                            <Button Style="{StaticResource FormatToolButton}" Content="🖍️ Highlight" ToolTip="Text Highlight" Click="BtnHighlight_Click"/>
+                            <Border Style="{StaticResource RibbonGroup}"><StackPanel Orientation="Horizontal">
+                                <Button Style="{StaticResource RibbonIconButton}" Content="≡" FontSize="18" HorizontalContentAlignment="Left" ToolTip="Align left" Click="BtnAlignLeft_Click"/>
+                                <Button Style="{StaticResource RibbonIconButton}" Content="≡" FontSize="18" ToolTip="Align center" Click="BtnAlignCenter_Click"/>
+                                <Button Style="{StaticResource RibbonIconButton}" Content="≡" FontSize="18" HorizontalContentAlignment="Right" ToolTip="Align right" Click="BtnAlignRight_Click"/>
+                                <Button Style="{StaticResource RibbonIconButton}" Content="¶→" FontSize="10" ToolTip="Left-to-right paragraph" Click="BtnLtrParagraph_Click"/>
+                                <Button Style="{StaticResource RibbonIconButton}" Content="←¶" FontSize="10" ToolTip="Right-to-left paragraph" Click="BtnRtlParagraph_Click"/>
+                            </StackPanel></Border>
 
-                            <Rectangle Width="1" Height="14" Fill="#30000000" Margin="4,4"/>
-
-                            <Button Style="{StaticResource FormatToolButton}" Content="H1" ToolTip="Heading 1" Click="BtnH1_Click"/>
-                            <Button Style="{StaticResource FormatToolButton}" Content="H2" ToolTip="Heading 2" Click="BtnH2_Click"/>
-                            <Button Style="{StaticResource FormatToolButton}" Content="• List" ToolTip="Bullet List" Click="BtnBullet_Click"/>
-
-                            <Rectangle Width="1" Height="14" Fill="#30000000" Margin="4,4"/>
-
-                            <!-- Alignments -->
-                            <Button Style="{StaticResource FormatToolButton}" Content="⬅" ToolTip="Align Left" Click="BtnAlignLeft_Click"/>
-                            <Button Style="{StaticResource FormatToolButton}" Content="↔" ToolTip="Align Center" Click="BtnAlignCenter_Click"/>
-                            <Button Style="{StaticResource FormatToolButton}" Content="➡" ToolTip="Align Right" Click="BtnAlignRight_Click"/>
-
-                            <!-- MS Word Style RTL/LTR Paragraph Direction Buttons -->
-                            <Button Style="{StaticResource FormatToolButton}" Content="¶ LTR" ToolTip="Left-to-Right Paragraph Direction (Word style)" Click="BtnLtrParagraph_Click"/>
-                            <Button Style="{StaticResource FormatToolButton}" Content="¶ RTL" ToolTip="Right-to-Left Paragraph Direction (Word style)" Click="BtnRtlParagraph_Click"/>
-
-                            <Rectangle Width="1" Height="14" Fill="#30000000" Margin="4,4"/>
-
-                            <!-- 2 Columns Layout Toggle -->
-                            <Button x:Name="ColToggleBtn" Style="{StaticResource FormatToolButton}" Content="1 Col" ToolTip="Toggle 1 / 2 Column Layout" Click="ColToggleBtn_Click"/>
-
-                            <!-- Table Tools -->
-                            <Button Style="{StaticResource FormatToolButton}" Content="📊 Table" ToolTip="Table Tools Menu" Click="BtnTableMenu_Click"/>
-                            <!-- Image Insert -->
-                            <Button Style="{StaticResource FormatToolButton}" Content="📷 Image" ToolTip="Insert Image" Click="BtnInsertImage_Click"/>
-                            <!-- Voice Memo -->
-                            <Button Style="{StaticResource FormatToolButton}" Content="🎙️ Voice" ToolTip="Record Voice Memo" Click="BtnVoiceMemo_Click"/>
+                            <Border Style="{StaticResource RibbonGroup}"><StackPanel Orientation="Horizontal">
+                                <Button x:Name="ColToggleBtn" Style="{StaticResource RibbonIconButton}" Content="▥" FontSize="16" ToolTip="Use two columns" Click="ColToggleBtn_Click"/>
+                                <Button Style="{StaticResource RibbonIconButton}" Content="▦" FontSize="16" ToolTip="Table tools" Click="BtnTableMenu_Click"/>
+                                <Button Style="{StaticResource RibbonIconButton}" Content="▧" FontSize="17" ToolTip="Insert image" Click="BtnInsertImage_Click"/>
+                                <Button Style="{StaticResource RibbonIconButton}" ToolTip="Record voice memo" Click="BtnVoiceMemo_Click"><Rectangle Width="15" Height="15" Fill="{Binding ElementName=TitleTextBox, Path=Foreground}"><Rectangle.OpacityMask><ImageBrush ImageSource="/Resources/Icons/music-microphone-large-svgrepo-com.png"/></Rectangle.OpacityMask></Rectangle></Button>
+                            </StackPanel></Border>
                             </WrapPanel>
                         </ScrollViewer>
                     </DockPanel>

@@ -31,7 +31,6 @@ namespace KeyMapper
         {
             InitializeComponent();
             Topmost = false;
-            StartMiniVolumeGradient();
 
             _spinStoryboard = (Storyboard)FindResource("SpinDiscStoryboard");
             _miniBackdropStoryboard =
@@ -86,35 +85,6 @@ namespace KeyMapper
             _isRestoringPreferences = false;
 
             _ = InitializeLibraryAsync();
-        }
-
-        private void StartMiniVolumeGradient()
-        {
-            AnimateMiniVolumeShell(MiniVolumeShellV);
-            AnimateMiniVolumeShell(MiniVolumeShellH);
-        }
-
-        private static void AnimateMiniVolumeShell(Border shell)
-        {
-            if (shell.Background is not LinearGradientBrush brush)
-            {
-                return;
-            }
-
-            if (brush.IsFrozen)
-            {
-                brush = brush.Clone();
-                shell.Background = brush;
-            }
-
-            var rotation = new RotateTransform(-6, 0.5, 0.5);
-            brush.RelativeTransform = rotation;
-            var animation = new DoubleAnimation(-6, 6, TimeSpan.FromSeconds(7.5))
-            {
-                AutoReverse = true,
-                RepeatBehavior = RepeatBehavior.Forever
-            };
-            rotation.BeginAnimation(RotateTransform.AngleProperty, animation);
         }
 
         private void GrooveTimer_Tick(object? sender, EventArgs e)
@@ -588,7 +558,7 @@ namespace KeyMapper
             double clamped = Math.Clamp(volumePercent, 0, 100);
             if (MiniPopupVolumeFill != null)
             {
-                MiniPopupVolumeFill.Height = 112 * clamped / 100.0;
+                MiniPopupVolumeFill.Height = 154 * clamped / 100.0;
             }
             if (MiniPopupVolumeText != null)
             {

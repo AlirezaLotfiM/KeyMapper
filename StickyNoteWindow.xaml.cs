@@ -1010,12 +1010,14 @@ namespace KeyMapper
             {
                 RichEditor.Document.ColumnWidth = 110;
                 RichEditor.Document.ColumnGap = 12;
-                ColToggleBtn.Content = "2 Cols";
+                ColToggleBtn.Content = "▦";
+                ColToggleBtn.ToolTip = "Use one column";
             }
             else
             {
                 RichEditor.Document.ColumnWidth = double.NaN;
-                ColToggleBtn.Content = "1 Col";
+                ColToggleBtn.Content = "▥";
+                ColToggleBtn.ToolTip = "Use two columns";
             }
             SaveNoteState();
         }
