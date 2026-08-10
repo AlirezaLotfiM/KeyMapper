@@ -162,9 +162,7 @@
                                             <Rectangle x:Name="PixelMarker" Grid.Column="0" Fill="{DynamicResource AppAccentBrush}" Visibility="Collapsed"/>
                                             <ContentPresenter Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" ContentSource="Icon"/>
                                             <ContentPresenter Grid.Column="2" Margin="5,0,4,0" VerticalAlignment="Center" ContentSource="Header" RecognizesAccessKey="True"/>
-                                            <Border x:Name="SubmenuBadge" Grid.Column="3" Width="18" Height="18" CornerRadius="6" Background="{DynamicResource AppAccentSoftBrush}" BorderBrush="{DynamicResource AppAccentBrush}" BorderThickness="1" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed">
-                                                <TextBlock x:Name="Arrow" Text="⋯" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource AppAccentBrush}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                                            </Border>
+                                            <TextBlock x:Name="Arrow" Grid.Column="3" Text="..." FontSize="13" FontWeight="Bold" Foreground="{DynamicResource AppAccentBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed"/>
                                         </Grid>
                                     </Border>
                                     <Popup x:Name="PART_Popup" Placement="Right" HorizontalOffset="-2" VerticalOffset="-2" AllowsTransparency="True" Focusable="False" IsOpen="{Binding IsSubmenuOpen, RelativeSource={RelativeSource TemplatedParent}}">
@@ -175,7 +173,7 @@
                                 </Grid>
                                 <ControlTemplate.Triggers>
                                     <Trigger Property="HasItems" Value="True">
-                                        <Setter TargetName="SubmenuBadge" Property="Visibility" Value="Visible"/>
+                                        <Setter TargetName="Arrow" Property="Visibility" Value="Visible"/>
                                     </Trigger>
                                     <Trigger Property="IsHighlighted" Value="True">
                                         <Setter TargetName="PixelCell" Property="Background" Value="{DynamicResource AppAccentSoftBrush}"/>
