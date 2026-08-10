@@ -697,12 +697,50 @@
         </Popup>
 
         <!-- AI Tools Flyout -->
-        <Popup x:Name="AiPopup" StaysOpen="False" PlacementTarget="{Binding ElementName=FormatToolbar}" Placement="Bottom">
-            <Border Background="#FFFFFF" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="6" Padding="6">
-                <StackPanel Width="150">
-                    <TextBlock Text="✨ AI Tools" FontWeight="Bold" FontSize="11" Margin="4,2,4,6" Foreground="#444444"/>
-                    <Button Content="📝 Summarize Note" Margin="2" Click="AiSummarize_Click"/>
-                    <Button Content="✨ Fix Grammar &amp; Spells" Margin="2" Click="AiFixGrammar_Click"/>
+        <Popup x:Name="AiPopup" StaysOpen="False" AllowsTransparency="True" PopupAnimation="Fade" PlacementTarget="{Binding ElementName=FormatToolbar}" Placement="Bottom">
+            <Border Background="{DynamicResource AppSurfaceBrush}" BorderBrush="{DynamicResource AppAccentBrush}" BorderThickness="1.5" CornerRadius="12" Padding="10" ClipToBounds="True" SnapsToDevicePixels="True" UseLayoutRounding="True" Margin="3">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="16" ShadowDepth="4" Direction="270" Color="#000000" Opacity="0.20"/>
+                </Border.Effect>
+                <StackPanel Width="190">
+                    <Border Background="{DynamicResource AppAccentSoftBrush}" BorderBrush="{DynamicResource AppAccentBrush}" BorderThickness="1" CornerRadius="8" Padding="7,5" Margin="0,0,0,7">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="26"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Width="22" Height="22" CornerRadius="7" Background="{DynamicResource AppAccentBrush}" VerticalAlignment="Center">
+                                <Image Source="/Resources/Icons/ai.png" Width="14" Height="14"/>
+                            </Border>
+                            <StackPanel Grid.Column="1" Margin="7,0,0,0" VerticalAlignment="Center">
+                                <TextBlock Text="AI tools" FontWeight="Bold" FontSize="11" Foreground="{DynamicResource AppTextBrush}"/>
+                                <TextBlock Text="Improve the text in this note" FontSize="9" Foreground="{DynamicResource AppMutedTextBrush}" Margin="0,1,0,0"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <Button Style="{StaticResource TranslateLanguageButton}" Width="190" Click="AiSummarize_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <Border Width="22" Height="22" CornerRadius="7" Background="{DynamicResource AppAccentSoftBrush}" BorderBrush="{DynamicResource AppAccentBrush}" BorderThickness="1">
+                                <Image Source="/Resources/Icons/ai.png" Width="13" Height="13"/>
+                            </Border>
+                            <StackPanel Margin="7,0,0,0" VerticalAlignment="Center">
+                                <TextBlock Text="Summarize note" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource AppTextBrush}"/>
+                                <TextBlock Text="Create two concise points" FontSize="8.5" Foreground="{DynamicResource AppMutedTextBrush}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource TranslateLanguageButton}" Width="190" Click="AiFixGrammar_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <Border Width="22" Height="22" CornerRadius="7" Background="{DynamicResource AppAccentSoftBrush}" BorderBrush="{DynamicResource AppAccentBrush}" BorderThickness="1">
+                                <TextBlock Text="Aa" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource AppAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <StackPanel Margin="7,0,0,0" VerticalAlignment="Center">
+                                <TextBlock Text="Fix grammar" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource AppTextBrush}"/>
+                                <TextBlock Text="Clean spelling and wording" FontSize="8.5" Foreground="{DynamicResource AppMutedTextBrush}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Button>
                 </StackPanel>
             </Border>
         </Popup>
