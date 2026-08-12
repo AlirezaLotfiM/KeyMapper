@@ -59,6 +59,7 @@ namespace KeyMapper
 
         private const int GWL_EXSTYLE = -20;
         private const int WS_EX_TOOLWINDOW = 0x00000080;
+        private const int WS_EX_APPWINDOW = 0x00040000;
         public StickyNoteModel Note { get; }
         private readonly AudioRecorderService _audioRecorder;
         private bool _isUpdatingUi;
@@ -76,6 +77,8 @@ namespace KeyMapper
             _isUpdatingUi = true;
             Note = note;
             InitializeComponent();
+            Title = string.IsNullOrWhiteSpace(note.Title) ? "Sticky Note" : note.Title;
+            ShowInTaskbar = !note.IsPinned;
             _audioRecorder = new AudioRecorderService();
 
             _sidebarHideTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(450) };
@@ -108,8 +111,7 @@ namespace KeyMapper
             try
             {
                 IntPtr hwnd = new WindowInteropHelper(this).Handle;
-                int extendedStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
-                SetWindowLong(hwnd, GWL_EXSTYLE, extendedStyle | WS_EX_TOOLWINDOW);
+                ApplyTaskbarWindowStyle(hwnd);
 
                 HwndSource source = HwndSource.FromHwnd(hwnd);
                 source?.AddHook(WndProc);
@@ -332,13 +334,12 @@ namespace KeyMapper
                 IntPtr hwnd = new WindowInteropHelper(this).Handle;
                 if (hwnd == IntPtr.Zero) return;
 
-                SetParent(hwnd, IntPtr.Zero);
-                // Strip HWND_TOPMOST style before HWND_BOTTOM can take effect
-                //SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
-                //SetWindowPos(hwnd, HWND_BOTTOM,    0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
-                // NOTE: Do NOT call SetForegroundWindow(desktopHwnd) here.
-                // It triggers a second WPF Deactivated event that causes a layout
-                // recalculation and resets the window size before SaveNoteState captures it.
+                ApplyTaskbarWindowStyle(hwnd);
+                // A desktop note belongs below normal application windows. This
+                // keeps it from intercepting clicks in the app behind it while
+                // still allowing the taskbar button to bring it forward.
+                SetWindowPos(hwnd, HWND_BOTTOM, 0, 0, 0, 0,
+                    SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
             }
             catch (Exception ex)
             {
@@ -367,6 +368,7 @@ namespace KeyMapper
         public void SetPinnedState(bool pinned)
         {
             Note.IsPinned = pinned;
+            UpdateTaskbarPresence();
             if (PinIconSlash != null)
             {
                 // When pinned, show UNPIN icon (with slash) to unpin. When unpinned, show PIN icon (clean) to pin.
@@ -872,7 +874,9 @@ namespace KeyMapper
                 ThemePopup.IsOpen = false;
             }
 
-            if (!_isEditMode && e.ChangedButton == MouseButton.Left)
+            if (!_isEditMode &&
+                e.ChangedButton == MouseButton.Left &&
+                !(e.OriginalSource is DependencyObject mouseSource && IsInteractiveMouseTarget(mouseSource)))
             {
                 DragMove();
             }
@@ -895,6 +899,24 @@ namespace KeyMapper
             return false;
         }
 
+        private static bool IsInteractiveMouseTarget(DependencyObject source)
+        {
+            DependencyObject? current = source;
+            while (current != null)
+            {
+                if (current is ButtonBase || current is ComboBox || current is Thumb)
+                {
+                    return true;
+                }
+
+                current = current is Visual visual
+                    ? VisualTreeHelper.GetParent(visual)
+                    : LogicalTreeHelper.GetParent(current);
+            }
+
+            return false;
+        }
+
         // ================= HEADER & TOOLBAR EVENT HANDLERS =================
 
         private void Header_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -906,7 +928,11 @@ namespace KeyMapper
         }
 
         private void TitleTextBox_LostFocus(object sender, RoutedEventArgs e) => SaveNoteState();
-        private void TitleTextBox_TextChanged(object sender, TextChangedEventArgs e) => SaveNoteState();
+        private void TitleTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            Title = string.IsNullOrWhiteSpace(TitleTextBox.Text) ? "Sticky Note" : TitleTextBox.Text;
+            SaveNoteState();
+        }
 
         private void ApplyToolbarLayout()
         {
@@ -1219,6 +1245,33 @@ namespace KeyMapper
             // is ready for typing without an extra click.
             RichEditor.Focus();
             SaveNoteState();
+        }
+
+        private void UpdateTaskbarPresence()
+        {
+            ShowInTaskbar = !Note.IsPinned;
+            Title = string.IsNullOrWhiteSpace(Note.Title) ? "Sticky Note" : Note.Title;
+
+            IntPtr hwnd = new WindowInteropHelper(this).Handle;
+            if (hwnd != IntPtr.Zero)
+            {
+                ApplyTaskbarWindowStyle(hwnd);
+            }
+        }
+
+        private void ApplyTaskbarWindowStyle(IntPtr hwnd)
+        {
+            int extendedStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
+            if (Note.IsPinned)
+            {
+                extendedStyle = (extendedStyle | WS_EX_TOOLWINDOW) & ~WS_EX_APPWINDOW;
+            }
+            else
+            {
+                extendedStyle = (extendedStyle | WS_EX_APPWINDOW) & ~WS_EX_TOOLWINDOW;
+            }
+
+            SetWindowLong(hwnd, GWL_EXSTYLE, extendedStyle);
         }
 
         private void BtnAlignLeft_Click(object sender, RoutedEventArgs e) => ApplyAlignment(TextAlignment.Left);
