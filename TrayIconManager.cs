@@ -52,6 +52,11 @@ namespace KeyMapper
             stickyNotesMenu.DropDownItems.Add(new ToolStripMenuItem("🙈 Hide All Notes", null, (s, e) => StickyNoteManager.Instance.HideAllNotes()));
             contextMenu.Items.Add(stickyNotesMenu);
 
+            var fencesMenu = new ToolStripMenuItem("Desktop Fences (قاب‌های دسکتاپ)");
+            fencesMenu.DropDownItems.Add(new ToolStripMenuItem("➕ New Desktop Fence", null, (s, e) => DesktopFenceManager.Instance.CreateNewFence()));
+            fencesMenu.DropDownItems.Add(new ToolStripMenuItem("👁️ Toggle Fences Visibility", null, (s, e) => DesktopFenceManager.Instance.ToggleFencesVisibility()));
+            contextMenu.Items.Add(fencesMenu);
+
             _enableItem = new ToolStripMenuItem("Enabled", null, (s, e) =>
             {
                 var item = (ToolStripMenuItem)s!;
