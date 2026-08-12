@@ -153,7 +153,6 @@
                       x:Name="HeaderRowGrid"
                       Background="Transparent"
                       Height="38"
-                      Cursor="SizeAll"
                       MouseLeftButtonDown="HeaderRow_MouseLeftButtonDown">
                     <!-- COMPACT TITLE HEADER PILL -->
                     <Border x:Name="HeaderBorder"
@@ -165,7 +164,7 @@
                             Margin="10,6,10,2"
                             Padding="10,4,12,4">
                         <Grid>
-                            <!-- Title Text (Clean, crisp typography) -->
+                            <!-- Title Text (Clean, crisp typography, no heavy glow) -->
                             <TextBlock x:Name="TitleTxt"
                                        Text="Fence Title"
                                        Foreground="#F1F5F9"
@@ -298,54 +297,55 @@
             </Grid>
         </Border>
 
-        <!-- COLUMN 1: EXTERIOR FLOATING SIDEBAR MENU (UNCLIPPED, SEMI-FROSTED VISIBILITY, INDEPENDENT HEIGHT) -->
+        <!-- COLUMN 1: EXTERIOR FLOATING SIDEBAR MENU (SCROLLABLE, SOFT TRANSLUCENT, NO DRAG CURSOR, SINGLE ICON ON MINIMIZE) -->
         <Border Grid.Column="1"
                 x:Name="SidebarMenuBorder"
                 VerticalAlignment="Top"
                 Margin="8,4,0,0"
-                Background="#EE1E1E2E"
+                Background="#B01E1E2E"
                 BorderBrush="#44FFFFFF"
                 BorderThickness="1.2"
                 CornerRadius="10"
-                Padding="3"
+                Padding="2"
                 Opacity="0.0"
                 IsHitTestVisible="True"
-                Cursor="SizeAll"
                 MouseLeftButtonDown="SidebarMenu_MouseLeftButtonDown">
             <Border.Effect>
-                <DropShadowEffect BlurRadius="12" ShadowDepth="3" Direction="270" Color="#000000" Opacity="0.4"/>
+                <DropShadowEffect BlurRadius="12" ShadowDepth="3" Direction="270" Color="#000000" Opacity="0.3"/>
             </Border.Effect>
-            <StackPanel Orientation="Vertical">
-                <!-- Color Theme Swatch Picker (Popup Toggle) -->
-                <Button x:Name="PaletteMenuBtn" Style="{StaticResource SidebarIconButton}" ToolTip="Color Palette &amp; Dark/Light Mode" Click="PaletteMenuBtn_Click">
-                    <TextBlock Text="🎨" FontSize="12"/>
-                </Button>
+            <ScrollViewer Style="{StaticResource SlimScrollViewerStyle}" MaxHeight="240" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel Orientation="Vertical">
+                    <!-- Color Theme Swatch Picker (Popup Toggle) -->
+                    <Button x:Name="PaletteMenuBtn" Style="{StaticResource SidebarIconButton}" ToolTip="Color Palette &amp; Dark/Light Mode" Click="PaletteMenuBtn_Click">
+                        <TextBlock Text="🎨" FontSize="12"/>
+                    </Button>
 
-                <!-- Transparency Settings (Popup Toggle) -->
-                <Button x:Name="OpacityMenuBtn" Style="{StaticResource SidebarIconButton}" ToolTip="Background Transparency" Click="OpacityMenuBtn_Click">
-                    <TextBlock Text="💧" FontSize="12"/>
-                </Button>
+                    <!-- Transparency Settings (Popup Toggle) -->
+                    <Button x:Name="OpacityMenuBtn" Style="{StaticResource SidebarIconButton}" ToolTip="Background Transparency" Click="OpacityMenuBtn_Click">
+                        <TextBlock Text="💧" FontSize="12"/>
+                    </Button>
 
-                <!-- Add File / Folder Portal -->
-                <Button x:Name="AddShortcutBtn" Style="{StaticResource SidebarIconButton}" ToolTip="Add Shortcut" Click="AddItemBtn_Click">
-                    <TextBlock Text="➕" FontSize="11"/>
-                </Button>
+                    <!-- Add File / Folder Portal -->
+                    <Button x:Name="AddShortcutBtn" Style="{StaticResource SidebarIconButton}" ToolTip="Add Shortcut" Click="AddItemBtn_Click">
+                        <TextBlock Text="➕" FontSize="11"/>
+                    </Button>
 
-                <!-- Eye Icon: Toggle Portal Path Visibility -->
-                <Button x:Name="EyeToggleBtn" Style="{StaticResource SidebarIconButton}" ToolTip="Toggle Portal Path Display" Click="EyeToggleBtn_Click">
-                    <TextBlock Text="👁️" FontSize="11"/>
-                </Button>
+                    <!-- Eye Icon: Toggle Portal Path Visibility -->
+                    <Button x:Name="EyeToggleBtn" Style="{StaticResource SidebarIconButton}" ToolTip="Toggle Portal Path Display" Click="EyeToggleBtn_Click">
+                        <TextBlock Text="👁️" FontSize="11"/>
+                    </Button>
 
-                <!-- Collapse / Expand Fence -->
-                <Button x:Name="CollapseBtn" Style="{StaticResource SidebarIconButton}" ToolTip="Collapse / Expand (Minimize/Maximize)" Click="CollapseBtn_Click">
-                    <TextBlock x:Name="CollapseTxt" Text="▲" FontSize="10"/>
-                </Button>
+                    <!-- Collapse / Expand Fence -->
+                    <Button x:Name="CollapseBtn" Style="{StaticResource SidebarIconButton}" ToolTip="Collapse / Expand" Click="CollapseBtn_Click">
+                        <TextBlock x:Name="CollapseTxt" Text="▲" FontSize="10"/>
+                    </Button>
 
-                <!-- Delete Fence with Confirmation Dialog -->
-                <Button x:Name="DeleteFenceBtn" Style="{StaticResource SidebarIconButton}" ToolTip="Delete Fence" Foreground="#EF4444" Click="DeleteFenceBtn_Click">
-                    <TextBlock Text="🗑️" FontSize="11"/>
-                </Button>
-            </StackPanel>
+                    <!-- Delete Fence with Confirmation Dialog -->
+                    <Button x:Name="DeleteFenceBtn" Style="{StaticResource SidebarIconButton}" ToolTip="Delete Fence" Foreground="#EF4444" Click="DeleteFenceBtn_Click">
+                        <TextBlock Text="🗑️" FontSize="11"/>
+                    </Button>
+                </StackPanel>
+            </ScrollViewer>
         </Border>
 
         <!-- COLOR PALETTE & DARK/LIGHT POPUP (MATCHING STICKY NOTES) -->

@@ -55,7 +55,7 @@ namespace KeyMapper
 
             Left = _config.Left;
             Top = _config.Top;
-            Width = Math.Max(220, _config.Width);
+            Width = Math.Max(240, _config.Width);
             Height = Math.Max(120, _config.Height);
             _expandedHeight = Height;
 
@@ -162,9 +162,18 @@ namespace KeyMapper
                 Color borderCol = (Color)ColorConverter.ConvertFromString(borderHex);
                 MainShell.BorderBrush = new SolidColorBrush(Color.FromArgb(0x44, borderCol.R, borderCol.G, borderCol.B));
 
-                // Semi-frosted visible sidebar menu background so it's clearly readable over any desktop wallpaper
-                SidebarMenuBorder.Background = new SolidColorBrush(darkMode ? Color.FromArgb(0xEE, 0x1E, 0x1E, 0x2E) : Color.FromArgb(0xEE, 0xFF, 0xFF, 0xFF));
-                SidebarMenuBorder.BorderBrush = new SolidColorBrush(darkMode ? Color.FromArgb(0x44, 0xFF, 0xFF, 0xFF) : Color.FromArgb(0xEE, 0xCC, 0xCC, 0xCC));
+                // Translucent glass sidebar menu (NOT solid white) with high contrast icons
+                Color iconColor = darkMode ? Color.FromRgb(0xF1, 0xF5, 0xF9) : Color.FromRgb(0x33, 0x33, 0x33);
+                var iconBrush = new SolidColorBrush(iconColor);
+
+                PaletteMenuBtn.Foreground = iconBrush;
+                OpacityMenuBtn.Foreground = iconBrush;
+                AddShortcutBtn.Foreground = iconBrush;
+                EyeToggleBtn.Foreground = iconBrush;
+                CollapseBtn.Foreground = iconBrush;
+
+                SidebarMenuBorder.Background = new SolidColorBrush(darkMode ? Color.FromArgb(0xB0, 0x1E, 0x1E, 0x2E) : Color.FromArgb(0xC0, 0xE2, 0xE8, 0xF0));
+                SidebarMenuBorder.BorderBrush = new SolidColorBrush(darkMode ? Color.FromArgb(0x44, 0xFF, 0xFF, 0xFF) : Color.FromArgb(0x88, 0x94, 0xA3, 0xB8));
 
                 DarkLightIconTxt.Text = darkMode ? "🌙" : "☀️";
                 DarkLightTextTxt.Text = darkMode ? "Dark Mode" : "Light Mode";
@@ -240,6 +249,13 @@ namespace KeyMapper
                 Height = 48;
                 CollapseTxt.Text = "▼";
                 CollapseBtn.ToolTip = "Maximize / Expand Fence";
+
+                // In minimized state: ONLY show the maximize button in the sidebar menu!
+                PaletteMenuBtn.Visibility = Visibility.Collapsed;
+                OpacityMenuBtn.Visibility = Visibility.Collapsed;
+                AddShortcutBtn.Visibility = Visibility.Collapsed;
+                EyeToggleBtn.Visibility = Visibility.Collapsed;
+                DeleteFenceBtn.Visibility = Visibility.Collapsed;
             }
             else
             {
@@ -247,6 +263,13 @@ namespace KeyMapper
                 Height = Math.Max(140, _expandedHeight);
                 CollapseTxt.Text = "▲";
                 CollapseBtn.ToolTip = "Minimize / Collapse Fence";
+
+                // In maximized state: show ALL sidebar menu buttons!
+                PaletteMenuBtn.Visibility = Visibility.Visible;
+                OpacityMenuBtn.Visibility = Visibility.Visible;
+                AddShortcutBtn.Visibility = Visibility.Visible;
+                EyeToggleBtn.Visibility = Visibility.Visible;
+                DeleteFenceBtn.Visibility = Visibility.Visible;
             }
             UpdateClipping();
         }
