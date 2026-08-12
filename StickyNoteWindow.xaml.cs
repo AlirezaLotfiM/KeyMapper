@@ -858,11 +858,9 @@ namespace KeyMapper
                 SaveNoteState();
             }
 
-            // Now it is safe to send unpinned note back to desktop z-order
-            if (!Note.IsPinned)
-            {
-                SendToDesktopBottom();
-            }
+            // Keep the note visible after resizing. An unpinned note is moved
+            // behind normal windows when it actually deactivates, not while
+            // the user is still working with its resize handle.
         }
 
         private void WindowRootGrid_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
