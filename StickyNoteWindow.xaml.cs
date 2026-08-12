@@ -712,6 +712,24 @@ namespace KeyMapper
             markerRange.Text = markerRange.Text.StartsWith("☑", StringComparison.Ordinal)
                 ? "☐"
                 : "☑";
+
+            // The preview handler consumes the mouse event so the checkbox can
+            // toggle without inserting a character. Put the caret immediately
+            // after the marker and restore editor focus so typing can continue
+            // in the same checklist item.
+            TextPointer? updatedStart = GetFirstTextPosition(paragraph);
+            TextPointer? caret = updatedStart == null
+                ? null
+                : MoveForwardByTextCharacters(
+                    updatedStart,
+                    paragraph.ContentEnd,
+                    GetChecklistPrefixLength(paragraph));
+            if (caret != null)
+            {
+                RichEditor.Focus();
+                RichEditor.Selection.Select(caret, caret);
+            }
+
             SaveNoteState();
             return true;
         }
@@ -1184,6 +1202,10 @@ namespace KeyMapper
                 }
             }
 
+            // Clicking a toolbar button moves keyboard focus away from the
+            // editor. Return it immediately so a newly-created checklist item
+            // is ready for typing without an extra click.
+            RichEditor.Focus();
             SaveNoteState();
         }
 
