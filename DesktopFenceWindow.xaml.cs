@@ -43,7 +43,7 @@ namespace KeyMapper
         private readonly DesktopFenceConfig _config;
         private bool _isEditingTitle;
         private double _expandedHeight = 340;
-        private bool _isDarkMode = false;
+        private bool _isDarkMode = true;
 
         public string FenceId => _config.Id;
         public bool IsCollapsed => _config.IsCollapsed;
@@ -82,13 +82,13 @@ namespace KeyMapper
 
         private void UpdateClipping()
         {
-            if (ActualWidth > 0 && ActualHeight > 0)
+            if (MainShell.ActualWidth > 0 && MainShell.ActualHeight > 0)
             {
                 MainShell.Clip = new RectangleGeometry
                 {
                     RadiusX = 16,
                     RadiusY = 16,
-                    Rect = new Rect(0, 0, Math.Max(0, ActualWidth - 36), Math.Max(0, ActualHeight - 8))
+                    Rect = new Rect(0, 0, MainShell.ActualWidth, MainShell.ActualHeight)
                 };
             }
         }
@@ -119,39 +119,31 @@ namespace KeyMapper
 
         private void ApplyThemeColors(string themeName, bool darkMode)
         {
-            _config.ColorTheme = string.IsNullOrWhiteSpace(themeName) ? "Warm Yellow" : themeName;
+            _config.ColorTheme = string.IsNullOrWhiteSpace(themeName) ? "Lavender" : themeName;
             _isDarkMode = darkMode;
 
             (string headerHex, string textHex, string bodyHex, string borderHex) = (themeName, darkMode) switch
             {
-                ("Warm Yellow", false) => ("#15000000", "#222222", "#FFF59D", "#FFEE58"),
                 ("Warm Yellow", true) => ("#2C2A1E", "#FEF08A", "#1A1914", "#FDE047"),
+                ("Warm Yellow", false) => ("#FEF08A", "#713F12", "#FEFCE8", "#CA8A04"),
 
-                ("Pastel Pink", false) => ("#15000000", "#222222", "#F8BBD0", "#F48FB1"),
                 ("Pastel Pink", true) => ("#2C1E26", "#FBCFE8", "#1A1418", "#F472B6"),
+                ("Pastel Pink", false) => ("#FBCFE8", "#831843", "#FDF2F8", "#DB2777"),
 
-                ("Soft Mint", false) => ("#15000000", "#222222", "#A5D6A7", "#81C784"),
                 ("Soft Mint", true) => ("#1E2C26", "#A7F3D0", "#141A17", "#34D399"),
+                ("Soft Mint", false) => ("#A7F3D0", "#064E3B", "#ECFDF5", "#059669"),
 
-                ("Sky Blue", false) => ("#15000000", "#222222", "#80DEEA", "#4DD0E1"),
                 ("Sky Blue", true) => ("#1E262C", "#BAE6FD", "#14171A", "#38BDF8"),
+                ("Sky Blue", false) => ("#BAE6FD", "#0C4A6E", "#F0F9FF", "#0284C7"),
 
-                ("Lavender", false) => ("#15000000", "#222222", "#E1BEE7", "#CE93D8"),
-                ("Lavender", true) => ("#221E2E", "#E9D5FF", "#181824", "#C084FC"),
+                ("Dark Carbon", true) => ("#1E293B", "#F1F5F9", "#0F172A", "#64748B"),
+                ("Dark Carbon", false) => ("#E2E8F0", "#0F172A", "#F8FAFC", "#475569"),
 
-                ("Dark Carbon", _) => ("#38334155", "#FFFFFF", "#2C2C2C", "#444444"),
-
-                ("Warm Cream", false) => ("#15000000", "#222222", "#FFF8E7", "#FFE0B2"),
                 ("Warm Cream", true) => ("#2C271E", "#FEF3C7", "#1A1714", "#F59E0B"),
+                ("Warm Cream", false) => ("#FEF3C7", "#78350F", "#FFFBEB", "#D97706"),
 
-                ("Coral", false) => ("#15000000", "#222222", "#FF8A80", "#FF5252"),
-                ("Coral", true) => ("#2C1E1E", "#FECACA", "#1A1414", "#F87171"),
-
-                ("Peach", false) => ("#15000000", "#222222", "#FFD180", "#FFAB40"),
-                ("Peach", true) => ("#2C241E", "#FDE68A", "#1A1714", "#FBBF24"),
-
-                _ when darkMode => ("#221E2E", "#E9D5FF", "#181824", "#C084FC"),
-                _ => ("#15000000", "#222222", "#FFF59D", "#FFEE58")
+                _ when darkMode => ("#221E2E", "#E9D5FF", "#181824", "#C084FC"), // Lavender Dark
+                _ => ("#E9D5FF", "#581C87", "#FAF5FF", "#9333EA")               // Lavender Light
             };
 
             try
@@ -168,7 +160,7 @@ namespace KeyMapper
                 HeaderBorder.Background = new SolidColorBrush(Color.FromArgb(headAlpha, headCol.R, headCol.G, headCol.B));
 
                 Color borderCol = (Color)ColorConverter.ConvertFromString(borderHex);
-                MainShell.BorderBrush = new SolidColorBrush(Color.FromArgb(0x66, borderCol.R, borderCol.G, borderCol.B));
+                MainShell.BorderBrush = new SolidColorBrush(Color.FromArgb(0x44, borderCol.R, borderCol.G, borderCol.B));
 
                 DarkLightIconTxt.Text = darkMode ? "🌙" : "☀️";
                 DarkLightTextTxt.Text = darkMode ? "Dark Mode" : "Light Mode";
