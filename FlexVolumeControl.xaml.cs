@@ -135,39 +135,17 @@ namespace KeyMapper
             double width = CapsuleSurface.ActualWidth;
             double height = CapsuleSurface.ActualHeight;
             double activeHeight = height * Math.Clamp(volume / 100d, 0d, 1d);
-            double transitionHeight = Math.Clamp(height * 0.24d, 18d, 34d);
-            double halfTransition = transitionHeight / 2d;
-            double coreHeight = volume >= 99.5d
-                ? height
-                : Math.Max(0d, activeHeight - halfTransition);
-            double featherTop = Math.Clamp(
-                height - activeHeight - halfTransition,
-                0d,
-                Math.Max(0d, height - transitionHeight));
-            double glowTop = featherTop;
-            double glowHeight = transitionHeight;
-            double bloomHeight = volume <= 0.1d
-                ? 0d
-                : Math.Min(height, activeHeight + halfTransition);
+            double coreHeight = activeHeight;
             int generation = ++_animationGeneration;
 
             FillCore.Width = width;
-            FillFeather.Width = width;
-            BoundaryGlow.Width = width;
-            FillFeather.Height = transitionHeight;
-            BoundaryGlow.Height = glowHeight;
-            FillFeather.Visibility = volume <= 0.1d || volume >= 99.5d
-                ? Visibility.Collapsed
-                : Visibility.Visible;
-            BoundaryGlow.Visibility = FillFeather.Visibility;
+            FillFeather.Visibility = Visibility.Collapsed;
+            BoundaryGlow.Visibility = Visibility.Collapsed;
+            OuterBloom.Visibility = Visibility.Collapsed;
 
             bool useAnimation = animate && SystemParameters.ClientAreaAnimation;
             SetAnimatedValue(FillCore, FrameworkElement.HeightProperty, coreHeight, useAnimation, generation);
             SetAnimatedValue(FillCore, Canvas.TopProperty, height - coreHeight, useAnimation, generation);
-            SetAnimatedValue(FillFeather, Canvas.TopProperty, featherTop, useAnimation, generation);
-            SetAnimatedValue(BoundaryGlow, Canvas.TopProperty, glowTop, useAnimation, generation);
-            SetAnimatedValue(OuterBloom, FrameworkElement.HeightProperty, bloomHeight, useAnimation, generation);
-            OuterBloom.Opacity = volume <= 0.1d ? 0d : 0.16d;
             UpdateMuteVisual();
         }
 
