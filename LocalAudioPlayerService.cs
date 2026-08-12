@@ -75,6 +75,8 @@ namespace KeyMapper
         public bool IsShuffle { get; set; }
         public RepeatMode RepeatMode { get; set; } = RepeatMode.Off;
         public List<string> UserQueuePaths { get; set; } = new();
+        public List<string> ContextQueuePaths { get; set; } = new();
+        public List<string> UnshuffledContextQueuePaths { get; set; } = new();
     }
 
     public class CachedTrackItem
@@ -344,6 +346,93 @@ namespace KeyMapper
 
             // Group by Artist & Genre
             PopulateGroupsAndQueues(items);
+
+            // Restore saved playback session immediately from cache if available
+            RestoreSavedSessionFromItems(items);
+        }
+
+        private void RestoreSavedSessionFromItems(List<AudioTrackItem> items)
+        {
+            if (_sessionRestored || _savedSession == null || items.Count == 0) return;
+
+            _sessionRestored = true;
+
+            var trackMap = items.ToDictionary(x => x.FilePath, StringComparer.OrdinalIgnoreCase);
+
+            // Restore UnshuffledContextQueue
+            if (_savedSession.UnshuffledContextQueuePaths != null && _savedSession.UnshuffledContextQueuePaths.Count > 0)
+            {
+                var restoredUnshuffled = new List<AudioTrackItem>();
+                foreach (var path in _savedSession.UnshuffledContextQueuePaths)
+                {
+                    if (trackMap.TryGetValue(path, out var track))
+                    {
+                        restoredUnshuffled.Add(track);
+                    }
+                }
+                if (restoredUnshuffled.Count > 0)
+                {
+                    _unshuffledContextQueue = restoredUnshuffled;
+                }
+            }
+
+            // Restore ContextQueue
+            if (_savedSession.ContextQueuePaths != null && _savedSession.ContextQueuePaths.Count > 0)
+            {
+                var restoredContext = new List<AudioTrackItem>();
+                foreach (var path in _savedSession.ContextQueuePaths)
+                {
+                    if (trackMap.TryGetValue(path, out var track))
+                    {
+                        restoredContext.Add(track);
+                    }
+                }
+                if (restoredContext.Count > 0)
+                {
+                    ContextQueue = restoredContext;
+                }
+            }
+
+            // Restore UserQueue
+            if (_savedSession.UserQueuePaths != null && _savedSession.UserQueuePaths.Count > 0)
+            {
+                UserQueue.Clear();
+                foreach (var path in _savedSession.UserQueuePaths)
+                {
+                    if (trackMap.TryGetValue(path, out var track) && !UserQueue.Contains(track))
+                    {
+                        UserQueue.Add(track);
+                    }
+                }
+                OnQueueUpdated?.Invoke();
+            }
+
+            if (!string.IsNullOrWhiteSpace(_savedSession.LastTrackFilePath))
+            {
+                if (trackMap.TryGetValue(_savedSession.LastTrackFilePath, out var lastTrack))
+                {
+                    CurrentTrack = lastTrack;
+                    CurrentTrack.IsCurrentlyPlaying = true;
+                    _contextIndex = Math.Max(0, ContextQueue.IndexOf(lastTrack));
+
+                    if (_savedSession.PositionSeconds > 0)
+                    {
+                        _pendingSeekPositionSeconds = _savedSession.PositionSeconds;
+                    }
+
+                    try
+                    {
+                        _mediaPlayer.Open(new Uri(CurrentTrack.FilePath));
+                    }
+                    catch { }
+
+                    OnTrackChanged?.Invoke(CurrentTrack);
+                    if (_savedSession.PositionSeconds > 0)
+                    {
+                        OnPositionChanged?.Invoke(TimeSpan.FromSeconds(_savedSession.PositionSeconds), CurrentTrack.Duration);
+                    }
+                }
+            }
         }
 
         private BitmapSource? LoadCoverArtFromCache(string artFileName)
@@ -501,7 +590,9 @@ namespace KeyMapper
                     VolumePercent = CurrentVolume * 100.0,
                     IsShuffle = IsShuffle,
                     RepeatMode = RepeatMode,
-                    UserQueuePaths = UserQueue.Select(x => x.FilePath).ToList()
+                    UserQueuePaths = UserQueue.Select(x => x.FilePath).ToList(),
+                    ContextQueuePaths = ContextQueue.Select(x => x.FilePath).ToList(),
+                    UnshuffledContextQueuePaths = _unshuffledContextQueue.Select(x => x.FilePath).ToList()
                 };
                 string json = JsonSerializer.Serialize(session);
                 File.WriteAllText(_sessionFilePath, json);
@@ -895,8 +986,37 @@ namespace KeyMapper
                     PlaybackHistory.Clear();
                     foreach (var hIt in historyItems) PlaybackHistory.Add(hIt);
 
-                    _unshuffledContextQueue = Playlist.ToList();
-                    ContextQueue = Playlist.ToList();
+                    var trackMap = items.ToDictionary(x => x.FilePath, StringComparer.OrdinalIgnoreCase);
+
+                    // Restore or preserve ContextQueue & UnshuffledContextQueue
+                    if (_savedSession != null && _savedSession.ContextQueuePaths != null && _savedSession.ContextQueuePaths.Count > 0)
+                    {
+                        var restoredUnshuffled = new List<AudioTrackItem>();
+                        foreach (var path in _savedSession.UnshuffledContextQueuePaths ?? Enumerable.Empty<string>())
+                        {
+                            if (trackMap.TryGetValue(path, out var t)) restoredUnshuffled.Add(t);
+                        }
+                        if (restoredUnshuffled.Count > 0) _unshuffledContextQueue = restoredUnshuffled;
+
+                        var restoredContext = new List<AudioTrackItem>();
+                        foreach (var path in _savedSession.ContextQueuePaths)
+                        {
+                            if (trackMap.TryGetValue(path, out var t)) restoredContext.Add(t);
+                        }
+                        if (restoredContext.Count > 0) ContextQueue = restoredContext;
+                    }
+                    else if (ContextQueue.Count > 0)
+                    {
+                        var remappedContext = ContextQueue.Select(x => trackMap.TryGetValue(x.FilePath, out var t) ? t : x).ToList();
+                        ContextQueue = remappedContext;
+                        var remappedUnshuffled = _unshuffledContextQueue.Select(x => trackMap.TryGetValue(x.FilePath, out var t) ? t : x).ToList();
+                        _unshuffledContextQueue = remappedUnshuffled;
+                    }
+                    else
+                    {
+                        _unshuffledContextQueue = Playlist.ToList();
+                        ContextQueue = Playlist.ToList();
+                    }
 
                     UserQueue.Clear();
                     foreach (string path in queuedPaths)
@@ -1207,11 +1327,17 @@ namespace KeyMapper
             PlayNext();
         }
 
+        private int _sessionSaveCounter = 0;
         private void PositionTimer_Tick(object? sender, EventArgs e)
         {
             if (_mediaPlayer.NaturalDuration.HasTimeSpan)
             {
                 OnPositionChanged?.Invoke(_mediaPlayer.Position, _mediaPlayer.NaturalDuration.TimeSpan);
+            }
+
+            if (IsPlaying && ++_sessionSaveCounter % 10 == 0)
+            {
+                SaveSession();
             }
         }
 

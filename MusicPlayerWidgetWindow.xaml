@@ -8,6 +8,14 @@
         MouseLeftButtonDown="Window_MouseLeftButtonDown">
 
     <Window.Resources>
+        <!-- Samsung Volume Gradient Brush -->
+        <LinearGradientBrush x:Key="SamsungVolumeGradient" StartPoint="0,0.5" EndPoint="1,0.5">
+            <GradientStop Color="#7C3AED" Offset="0.0"/>
+            <GradientStop Color="#A855F7" Offset="0.35"/>
+            <GradientStop Color="#EC4899" Offset="0.75"/>
+            <GradientStop Color="#F43F5E" Offset="1.0"/>
+        </LinearGradientBrush>
+
         <!-- Taskbar Thumbnail Media Button Vector Icons -->
         <DrawingImage x:Key="TaskbarPlayIcon">
             <DrawingImage.Drawing>
@@ -509,6 +517,63 @@
             </Setter>
         </Style>
 
+        <!-- Samsung One UI Vibrant Gradient Volume Slider Style -->
+        <Style x:Key="SamsungVolumeSliderStyle" TargetType="{x:Type Slider}">
+            <Setter Property="Stylus.IsPressAndHoldEnabled" Value="False"/>
+            <Setter Property="Background" Value="#1F1F2C"/>
+            <Setter Property="Height" Value="18"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Slider}">
+                        <Grid VerticalAlignment="Center">
+                            <!-- Outer glow bloom -->
+                            <Border CornerRadius="9" Background="{StaticResource SamsungVolumeGradient}" Opacity="0.10" Margin="0,1">
+                                <Border.Effect>
+                                    <BlurEffect Radius="4"/>
+                                </Border.Effect>
+                            </Border>
+                            <!-- Track capsule shell -->
+                            <Border x:Name="TrackShell" Height="14" CornerRadius="7" Background="#181826" BorderBrush="#22FFFFFF" BorderThickness="1" ClipToBounds="True">
+                                <Track x:Name="PART_Track">
+                                    <Track.DecreaseRepeatButton>
+                                        <RepeatButton Command="{x:Static Slider.DecreaseLarge}">
+                                            <RepeatButton.Template>
+                                                <ControlTemplate TargetType="{x:Type RepeatButton}">
+                                                    <Border Height="14" CornerRadius="7" Background="{StaticResource SamsungVolumeGradient}"/>
+                                                </ControlTemplate>
+                                            </RepeatButton.Template>
+                                        </RepeatButton>
+                                    </Track.DecreaseRepeatButton>
+                                    <Track.IncreaseRepeatButton>
+                                        <RepeatButton Command="{x:Static Slider.IncreaseLarge}">
+                                            <RepeatButton.Template>
+                                                <ControlTemplate TargetType="{x:Type RepeatButton}">
+                                                    <Border Height="14" Background="Transparent"/>
+                                                </ControlTemplate>
+                                            </RepeatButton.Template>
+                                        </RepeatButton>
+                                    </Track.IncreaseRepeatButton>
+                                    <Track.Thumb>
+                                        <Thumb x:Name="Thumb">
+                                            <Thumb.Template>
+                                                <ControlTemplate TargetType="{x:Type Thumb}">
+                                                    <Border Width="14" Height="14" CornerRadius="7" Background="#FFFFFF" BorderBrush="#EC4899" BorderThickness="2">
+                                                        <Border.Effect>
+                                                            <DropShadowEffect BlurRadius="3" ShadowDepth="0" Color="#EC4899" Opacity="0.3"/>
+                                                        </Border.Effect>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Thumb.Template>
+                                        </Thumb>
+                                    </Track.Thumb>
+                                </Track>
+                            </Border>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <!-- Cyber ListBox Item Container Style (Stretches 100% Full Width) -->
         <Style x:Key="CyberListBoxItemStyle" TargetType="ListBoxItem">
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
@@ -706,7 +771,7 @@
                             <TextBlock Text=" / " Foreground="{DynamicResource MiniAdaptiveMutedBrush}" FontSize="9" FontWeight="SemiBold"/>
                             <TextBlock x:Name="MiniTotalTimeTxt" Text="00:00" Foreground="{DynamicResource MiniAdaptiveMutedBrush}" FontSize="9" FontWeight="SemiBold"/>
                         </StackPanel>
-                        <Button x:Name="MiniVolumeButtonV" Grid.Row="1" HorizontalAlignment="Right" Width="22" Height="22" Padding="2" Style="{StaticResource MiniHeaderIconButton}" Click="MiniVolumeButton_Click" ToolTip="System volume">
+                        <Button x:Name="MiniVolumeButtonV" Grid.Row="1" HorizontalAlignment="Right" Width="22" Height="22" Padding="2" Style="{StaticResource MiniHeaderIconButton}" Click="MiniVolumeButton_Click" ToolTip="App volume">
                             <Rectangle Width="13" Height="13" Fill="{DynamicResource MiniAdaptiveForegroundBrush}"><Rectangle.OpacityMask><ImageBrush ImageSource="/Resources/Icons/music-volume-loud-svgrepo-com.png"/></Rectangle.OpacityMask></Rectangle>
                         </Button>
                     </Grid>
@@ -814,7 +879,7 @@
                                     <Rectangle Width="12" Height="12" Fill="{StaticResource MiniForegroundBrush}"><Rectangle.OpacityMask><ImageBrush ImageSource="/Resources/Icons/music-skip-next-svgrepo-com.png"/></Rectangle.OpacityMask></Rectangle>
                                 </Button>
                             </StackPanel>
-                            <Button x:Name="MiniVolumeButtonH" Grid.Column="1" HorizontalAlignment="Right" Width="24" Height="28" Padding="3" Margin="12,0,0,0" Style="{StaticResource MiniHeaderIconButton}" Click="MiniVolumeButton_Click" ToolTip="System volume">
+                            <Button x:Name="MiniVolumeButtonH" Grid.Column="1" HorizontalAlignment="Right" Width="24" Height="28" Padding="3" Margin="12,0,0,0" Style="{StaticResource MiniHeaderIconButton}" Click="MiniVolumeButton_Click" ToolTip="App volume">
                                 <Rectangle Width="13" Height="13" Fill="{DynamicResource MiniAdaptiveForegroundBrush}"><Rectangle.OpacityMask><ImageBrush ImageSource="/Resources/Icons/music-volume-loud-svgrepo-com.png"/></Rectangle.OpacityMask></Rectangle>
                             </Button>
                         </Grid>
@@ -947,10 +1012,15 @@
                             <Button x:Name="NextBtn" Width="40" Height="40" Style="{StaticResource CyberCircleButton}" Click="NextBtn_Click"><Rectangle Width="18" Height="18" Fill="{DynamicResource AppTextBrush}"><Rectangle.OpacityMask><ImageBrush ImageSource="/Resources/Icons/music-skip-next-svgrepo-com.png"/></Rectangle.OpacityMask></Rectangle></Button>
                         </StackPanel>
 
-                        <!-- Volume Slider -->
-                        <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                            <Rectangle Width="15" Height="15" Fill="{DynamicResource AppAccentBrush}" Margin="0,0,5,0"><Rectangle.OpacityMask><ImageBrush ImageSource="/Resources/Icons/music-volume-loud-svgrepo-com.png"/></Rectangle.OpacityMask></Rectangle>
-                            <Slider x:Name="VolumeSlider" Width="60" Style="{StaticResource CyberNeonSlider}" Minimum="0" Maximum="100" Value="80" ValueChanged="VolumeSlider_ValueChanged" VerticalAlignment="Center" Cursor="Hand"/>
+                        <!-- Samsung Gradient Volume Control (App Volume) -->
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" ToolTip="App volume">
+                            <Rectangle Width="14" Height="14" Fill="#EC4899" Margin="0,0,6,0">
+                                <Rectangle.OpacityMask>
+                                    <ImageBrush ImageSource="/Resources/Icons/music-volume-loud-svgrepo-com.png"/>
+                                </Rectangle.OpacityMask>
+                            </Rectangle>
+                            <Slider x:Name="VolumeSlider" Width="75" Style="{StaticResource SamsungVolumeSliderStyle}" Minimum="0" Maximum="100" Value="80" ValueChanged="VolumeSlider_ValueChanged" VerticalAlignment="Center" Cursor="Hand" ToolTip="App volume"/>
+                            <TextBlock x:Name="MainVolumePercentTxt" Text="80%" Foreground="#E2E8F0" FontSize="10" FontWeight="Bold" Margin="6,0,0,0" VerticalAlignment="Center" MinWidth="26"/>
                         </StackPanel>
                     </Grid>
                 </Grid>

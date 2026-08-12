@@ -27,9 +27,7 @@ namespace KeyMapper
         private double _groovePhase;
         private bool _isRestoringPreferences = true;
         private bool _playlistVisiblePreference = true;
-        private readonly SystemVolumeService _systemVolumeService =
-            SystemVolumeService.Instance;
-        private bool _syncingSystemVolume;
+        private bool _syncingVolume;
         private Color? _lastMiniArtworkColor;
         private DependencyPropertyDescriptor? _themeProbeDescriptor;
 
@@ -57,7 +55,6 @@ namespace KeyMapper
             LocalAudioPlayerService.Instance.OnCustomPlaylistsUpdated += Instance_OnCustomPlaylistsUpdated;
             LocalAudioPlayerService.Instance.OnHistoryUpdated += Instance_OnHistoryUpdated;
             LocalAudioPlayerService.Instance.OnPlayCountsUpdated += Instance_OnPlayCountsUpdated;
-            _systemVolumeService.VolumeChanged += Instance_OnSystemVolumeChanged;
             Closed += MusicPlayerWidgetWindow_Closed;
 
             _themeProbeDescriptor = DependencyPropertyDescriptor.FromProperty(
@@ -92,11 +89,8 @@ namespace KeyMapper
             }
             double currentVol = LocalAudioPlayerService.Instance.CurrentVolume * 100.0;
             if (VolumeSlider != null) VolumeSlider.Value = currentVol;
-            SyncMiniSystemVolume(
-                _systemVolumeService.IsAvailable
-                    ? _systemVolumeService.VolumePercent
-                    : currentVol,
-                _systemVolumeService.IsAvailable && _systemVolumeService.IsMuted);
+            if (MainVolumePercentTxt != null) MainVolumePercentTxt.Text = $"{Math.Round(currentVol)}%";
+            SyncMiniVolume(currentVol);
 
             UpdateTabStyles();
             _isRestoringPreferences = false;
@@ -106,7 +100,6 @@ namespace KeyMapper
 
         private void MusicPlayerWidgetWindow_Closed(object? sender, EventArgs e)
         {
-            _systemVolumeService.VolumeChanged -= Instance_OnSystemVolumeChanged;
             if (_themeProbeDescriptor != null)
             {
                 _themeProbeDescriptor.RemoveValueChanged(
@@ -560,6 +553,10 @@ namespace KeyMapper
         private void VolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             LocalAudioPlayerService.Instance.SetVolume(e.NewValue);
+            if (MainVolumePercentTxt != null)
+            {
+                MainVolumePercentTxt.Text = $"{Math.Round(e.NewValue)}%";
+            }
         }
 
         private void MiniVolumeButton_Click(object sender, RoutedEventArgs e)
@@ -572,29 +569,19 @@ namespace KeyMapper
             MiniVolumePopup.IsOpen = !MiniVolumePopup.IsOpen;
             if (MiniVolumePopup.IsOpen)
             {
-                double current = _systemVolumeService.IsAvailable
-                    ? _systemVolumeService.VolumePercent
-                    : LocalAudioPlayerService.Instance.CurrentVolume * 100.0;
-                SyncMiniSystemVolume(
-                    current,
-                    _systemVolumeService.IsAvailable &&
-                    _systemVolumeService.IsMuted);
+                double current = LocalAudioPlayerService.Instance.CurrentVolume * 100.0;
+                SyncMiniVolume(current);
             }
         }
 
         private void MiniFlexVolume_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            if (_syncingSystemVolume)
+            if (_syncingVolume)
             {
                 return;
             }
 
-            if (!_systemVolumeService.TrySetVolumePercent(e.NewValue))
-            {
-                // Keep the control useful on systems where Core Audio is
-                // temporarily unavailable, without changing normal behavior.
-                LocalAudioPlayerService.Instance.SetVolume(e.NewValue);
-            }
+            LocalAudioPlayerService.Instance.SetVolume(e.NewValue);
         }
 
         private void Instance_OnVolumeChanged(double volumePercent)
@@ -605,34 +592,22 @@ namespace KeyMapper
                 {
                     VolumeSlider.Value = volumePercent;
                 }
-                if (!_systemVolumeService.IsAvailable)
+                if (MainVolumePercentTxt != null)
                 {
-                    SyncMiniSystemVolume(volumePercent, false);
+                    MainVolumePercentTxt.Text = $"{Math.Round(volumePercent)}%";
                 }
+                SyncMiniVolume(volumePercent);
             });
         }
 
-        private void Instance_OnSystemVolumeChanged(
-            double volumePercent,
-            bool isMuted)
-        {
-            if (Dispatcher.HasShutdownStarted || Dispatcher.HasShutdownFinished)
-            {
-                return;
-            }
-
-            Dispatcher.BeginInvoke(new Action(() =>
-                SyncMiniSystemVolume(volumePercent, isMuted)));
-        }
-
-        private void SyncMiniSystemVolume(double volumePercent, bool isMuted)
+        private void SyncMiniVolume(double volumePercent)
         {
             if (MiniFlexVolume == null)
             {
                 return;
             }
 
-            _syncingSystemVolume = true;
+            _syncingVolume = true;
             try
             {
                 double clamped = Math.Clamp(volumePercent, 0d, 100d);
@@ -640,11 +615,11 @@ namespace KeyMapper
                 {
                     MiniFlexVolume.Value = clamped;
                 }
-                MiniFlexVolume.IsMuted = isMuted;
+                MiniFlexVolume.IsMuted = clamped <= 0.1d;
             }
             finally
             {
-                _syncingSystemVolume = false;
+                _syncingVolume = false;
             }
         }
 

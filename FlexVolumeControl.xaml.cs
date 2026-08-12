@@ -167,7 +167,7 @@ namespace KeyMapper
             SetAnimatedValue(FillFeather, Canvas.TopProperty, featherTop, useAnimation, generation);
             SetAnimatedValue(BoundaryGlow, Canvas.TopProperty, glowTop, useAnimation, generation);
             SetAnimatedValue(OuterBloom, FrameworkElement.HeightProperty, bloomHeight, useAnimation, generation);
-            OuterBloom.Opacity = volume <= 0.1d ? 0d : 0.18d;
+            OuterBloom.Opacity = volume <= 0.1d ? 0d : 0.16d;
             UpdateMuteVisual();
         }
 
