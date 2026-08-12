@@ -2505,6 +2505,22 @@ namespace KeyMapper
             _petOverlayWindow?.Hide();
         }
 
+        public void OpenVpnTab(bool focusServerSelection = false)
+        {
+            Show();
+            WindowState = WindowState.Normal;
+            Activate();
+            MainTabs.SelectedItem = VpnTabItem;
+            if (focusServerSelection)
+            {
+                VpnControl.FocusServerList();
+            }
+            else
+            {
+                VpnControl.FocusOverview();
+            }
+        }
+
         public void SetKeyboardHookEnabled(bool enabled)
         {
             _hook.IsEnabled = enabled;

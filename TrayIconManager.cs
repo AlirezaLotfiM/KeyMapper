@@ -52,6 +52,43 @@ namespace KeyMapper
             stickyNotesMenu.DropDownItems.Add(new ToolStripMenuItem("🙈 Hide All Notes", null, (s, e) => StickyNoteManager.Instance.HideAllNotes()));
             contextMenu.Items.Add(stickyNotesMenu);
 
+            var vpnMenu = new ToolStripMenuItem("V2Ray VPN (وی پی ان)");
+            var vpnStatusItem = new ToolStripMenuItem("● Disconnected") { Enabled = false };
+            var vpnActionItem = new ToolStripMenuItem("⚡ Connect VPN", null, async (s, e) => await VpnService.Instance.ToggleConnectionAsync());
+            var vpnSelectServerItem = new ToolStripMenuItem("🌐 Select Server...", null, (s, e) => _mainWindow.OpenVpnTab(focusServerSelection: true));
+            var vpnOpenSectionItem = new ToolStripMenuItem("🛡️ Open VPN", null, (s, e) => _mainWindow.OpenVpnTab(focusServerSelection: false));
+
+            vpnMenu.DropDownItems.Add(vpnStatusItem);
+            vpnMenu.DropDownItems.Add(vpnActionItem);
+            vpnMenu.DropDownItems.Add(new ToolStripSeparator());
+            vpnMenu.DropDownItems.Add(vpnSelectServerItem);
+            vpnMenu.DropDownItems.Add(vpnOpenSectionItem);
+            contextMenu.Items.Add(vpnMenu);
+
+            Action updateVpnState = () =>
+            {
+                if (VpnService.Instance.IsConnected)
+                {
+                    vpnStatusItem.Text = $"● Connected ({VpnService.Instance.ActiveServer?.Name ?? "VPN"})";
+                    vpnStatusItem.ForeColor = Color.Green;
+                    vpnActionItem.Text = "🔌 Disconnect VPN";
+                }
+                else if (VpnService.Instance.IsConnecting)
+                {
+                    vpnStatusItem.Text = "● Connecting...";
+                    vpnStatusItem.ForeColor = Color.Orange;
+                    vpnActionItem.Text = "⚡ Connecting...";
+                }
+                else
+                {
+                    vpnStatusItem.Text = "● Disconnected";
+                    vpnStatusItem.ForeColor = Color.Red;
+                    vpnActionItem.Text = "⚡ Connect VPN";
+                }
+            };
+            VpnService.Instance.StateChanged += updateVpnState;
+            updateVpnState();
+
             var fencesMenu = new ToolStripMenuItem("Desktop Fences (قاب‌های دسکتاپ)");
             fencesMenu.DropDownItems.Add(new ToolStripMenuItem("➕ New Shortcuts Fence", null, (s, e) => DesktopFenceManager.Instance.CreateFence("New Fence", FenceType.CustomShortcuts)));
             fencesMenu.DropDownItems.Add(new ToolStripMenuItem("📁 New Folder Portal...", null, (s, e) =>

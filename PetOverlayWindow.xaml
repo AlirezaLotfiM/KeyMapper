@@ -218,6 +218,18 @@
                 </Style>
             </ContextMenu.Resources>
 
+            <!-- V2RAY VPN SUBMENU -->
+            <MenuItem Header="V2Ray VPN">
+                <MenuItem.Icon>
+                    <local:SvgIcon Style="{StaticResource PetMenuIcon}" Source="/Resources/Icons/settings-gear-svgrepo-com.svg"/>
+                </MenuItem.Icon>
+                <MenuItem x:Name="PetVpnStatusItem" Header="● Disconnected" IsEnabled="False" Foreground="#EF4444"/>
+                <MenuItem x:Name="PetVpnActionItem" Header="⚡ Connect VPN" Click="MenuVpnAction_Click"/>
+                <Separator/>
+                <MenuItem Header="🌐 Select Server..." Click="MenuVpnSelectServer_Click"/>
+                <MenuItem Header="🛡️ Open VPN" Click="MenuOpenVpn_Click"/>
+            </MenuItem>
+
             <!-- 1. STICKY NOTES SUBMENU -->
             <MenuItem Header="Sticky Notes">
                 <MenuItem.Icon>

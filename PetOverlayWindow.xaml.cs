@@ -317,6 +317,9 @@ namespace KeyMapper
             UpdateCommentMenuState();
             SetCharacter(settings.CurrentCharacter ?? "Pink Monster");
 
+            VpnService.Instance.StateChanged += () => Dispatcher.Invoke(UpdatePetVpnMenuState);
+            UpdatePetVpnMenuState();
+
             // Start idle animation
             if (FindResource("IdleAnimation") is Storyboard idleStory)
             {
@@ -2458,6 +2461,51 @@ namespace KeyMapper
             if (Application.Current.MainWindow is MainWindow mainWin)
             {
                 mainWin.ShowMusicPlayerWidget();
+            }
+        }
+
+        private void UpdatePetVpnMenuState()
+        {
+            if (PetVpnStatusItem == null || PetVpnActionItem == null) return;
+
+            if (VpnService.Instance.IsConnected)
+            {
+                PetVpnStatusItem.Header = $"● Connected ({VpnService.Instance.ActiveServer?.Name ?? "VPN"})";
+                PetVpnStatusItem.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#10B981"));
+                PetVpnActionItem.Header = "🔌 Disconnect VPN";
+            }
+            else if (VpnService.Instance.IsConnecting)
+            {
+                PetVpnStatusItem.Header = "● Connecting...";
+                PetVpnStatusItem.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F59E0B"));
+                PetVpnActionItem.Header = "⚡ Connecting...";
+            }
+            else
+            {
+                PetVpnStatusItem.Header = "● Disconnected";
+                PetVpnStatusItem.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#EF4444"));
+                PetVpnActionItem.Header = "⚡ Connect VPN";
+            }
+        }
+
+        private async void MenuVpnAction_Click(object sender, RoutedEventArgs e)
+        {
+            await VpnService.Instance.ToggleConnectionAsync();
+        }
+
+        private void MenuVpnSelectServer_Click(object sender, RoutedEventArgs e)
+        {
+            if (Application.Current.MainWindow is MainWindow mainWin)
+            {
+                mainWin.OpenVpnTab(focusServerSelection: true);
+            }
+        }
+
+        private void MenuOpenVpn_Click(object sender, RoutedEventArgs e)
+        {
+            if (Application.Current.MainWindow is MainWindow mainWin)
+            {
+                mainWin.OpenVpnTab(focusServerSelection: false);
             }
         }
 
