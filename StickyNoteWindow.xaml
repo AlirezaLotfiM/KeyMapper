@@ -16,6 +16,12 @@
         ResizeMode="NoResize">
 
     <Window.Resources>
+        <!-- Hover colors are updated per note theme in ApplyColorTheme().
+             They use a readable light overlay on dark paper and a restrained
+             dark overlay on light paper. -->
+        <SolidColorBrush x:Key="NoteHoverBrush" Color="#18000000"/>
+        <SolidColorBrush x:Key="NoteHoverBorderBrush" Color="#55000000"/>
+
         <!-- 7px Scrollbar Style -->
         <Style TargetType="ScrollBar">
             <Setter Property="Background" Value="Transparent"/>
@@ -66,8 +72,8 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="bd" Property="Background" Value="{DynamicResource AppAccentSoftBrush}"/>
-                                <Setter TargetName="bd" Property="BorderBrush" Value="{DynamicResource AppAccentBrush}"/>
+                                <Setter TargetName="bd" Property="Background" Value="{DynamicResource NoteHoverBrush}"/>
+                                <Setter TargetName="bd" Property="BorderBrush" Value="{DynamicResource NoteHoverBorderBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -93,7 +99,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="bd" Property="Background" Value="#25000000"/>
+                                <Setter TargetName="bd" Property="Background" Value="{DynamicResource NoteHoverBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -119,8 +125,8 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource AppAccentSoftBrush}"/>
-                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource AppAccentBrush}"/>
+                                <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource NoteHoverBrush}"/>
+                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource NoteHoverBorderBrush}"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True"><Setter TargetName="Chrome" Property="Opacity" Value="0.72"/></Trigger>
                         </ControlTemplate.Triggers>
@@ -157,10 +163,10 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsHighlighted" Value="True">
-                                <Setter TargetName="ItemChrome" Property="Background" Value="{DynamicResource AppAccentSoftBrush}"/>
+                                <Setter TargetName="ItemChrome" Property="Background" Value="{DynamicResource NoteHoverBrush}"/>
                             </Trigger>
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="ItemChrome" Property="Background" Value="{DynamicResource AppAccentSoftBrush}"/>
+                                <Setter TargetName="ItemChrome" Property="Background" Value="{DynamicResource NoteHoverBrush}"/>
                                 <Setter Property="FontWeight" Value="SemiBold"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
@@ -246,10 +252,10 @@
                         </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ComboChrome" Property="BorderBrush" Value="{DynamicResource AppAccentBrush}"/>
+                                <Setter TargetName="ComboChrome" Property="BorderBrush" Value="{DynamicResource NoteHoverBorderBrush}"/>
                             </Trigger>
                             <Trigger Property="IsKeyboardFocusWithin" Value="True">
-                                <Setter TargetName="ComboChrome" Property="BorderBrush" Value="{DynamicResource AppAccentBrush}"/>
+                                <Setter TargetName="ComboChrome" Property="BorderBrush" Value="{DynamicResource NoteHoverBorderBrush}"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter TargetName="ComboChrome" Property="Opacity" Value="0.48"/>
@@ -283,8 +289,8 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="PopupActionChrome" Property="Background" Value="{DynamicResource AppAccentSoftBrush}"/>
-                                <Setter TargetName="PopupActionChrome" Property="BorderBrush" Value="{DynamicResource AppAccentBrush}"/>
+                                <Setter TargetName="PopupActionChrome" Property="Background" Value="{DynamicResource NoteHoverBrush}"/>
+                                <Setter TargetName="PopupActionChrome" Property="BorderBrush" Value="{DynamicResource NoteHoverBorderBrush}"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="PopupActionChrome" Property="Opacity" Value="0.72"/>
@@ -345,8 +351,8 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="LanguageButtonBorder" Property="Background" Value="{DynamicResource AppAccentSoftBrush}"/>
-                                <Setter TargetName="LanguageButtonBorder" Property="BorderBrush" Value="{DynamicResource AppAccentBrush}"/>
+                                <Setter TargetName="LanguageButtonBorder" Property="Background" Value="{DynamicResource NoteHoverBrush}"/>
+                                <Setter TargetName="LanguageButtonBorder" Property="BorderBrush" Value="{DynamicResource NoteHoverBorderBrush}"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="LanguageButtonBorder" Property="Opacity" Value="0.78"/>
@@ -384,8 +390,8 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="TableButtonBorder" Property="Background" Value="{DynamicResource AppAccentSoftBrush}"/>
-                                <Setter TargetName="TableButtonBorder" Property="BorderBrush" Value="{DynamicResource AppAccentBrush}"/>
+                                <Setter TargetName="TableButtonBorder" Property="Background" Value="{DynamicResource NoteHoverBrush}"/>
+                                <Setter TargetName="TableButtonBorder" Property="BorderBrush" Value="{DynamicResource NoteHoverBorderBrush}"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="TableButtonBorder" Property="Opacity" Value="0.78"/>
@@ -416,7 +422,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="SwatchBorder" Property="BorderBrush" Value="{DynamicResource AppAccentBrush}"/>
+                                <Setter TargetName="SwatchBorder" Property="BorderBrush" Value="{DynamicResource NoteHoverBorderBrush}"/>
                                 <Setter TargetName="SwatchBorder" Property="BorderThickness" Value="2"/>
                             </Trigger>
                         </ControlTemplate.Triggers>

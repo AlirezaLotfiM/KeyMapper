@@ -495,6 +495,18 @@ namespace KeyMapper
                 ? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F8F4FF"))
                 : new SolidColorBrush((Color)ColorConverter.ConvertFromString("#333333"));
 
+            // Keep hover states readable against the note itself. A fixed dark
+            // overlay disappears on dark paper, while the light overlay used
+            // here remains visible without changing the theme's accent colors.
+            Resources["NoteHoverBrush"] = new SolidColorBrush(
+                isDark
+                    ? Color.FromArgb(0x38, 0xFF, 0xFF, 0xFF)
+                    : Color.FromArgb(0x1A, 0x00, 0x00, 0x00));
+            Resources["NoteHoverBorderBrush"] = new SolidColorBrush(
+                isDark
+                    ? Color.FromArgb(0xA0, 0xFF, 0xFF, 0xFF)
+                    : Color.FromArgb(0x55, 0x00, 0x00, 0x00));
+
             TitleTextBox.Foreground = iconBrush;
             StatusLabel.Foreground = mutedBrush;
             PinBadgeLabel.Foreground = mutedBrush;
