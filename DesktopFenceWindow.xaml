@@ -62,66 +62,6 @@
                 </Setter.Value>
             </Setter>
         </Style>
-
-        <!-- Ultra-Slim 6px ScrollBar Style -->
-        <Style x:Key="SlimScrollBarThumb" TargetType="{x:Type Thumb}">
-            <Setter Property="OverridesDefaultStyle" Value="True"/>
-            <Setter Property="IsTabStop" Value="False"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type Thumb}">
-                        <Border CornerRadius="3" Background="#55FFFFFF" Margin="1,0">
-                            <Border.Style>
-                                <Style TargetType="Border">
-                                    <Style.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Background" Value="#99FFFFFF"/>
-                                        </Trigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Border.Style>
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style x:Key="SlimScrollViewerStyle" TargetType="{x:Type ScrollViewer}">
-            <Setter Property="OverridesDefaultStyle" Value="True"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type ScrollViewer}">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <ScrollContentPresenter Grid.Column="0"/>
-                            <ScrollBar x:Name="PART_VerticalScrollBar"
-                                       Grid.Column="1"
-                                       Value="{TemplateBinding VerticalOffset}"
-                                       Maximum="{TemplateBinding ScrollableHeight}"
-                                       ViewportSize="{TemplateBinding ViewportHeight}"
-                                       Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}"
-                                       Width="6"
-                                       Margin="2,4">
-                                <ScrollBar.Template>
-                                    <ControlTemplate TargetType="{x:Type ScrollBar}">
-                                        <Grid Background="Transparent">
-                                            <Track x:Name="PART_Track" IsDirectionReversed="True">
-                                                <Track.Thumb>
-                                                    <Thumb Style="{StaticResource SlimScrollBarThumb}"/>
-                                                </Track.Thumb>
-                                            </Track>
-                                        </Grid>
-                                    </ControlTemplate>
-                                </ScrollBar.Template>
-                            </ScrollBar>
-                        </Grid>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
     </Window.Resources>
 
     <!-- Root Grid: Column 0 = Main Fence, Column 1 = Exterior Sidebar with 8px Gap -->
@@ -164,7 +104,7 @@
                             Margin="10,6,10,2"
                             Padding="10,4,12,4">
                         <Grid>
-                            <!-- Title Text (Clean, crisp typography, no heavy glow) -->
+                            <!-- Title Text -->
                             <TextBlock x:Name="TitleTxt"
                                        Text="Fence Title"
                                        Foreground="#F1F5F9"
@@ -190,9 +130,9 @@
                     </Border>
                 </Grid>
 
-                <!-- Main Content Body -->
+                <!-- Main Content Body (No visible scrollbar, mouse wheel scroll active) -->
                 <Grid Grid.Row="1" x:Name="ContentGrid" Background="Transparent">
-                    <ScrollViewer Style="{StaticResource SlimScrollViewerStyle}" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <ScrollViewer VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled">
                         <Border Padding="6">
                             <Grid>
                                 <!-- Custom Shortcuts Desktop Grid -->
@@ -225,7 +165,7 @@
                                                         <Image Source="{Binding ShellIcon}" Stretch="UniformToFill" SnapsToDevicePixels="True"/>
                                                     </Border>
 
-                                                    <!-- Title Label without muddy glow -->
+                                                    <!-- Title Label -->
                                                     <TextBlock Grid.Row="1" Text="{Binding Title}" Foreground="{Binding ElementName=TitleTxt, Path=Foreground}" FontSize="10.5" FontWeight="SemiBold" TextAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,3,0,0"/>
                                                 </Grid>
                                             </Border>
@@ -297,7 +237,7 @@
             </Grid>
         </Border>
 
-        <!-- COLUMN 1: EXTERIOR FLOATING SIDEBAR MENU (SCROLLABLE, SOFT TRANSLUCENT, NO DRAG CURSOR, SINGLE ICON ON MINIMIZE) -->
+        <!-- COLUMN 1: EXTERIOR FLOATING SIDEBAR MENU (HIDDEN SCROLLBAR, MOUSE WHEEL SCROLL ACTIVE) -->
         <Border Grid.Column="1"
                 x:Name="SidebarMenuBorder"
                 VerticalAlignment="Top"
@@ -313,7 +253,7 @@
             <Border.Effect>
                 <DropShadowEffect BlurRadius="12" ShadowDepth="3" Direction="270" Color="#000000" Opacity="0.3"/>
             </Border.Effect>
-            <ScrollViewer Style="{StaticResource SlimScrollViewerStyle}" MaxHeight="240" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <ScrollViewer MaxHeight="240" VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled">
                 <StackPanel Orientation="Vertical">
                     <!-- Color Theme Swatch Picker (Popup Toggle) -->
                     <Button x:Name="PaletteMenuBtn" Style="{StaticResource SidebarIconButton}" ToolTip="Color Palette &amp; Dark/Light Mode" Click="PaletteMenuBtn_Click">
