@@ -53,8 +53,18 @@ namespace KeyMapper
             contextMenu.Items.Add(stickyNotesMenu);
 
             var fencesMenu = new ToolStripMenuItem("Desktop Fences (قاب‌های دسکتاپ)");
-            fencesMenu.DropDownItems.Add(new ToolStripMenuItem("➕ New Desktop Fence", null, (s, e) => DesktopFenceManager.Instance.CreateNewFence()));
-            fencesMenu.DropDownItems.Add(new ToolStripMenuItem("👁️ Toggle Fences Visibility", null, (s, e) => DesktopFenceManager.Instance.ToggleFencesVisibility()));
+            fencesMenu.DropDownItems.Add(new ToolStripMenuItem("➕ New Shortcuts Fence", null, (s, e) => DesktopFenceManager.Instance.CreateFence("New Fence", FenceType.CustomShortcuts)));
+            fencesMenu.DropDownItems.Add(new ToolStripMenuItem("📁 New Folder Portal...", null, (s, e) =>
+            {
+                using var dialog = new System.Windows.Forms.FolderBrowserDialog { Description = "Select folder for Live Folder Portal Fence" };
+                if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                {
+                    string folder = dialog.SelectedPath;
+                    DesktopFenceManager.Instance.CreateFolderPortalFence(System.IO.Path.GetFileName(folder), folder);
+                }
+            }));
+            fencesMenu.DropDownItems.Add(new ToolStripSeparator());
+            fencesMenu.DropDownItems.Add(new ToolStripMenuItem("👁️ Toggle Fences Visibility", null, (s, e) => DesktopFenceManager.Instance.ToggleVisibility()));
             contextMenu.Items.Add(fencesMenu);
 
             _enableItem = new ToolStripMenuItem("Enabled", null, (s, e) =>

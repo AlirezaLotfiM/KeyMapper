@@ -56,7 +56,7 @@ namespace KeyMapper
             Left = _config.Left;
             Top = _config.Top;
             Width = Math.Max(240, _config.Width);
-            Height = Math.Max(120, _config.Height);
+            Height = Math.Max(140, _config.Height);
             _expandedHeight = Height;
 
             ApplyThemeAndOpacity();
@@ -169,7 +169,7 @@ namespace KeyMapper
                 PaletteMenuBtn.Foreground = iconBrush;
                 OpacityMenuBtn.Foreground = iconBrush;
                 AddShortcutBtn.Foreground = iconBrush;
-                EyeToggleBtn.Foreground = iconBrush;
+                EditPortalBtn.Foreground = iconBrush;
                 CollapseBtn.Foreground = iconBrush;
 
                 SidebarMenuBorder.Background = new SolidColorBrush(darkMode ? Color.FromArgb(0xB0, 0x1E, 0x1E, 0x2E) : Color.FromArgb(0xC0, 0xE2, 0xE8, 0xF0));
@@ -212,7 +212,6 @@ namespace KeyMapper
         {
             ShortcutsItemsControl.Visibility = Visibility.Collapsed;
             FolderPortalPanel.Visibility = Visibility.Visible;
-            FolderPortalPathTxt.Text = $"Portal: {_config.FolderPortalPath}";
 
             try
             {
@@ -244,9 +243,9 @@ namespace KeyMapper
             _config.IsCollapsed = collapse;
             if (collapse)
             {
-                if (Height > 48) _expandedHeight = Height;
+                if (Height > 60) _expandedHeight = Height;
                 ContentGrid.Visibility = Visibility.Collapsed;
-                Height = 48;
+                Height = 60;
                 CollapseTxt.Text = "▼";
                 CollapseBtn.ToolTip = "Maximize / Expand Fence";
 
@@ -254,7 +253,7 @@ namespace KeyMapper
                 PaletteMenuBtn.Visibility = Visibility.Collapsed;
                 OpacityMenuBtn.Visibility = Visibility.Collapsed;
                 AddShortcutBtn.Visibility = Visibility.Collapsed;
-                EyeToggleBtn.Visibility = Visibility.Collapsed;
+                EditPortalBtn.Visibility = Visibility.Collapsed;
                 DeleteFenceBtn.Visibility = Visibility.Collapsed;
             }
             else
@@ -264,12 +263,22 @@ namespace KeyMapper
                 CollapseTxt.Text = "▲";
                 CollapseBtn.ToolTip = "Minimize / Collapse Fence";
 
-                // In maximized state: show ALL sidebar menu buttons!
+                // Common buttons
                 PaletteMenuBtn.Visibility = Visibility.Visible;
                 OpacityMenuBtn.Visibility = Visibility.Visible;
-                AddShortcutBtn.Visibility = Visibility.Visible;
-                EyeToggleBtn.Visibility = Visibility.Visible;
                 DeleteFenceBtn.Visibility = Visibility.Visible;
+
+                // Type-specific action button:
+                if (_config.Type == FenceType.FolderPortal)
+                {
+                    AddShortcutBtn.Visibility = Visibility.Collapsed;
+                    EditPortalBtn.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    AddShortcutBtn.Visibility = Visibility.Visible;
+                    EditPortalBtn.Visibility = Visibility.Collapsed;
+                }
             }
             UpdateClipping();
         }
@@ -377,7 +386,7 @@ namespace KeyMapper
 
         private void Window_DragOver(object sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            if (_config.Type == FenceType.CustomShortcuts && e.Data.GetDataPresent(DataFormats.FileDrop))
             {
                 e.Effects = DragDropEffects.Copy;
             }
@@ -390,7 +399,7 @@ namespace KeyMapper
 
         private void Window_Drop(object sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            if (_config.Type == FenceType.CustomShortcuts && e.Data.GetDataPresent(DataFormats.FileDrop))
             {
                 string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
                 if (files != null && files.Length > 0)
@@ -407,7 +416,6 @@ namespace KeyMapper
                             });
                         }
                     }
-                    _config.Type = FenceType.CustomShortcuts;
                     RenderConfig();
                     DesktopFenceManager.Instance.SaveFences();
                 }
@@ -466,8 +474,11 @@ namespace KeyMapper
 
             contextMenu.Items.Add(launchMenuItem);
             contextMenu.Items.Add(openLocItem);
-            contextMenu.Items.Add(new Separator());
-            contextMenu.Items.Add(removeItem);
+            if (_config.Type == FenceType.CustomShortcuts)
+            {
+                contextMenu.Items.Add(new Separator());
+                contextMenu.Items.Add(removeItem);
+            }
 
             contextMenu.IsOpen = true;
             e.Handled = true;
@@ -542,14 +553,6 @@ namespace KeyMapper
             }
         }
 
-        private void EyeToggleBtn_Click(object sender, RoutedEventArgs e)
-        {
-            if (FolderPortalPathBar != null)
-            {
-                FolderPortalPathBar.Visibility = FolderPortalPathBar.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
-            }
-        }
-
         private void AddItemBtn_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new Microsoft.Win32.OpenFileDialog
@@ -568,6 +571,24 @@ namespace KeyMapper
                     IsDirectory = Directory.Exists(file)
                 });
                 _config.Type = FenceType.CustomShortcuts;
+                RenderConfig();
+                DesktopFenceManager.Instance.SaveFences();
+            }
+        }
+
+        private void EditPortalBtn_Click(object sender, RoutedEventArgs e)
+        {
+            using var dialog = new System.Windows.Forms.FolderBrowserDialog
+            {
+                Description = "Select new folder for Portal Fence",
+                SelectedPath = Directory.Exists(_config.FolderPortalPath) ? _config.FolderPortalPath : string.Empty
+            };
+
+            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                string folder = dialog.SelectedPath;
+                _config.FolderPortalPath = folder;
+                _config.Title = Path.GetFileName(folder);
                 RenderConfig();
                 DesktopFenceManager.Instance.SaveFences();
             }

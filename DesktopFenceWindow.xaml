@@ -92,7 +92,7 @@
                 <Grid Grid.Row="0"
                       x:Name="HeaderRowGrid"
                       Background="Transparent"
-                      Height="38"
+                      Height="46"
                       MouseLeftButtonDown="HeaderRow_MouseLeftButtonDown">
                     <!-- COMPACT TITLE HEADER PILL -->
                     <Border x:Name="HeaderBorder"
@@ -101,14 +101,14 @@
                             BorderBrush="#1AFFFFFF"
                             BorderThickness="1"
                             CornerRadius="8"
-                            Margin="10,6,10,2"
-                            Padding="10,4,12,4">
+                            Margin="10,8,10,4"
+                            Padding="12,5,14,5">
                         <Grid>
                             <!-- Title Text -->
                             <TextBlock x:Name="TitleTxt"
                                        Text="Fence Title"
                                        Foreground="#F1F5F9"
-                                       FontSize="12"
+                                       FontSize="12.5"
                                        FontWeight="Bold"
                                        VerticalAlignment="Center"
                                        TextTrimming="CharacterEllipsis"
@@ -175,10 +175,6 @@
 
                                 <!-- Folder Portal Desktop Grid -->
                                 <StackPanel x:Name="FolderPortalPanel" Visibility="Collapsed">
-                                    <!-- Optional Folder Portal Path Bar (Toggled via Eye Icon) -->
-                                    <Border x:Name="FolderPortalPathBar" Background="#1AFFFFFF" CornerRadius="8" Padding="8,4" Margin="4,2,4,8" Visibility="Collapsed">
-                                        <TextBlock x:Name="FolderPortalPathTxt" Text="Portal: C:\Downloads" Foreground="{Binding ElementName=TitleTxt, Path=Foreground}" FontSize="10.5" FontWeight="Bold" TextTrimming="CharacterEllipsis"/>
-                                    </Border>
                                     <ItemsControl x:Name="FolderPortalItemsControl">
                                         <ItemsControl.ItemsPanel>
                                             <ItemsPanelTemplate>
@@ -237,7 +233,7 @@
             </Grid>
         </Border>
 
-        <!-- COLUMN 1: EXTERIOR FLOATING SIDEBAR MENU (HIDDEN SCROLLBAR, MOUSE WHEEL SCROLL ACTIVE) -->
+        <!-- COLUMN 1: EXTERIOR FLOATING SIDEBAR MENU (HIDDEN SCROLLBAR, TYPE-SPECIFIC ACTIONS) -->
         <Border Grid.Column="1"
                 x:Name="SidebarMenuBorder"
                 VerticalAlignment="Top"
@@ -265,14 +261,14 @@
                         <TextBlock Text="💧" FontSize="12"/>
                     </Button>
 
-                    <!-- Add File / Folder Portal -->
-                    <Button x:Name="AddShortcutBtn" Style="{StaticResource SidebarIconButton}" ToolTip="Add Shortcut" Click="AddItemBtn_Click">
+                    <!-- Add File / Shortcut Button (ONLY for Icon / CustomShortcuts Fences) -->
+                    <Button x:Name="AddShortcutBtn" Style="{StaticResource SidebarIconButton}" ToolTip="Add File / Shortcut" Click="AddItemBtn_Click">
                         <TextBlock Text="➕" FontSize="11"/>
                     </Button>
 
-                    <!-- Eye Icon: Toggle Portal Path Visibility -->
-                    <Button x:Name="EyeToggleBtn" Style="{StaticResource SidebarIconButton}" ToolTip="Toggle Portal Path Display" Click="EyeToggleBtn_Click">
-                        <TextBlock Text="👁️" FontSize="11"/>
+                    <!-- Edit Folder Portal Path Button (ONLY for Folder Portal Fences) -->
+                    <Button x:Name="EditPortalBtn" Style="{StaticResource SidebarIconButton}" ToolTip="Change Folder Path..." Click="EditPortalBtn_Click" Visibility="Collapsed">
+                        <TextBlock Text="✏️" FontSize="11"/>
                     </Button>
 
                     <!-- Collapse / Expand Fence -->
