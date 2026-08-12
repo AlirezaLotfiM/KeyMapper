@@ -58,16 +58,18 @@ namespace KeyMapper
         {
             Color background = ResolveBackground(themeName);
             bool isDark = GetRelativeLuminance(background) < 0.52;
-            Color border = Mix(background, isDark ? Colors.White : Colors.Black, isDark ? 0.28 : 0.18);
-            Color accent = isDark ? Color.FromRgb(0x64, 0xD8, 0xE3) : Color.FromRgb(0x31, 0x8D, 0x99);
+            Color surface = Mix(background, isDark ? Colors.White : Colors.White, isDark ? 0.10 : 0.62);
+            Color border = Mix(surface, isDark ? Colors.White : Colors.Black, isDark ? 0.32 : 0.16);
             Color danger = isDark ? Color.FromRgb(0xF3, 0x6F, 0x87) : Color.FromRgb(0xD6, 0x4B, 0x63);
-            Brush primaryText = isDark ? Brushes.White : new SolidColorBrush(Color.FromRgb(0x26, 0x38, 0x4F));
+            Brush primaryText = isDark ? Brushes.White : new SolidColorBrush(Color.FromRgb(0x1D, 0x2A, 0x3A));
             Brush secondaryText = isDark ? new SolidColorBrush(Color.FromRgb(0xD7, 0xCF, 0xE3)) : new SolidColorBrush(Color.FromRgb(0x68, 0x73, 0x84));
+            Brush dangerBrush = new SolidColorBrush(danger);
 
-            DialogCard.Background = new SolidColorBrush(background);
+            DialogCard.Background = new SolidColorBrush(surface);
             DialogCard.BorderBrush = new SolidColorBrush(border);
-            HeaderPanel.Background = new SolidColorBrush(Color.FromArgb(0x16, accent.R, accent.G, accent.B));
-            IconBadge.Background = new SolidColorBrush(Color.FromArgb(0x28, accent.R, accent.G, accent.B));
+            HeaderPanel.Background = Brushes.Transparent;
+            IconBadge.Background = new SolidColorBrush(Color.FromArgb(0x22, danger.R, danger.G, danger.B));
+            DeleteIcon.Fill = dangerBrush;
             DialogTitle.Foreground = primaryText;
             DialogSubtitle.Foreground = secondaryText;
             PromptText.Foreground = primaryText;
@@ -77,12 +79,18 @@ namespace KeyMapper
             CloseButton.BorderBrush = Brushes.Transparent;
 
             CancelButton.Foreground = primaryText;
-            CancelButton.Background = new SolidColorBrush(Color.FromArgb(0x18, accent.R, accent.G, accent.B));
-            CancelButton.BorderBrush = new SolidColorBrush(Color.FromArgb(0x80, accent.R, accent.G, accent.B));
+            CancelButton.Background = new SolidColorBrush(
+                isDark
+                    ? Color.FromArgb(0x1C, 0xFF, 0xFF, 0xFF)
+                    : Color.FromArgb(0x18, 0x00, 0x00, 0x00));
+            CancelButton.BorderBrush = new SolidColorBrush(
+                isDark
+                    ? Color.FromArgb(0x66, 0xFF, 0xFF, 0xFF)
+                    : Color.FromArgb(0x50, 0x00, 0x00, 0x00));
 
             DeleteButton.Foreground = Brushes.White;
-            DeleteButton.Background = new SolidColorBrush(danger);
-            DeleteButton.BorderBrush = new SolidColorBrush(danger);
+            DeleteButton.Background = dangerBrush;
+            DeleteButton.BorderBrush = dangerBrush;
         }
 
         private static Color ResolveBackground(string themeName)
