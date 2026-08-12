@@ -162,6 +162,10 @@ namespace KeyMapper
                 Color borderCol = (Color)ColorConverter.ConvertFromString(borderHex);
                 MainShell.BorderBrush = new SolidColorBrush(Color.FromArgb(0x44, borderCol.R, borderCol.G, borderCol.B));
 
+                // Semi-frosted visible sidebar menu background so it's clearly readable over any desktop wallpaper
+                SidebarMenuBorder.Background = new SolidColorBrush(darkMode ? Color.FromArgb(0xEE, 0x1E, 0x1E, 0x2E) : Color.FromArgb(0xEE, 0xFF, 0xFF, 0xFF));
+                SidebarMenuBorder.BorderBrush = new SolidColorBrush(darkMode ? Color.FromArgb(0x44, 0xFF, 0xFF, 0xFF) : Color.FromArgb(0xEE, 0xCC, 0xCC, 0xCC));
+
                 DarkLightIconTxt.Text = darkMode ? "🌙" : "☀️";
                 DarkLightTextTxt.Text = darkMode ? "Dark Mode" : "Light Mode";
             }
@@ -235,12 +239,14 @@ namespace KeyMapper
                 ContentGrid.Visibility = Visibility.Collapsed;
                 Height = 48;
                 CollapseTxt.Text = "▼";
+                CollapseBtn.ToolTip = "Maximize / Expand Fence";
             }
             else
             {
                 ContentGrid.Visibility = Visibility.Visible;
                 Height = Math.Max(140, _expandedHeight);
                 CollapseTxt.Text = "▲";
+                CollapseBtn.ToolTip = "Minimize / Collapse Fence";
             }
             UpdateClipping();
         }
@@ -269,7 +275,7 @@ namespace KeyMapper
             SidebarMenuBorder.BeginAnimation(OpacityProperty, anim);
         }
 
-        private void Header_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void HeaderRow_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ClickCount == 2)
             {
@@ -279,6 +285,14 @@ namespace KeyMapper
             }
 
             if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                DragMove();
+            }
+        }
+
+        private void SidebarMenu_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.LeftButton == MouseButtonState.Pressed && e.OriginalSource is Border)
             {
                 DragMove();
             }

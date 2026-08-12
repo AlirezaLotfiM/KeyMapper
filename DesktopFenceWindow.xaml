@@ -124,7 +124,7 @@
         </Style>
     </Window.Resources>
 
-    <!-- Root Grid: Column 0 = Main Fence, Column 1 = Exterior Sidebar with Gap -->
+    <!-- Root Grid: Column 0 = Main Fence, Column 1 = Exterior Sidebar with 8px Gap -->
     <Grid x:Name="RootGrid" Background="Transparent" Margin="6">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
@@ -148,42 +148,48 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <!-- COMPACT TITLE HEADER PILL (ONLY WIDE ENOUGH FOR TEXT) -->
-                <Border Grid.Row="0"
-                        x:Name="HeaderBorder"
-                        HorizontalAlignment="Left"
-                        Background="#221E1E2E"
-                        BorderBrush="#1AFFFFFF"
-                        BorderThickness="1"
-                        CornerRadius="8"
-                        Margin="10,8,10,2"
-                        Padding="10,4,12,4"
-                        MouseLeftButtonDown="Header_MouseLeftButtonDown">
-                    <Grid>
-                        <!-- Title Text -->
-                        <TextBlock x:Name="TitleTxt"
-                                   Text="Fence Title"
-                                   Foreground="#F1F5F9"
-                                   FontSize="12"
-                                   FontWeight="Bold"
-                                   VerticalAlignment="Center"
-                                   TextTrimming="CharacterEllipsis"
-                                   ToolTip="Double-click to collapse/expand"
-                                   MouseDown="TitleTxt_MouseDown"/>
-                        <TextBox x:Name="TitleEditBox"
-                                 Text="Fence Title"
-                                 Foreground="#FFFFFF"
-                                 Background="#2A2A40"
-                                 BorderBrush="#A855F7"
-                                 BorderThickness="1"
-                                 FontSize="12"
-                                 Padding="4,2"
-                                 VerticalAlignment="Center"
-                                 Visibility="Collapsed"
-                                 KeyDown="TitleEditBox_KeyDown"
-                                 LostFocus="TitleEditBox_LostFocus"/>
-                    </Grid>
-                </Border>
+                <!-- ENTIRE TOP BAR ROW (DRAGGABLE & DOUBLE-CLICK COLLAPSIBLE ANYWHERE ON ROW) -->
+                <Grid Grid.Row="0"
+                      x:Name="HeaderRowGrid"
+                      Background="Transparent"
+                      Height="38"
+                      Cursor="SizeAll"
+                      MouseLeftButtonDown="HeaderRow_MouseLeftButtonDown">
+                    <!-- COMPACT TITLE HEADER PILL -->
+                    <Border x:Name="HeaderBorder"
+                            HorizontalAlignment="Left"
+                            Background="#221E1E2E"
+                            BorderBrush="#1AFFFFFF"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Margin="10,6,10,2"
+                            Padding="10,4,12,4">
+                        <Grid>
+                            <!-- Title Text (Clean, crisp typography) -->
+                            <TextBlock x:Name="TitleTxt"
+                                       Text="Fence Title"
+                                       Foreground="#F1F5F9"
+                                       FontSize="12"
+                                       FontWeight="Bold"
+                                       VerticalAlignment="Center"
+                                       TextTrimming="CharacterEllipsis"
+                                       ToolTip="Double-click to collapse/expand"
+                                       MouseDown="TitleTxt_MouseDown"/>
+                            <TextBox x:Name="TitleEditBox"
+                                     Text="Fence Title"
+                                     Foreground="#FFFFFF"
+                                     Background="#2A2A40"
+                                     BorderBrush="#A855F7"
+                                     BorderThickness="1"
+                                     FontSize="12"
+                                     Padding="4,2"
+                                     VerticalAlignment="Center"
+                                     Visibility="Collapsed"
+                                     KeyDown="TitleEditBox_KeyDown"
+                                     LostFocus="TitleEditBox_LostFocus"/>
+                        </Grid>
+                    </Border>
+                </Grid>
 
                 <!-- Main Content Body -->
                 <Grid Grid.Row="1" x:Name="ContentGrid" Background="Transparent">
@@ -220,12 +226,8 @@
                                                         <Image Source="{Binding ShellIcon}" Stretch="UniformToFill" SnapsToDevicePixels="True"/>
                                                     </Border>
 
-                                                    <!-- Title Label with DropShadow for Desktop Readability -->
-                                                    <TextBlock Grid.Row="1" Text="{Binding Title}" Foreground="{Binding ElementName=TitleTxt, Path=Foreground}" FontSize="10.5" FontWeight="SemiBold" TextAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,3,0,0">
-                                                        <TextBlock.Effect>
-                                                            <DropShadowEffect BlurRadius="3" ShadowDepth="1" Color="#000000" Opacity="0.8"/>
-                                                        </TextBlock.Effect>
-                                                    </TextBlock>
+                                                    <!-- Title Label without muddy glow -->
+                                                    <TextBlock Grid.Row="1" Text="{Binding Title}" Foreground="{Binding ElementName=TitleTxt, Path=Foreground}" FontSize="10.5" FontWeight="SemiBold" TextAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,3,0,0"/>
                                                 </Grid>
                                             </Border>
                                         </DataTemplate>
@@ -268,11 +270,7 @@
                                                         </Border>
 
                                                         <!-- File / Folder Title -->
-                                                        <TextBlock Grid.Row="1" Text="{Binding Title}" Foreground="{Binding ElementName=TitleTxt, Path=Foreground}" FontSize="10.5" FontWeight="SemiBold" TextAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,3,0,0">
-                                                            <TextBlock.Effect>
-                                                                <DropShadowEffect BlurRadius="3" ShadowDepth="1" Color="#000000" Opacity="0.8"/>
-                                                            </TextBlock.Effect>
-                                                        </TextBlock>
+                                                        <TextBlock Grid.Row="1" Text="{Binding Title}" Foreground="{Binding ElementName=TitleTxt, Path=Foreground}" FontSize="10.5" FontWeight="SemiBold" TextAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,3,0,0"/>
                                                     </Grid>
                                                 </Border>
                                             </DataTemplate>
@@ -300,20 +298,22 @@
             </Grid>
         </Border>
 
-        <!-- COLUMN 1: EXTERIOR FLOATING SIDEBAR MENU (UNCLIPPED, 8PX GAP FROM FENCE) -->
+        <!-- COLUMN 1: EXTERIOR FLOATING SIDEBAR MENU (UNCLIPPED, SEMI-FROSTED VISIBILITY, INDEPENDENT HEIGHT) -->
         <Border Grid.Column="1"
                 x:Name="SidebarMenuBorder"
                 VerticalAlignment="Top"
                 Margin="8,4,0,0"
-                Background="#241E1E2E"
-                BorderBrush="#33FFFFFF"
+                Background="#EE1E1E2E"
+                BorderBrush="#44FFFFFF"
                 BorderThickness="1.2"
                 CornerRadius="10"
                 Padding="3"
                 Opacity="0.0"
-                IsHitTestVisible="True">
+                IsHitTestVisible="True"
+                Cursor="SizeAll"
+                MouseLeftButtonDown="SidebarMenu_MouseLeftButtonDown">
             <Border.Effect>
-                <DropShadowEffect BlurRadius="12" ShadowDepth="3" Direction="270" Color="#000000" Opacity="0.3"/>
+                <DropShadowEffect BlurRadius="12" ShadowDepth="3" Direction="270" Color="#000000" Opacity="0.4"/>
             </Border.Effect>
             <StackPanel Orientation="Vertical">
                 <!-- Color Theme Swatch Picker (Popup Toggle) -->
@@ -337,7 +337,7 @@
                 </Button>
 
                 <!-- Collapse / Expand Fence -->
-                <Button x:Name="CollapseBtn" Style="{StaticResource SidebarIconButton}" ToolTip="Collapse / Expand" Click="CollapseBtn_Click">
+                <Button x:Name="CollapseBtn" Style="{StaticResource SidebarIconButton}" ToolTip="Collapse / Expand (Minimize/Maximize)" Click="CollapseBtn_Click">
                     <TextBlock x:Name="CollapseTxt" Text="▲" FontSize="10"/>
                 </Button>
 
