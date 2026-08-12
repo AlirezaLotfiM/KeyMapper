@@ -64,6 +64,11 @@ namespace KeyMapper
         private bool _isUpdatingUi;
         private bool _isEditMode;
         private bool _isResizing;
+        private bool _toolbarDensityInitialized;
+        private bool _useCompactToolbar;
+        private bool _useCondensedCompactToolbar;
+        private bool _useMinimalCompactToolbar;
+        private bool _isSynchronizingFontSelectors;
         private readonly DispatcherTimer _sidebarHideTimer;
 
         public StickyNoteWindow(StickyNoteModel note)
@@ -77,7 +82,7 @@ namespace KeyMapper
             _sidebarHideTimer.Tick += (s, e) =>
             {
                 _sidebarHideTimer.Stop();
-                if (!_isEditMode && !ThemePopup.IsOpen && !AiPopup.IsOpen && !TranslatePopup.IsOpen && !TablePopup.IsOpen && !TextColorPopup.IsOpen && !HighlightPopup.IsOpen)
+                if (!_isEditMode && !ThemePopup.IsOpen && !AiPopup.IsOpen && !TranslatePopup.IsOpen && !TablePopup.IsOpen && !TextColorPopup.IsOpen && !HighlightPopup.IsOpen && !ListPopup.IsOpen && !ToolbarMorePopup.IsOpen)
                 {
                     SidebarMenuBorder.Opacity = 0.0;
                     FooterBar.Opacity = 0.0;
@@ -137,7 +142,7 @@ namespace KeyMapper
 
         private void StickyNoteWindow_Deactivated(object? sender, EventArgs e)
         {
-            // Do not interrupt an active resize drag — Z-order changes corrupt size
+            // Do not interrupt an active resize drag; Z-order changes corrupt size.
             if (_isResizing) return;
 
             if (ThemePopup.IsOpen && !ThemePopupCard.IsMouseOver)
@@ -167,6 +172,7 @@ namespace KeyMapper
 
         private void StickyNoteWindow_SizeChanged(object sender, SizeChangedEventArgs e)
         {
+            ApplyResponsiveToolbarLayout();
             if (_isUpdatingUi || WindowState != WindowState.Normal || Note.IsCollapsed) return;
             Note.Width = Width;
             Note.Height = Height;
@@ -191,6 +197,7 @@ namespace KeyMapper
                     NoteCardBorder.ActualHeight),
                 radius,
                 radius);
+            ApplyResponsiveToolbarLayout(NoteCardBorder.ActualWidth);
         }
 
         private void ApplyNoteModelToUi()
@@ -255,7 +262,7 @@ namespace KeyMapper
                 }
                 else if (!string.IsNullOrEmpty(Note.PlainTextContent))
                 {
-                    // Split on newlines so each line becomes its own Paragraph —
+                    // Split on newlines so each line becomes its own Paragraph.
                     // a single Run containing \n does NOT render as a line break in WPF RichTextBox.
                     var lines = Note.PlainTextContent.Split('\n');
                     foreach (var line in lines)
@@ -501,9 +508,9 @@ namespace KeyMapper
                 }
             }
 
-            if (DoneSidebarButton?.Content is TextBlock doneText)
+            if (DoneSidebarIcon != null)
             {
-                doneText.Foreground = isDark
+                DoneSidebarIcon.Foreground = isDark
                     ? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#9FF2B7"))
                     : new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2E7D32"));
             }
@@ -560,7 +567,7 @@ namespace KeyMapper
                 FooterBar.Visibility = Visibility.Collapsed;
                 MinHeight = 90;
                 Height = 90;
-                FoldIconText.Text = "🔽";
+                FoldSvgIcon.Source = "/Resources/Icons/down-chevron-svgrepo-com.svg";
 
                 // Disable resize when folded
                 if (NoteResizeThumb != null) NoteResizeThumb.Visibility = Visibility.Collapsed;
@@ -595,7 +602,7 @@ namespace KeyMapper
                 FooterBar.Visibility = Visibility.Visible;
                 Width  = restoreW;
                 Height = restoreH;
-                FoldIconText.Text = "🔼";
+                FoldSvgIcon.Source = "/Resources/Icons/up-chevron-svgrepo-com.svg";
 
                 // Enable resize when expanded
                 if (NoteResizeThumb != null) NoteResizeThumb.Visibility = Visibility.Visible;
@@ -674,6 +681,76 @@ namespace KeyMapper
             {
                 ThemePopup.IsOpen = false;
             }
+
+            if (_isEditMode && TryToggleChecklistMarker(e.GetPosition(RichEditor)))
+            {
+                e.Handled = true;
+            }
+        }
+
+        private bool TryToggleChecklistMarker(Point point)
+        {
+            TextPointer? position = RichEditor.GetPositionFromPoint(point, true);
+            Paragraph? paragraph = position?.Paragraph;
+            if (position == null || paragraph == null) return false;
+
+            int prefixLength = GetChecklistPrefixLength(paragraph);
+            if (prefixLength == 0) return false;
+
+            TextPointer? start = GetFirstTextPosition(paragraph);
+            if (start == null) return false;
+            int offset = start.GetOffsetToPosition(position);
+            if (offset < 0 || offset > prefixLength + 1) return false;
+
+            TextPointer? end = MoveForwardByTextCharacters(
+                start,
+                paragraph.ContentEnd,
+                1);
+            if (end == null) return false;
+
+            var markerRange = new TextRange(start, end);
+            markerRange.Text = markerRange.Text.StartsWith("☑", StringComparison.Ordinal)
+                ? "☐"
+                : "☑";
+            SaveNoteState();
+            return true;
+        }
+
+        private void RichEditor_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (!_isEditMode || e.Key != Key.Enter || Keyboard.Modifiers != ModifierKeys.None)
+            {
+                return;
+            }
+
+            Paragraph? paragraph = RichEditor.CaretPosition.Paragraph;
+            if (paragraph == null || GetChecklistPrefixLength(paragraph) == 0) return;
+
+            string paragraphText = new TextRange(
+                paragraph.ContentStart,
+                paragraph.ContentEnd).Text;
+            string contentWithoutMarker = paragraphText.Substring(
+                Math.Min(GetChecklistPrefixLength(paragraph), paragraphText.Length));
+
+            if (string.IsNullOrWhiteSpace(contentWithoutMarker))
+            {
+                RemoveChecklistMarker(paragraph);
+                e.Handled = true;
+                SaveNoteState();
+                return;
+            }
+
+            Dispatcher.BeginInvoke(
+                DispatcherPriority.Input,
+                new Action(() =>
+                {
+                    Paragraph? nextParagraph = RichEditor.CaretPosition.Paragraph;
+                    if (nextParagraph != null && GetChecklistPrefixLength(nextParagraph) == 0)
+                    {
+                        InsertChecklistMarker(nextParagraph, "☐ ");
+                        SaveNoteState();
+                    }
+                }));
         }
 
         private void RichEditor_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
@@ -788,15 +865,6 @@ namespace KeyMapper
             return false;
         }
 
-        private void FormatToolbarScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
-        {
-            if (e.Delta != 0)
-            {
-                FormatToolbarScrollViewer.ScrollToVerticalOffset(FormatToolbarScrollViewer.VerticalOffset - e.Delta);
-                e.Handled = true;
-            }
-        }
-
         // ================= HEADER & TOOLBAR EVENT HANDLERS =================
 
         private void Header_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -814,7 +882,9 @@ namespace KeyMapper
         {
             if (ToolbarPinButton != null)
             {
-                ToolbarPinButton.Content = Note.IsToolbarPinned ? "📍" : "📌";
+                ToolbarPinIcon.Source = Note.IsToolbarPinned
+                    ? "/Resources/Icons/pin-slash.svg.svg"
+                    : "/Resources/Icons/pin.svg.svg";
                 ToolbarPinButton.ToolTip = Note.IsToolbarPinned
                     ? "Unpin writing tools"
                     : "Pin writing tools";
@@ -823,6 +893,61 @@ namespace KeyMapper
             bool showToolbar = !Note.IsCollapsed && (_isEditMode || Note.IsToolbarPinned);
             FormatBarRow.Height = showToolbar ? GridLength.Auto : new GridLength(0);
             FormatToolbar.Visibility = showToolbar ? Visibility.Visible : Visibility.Collapsed;
+            ApplyResponsiveToolbarLayout();
+        }
+
+        private void ApplyResponsiveToolbarLayout(double availableWidth = double.NaN)
+        {
+            if (ToolbarNormalLayout == null || ToolbarCompactLayout == null) return;
+
+            if (double.IsNaN(availableWidth) || availableWidth <= 0)
+            {
+                availableWidth = NoteCardBorder?.ActualWidth ?? ActualWidth;
+            }
+            if (availableWidth <= 0) return;
+
+            if (!_toolbarDensityInitialized)
+            {
+                _useCompactToolbar = availableWidth < 520;
+                _useCondensedCompactToolbar = availableWidth < 300;
+                _useMinimalCompactToolbar = availableWidth < 210;
+                _toolbarDensityInitialized = true;
+            }
+            else
+            {
+                // Separate enter/exit points stop the toolbar flickering at a breakpoint.
+                _useCompactToolbar = _useCompactToolbar
+                    ? availableWidth < 550
+                    : availableWidth < 520;
+                _useCondensedCompactToolbar = _useCondensedCompactToolbar
+                    ? availableWidth < 320
+                    : availableWidth < 300;
+                _useMinimalCompactToolbar = _useMinimalCompactToolbar
+                    ? availableWidth < 230
+                    : availableWidth < 210;
+            }
+
+            if (!_useCompactToolbar)
+            {
+                _useCondensedCompactToolbar = false;
+                _useMinimalCompactToolbar = false;
+            }
+
+            ToolbarNormalLayout.Visibility = _useCompactToolbar
+                ? Visibility.Collapsed
+                : Visibility.Visible;
+            ToolbarCompactLayout.Visibility = _useCompactToolbar
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+            CompactCoreFormattingGroup.Visibility = _useCondensedCompactToolbar
+                ? Visibility.Collapsed
+                : Visibility.Visible;
+            CompactPrimaryActionGroup.Visibility = _useMinimalCompactToolbar
+                ? Visibility.Collapsed
+                : Visibility.Visible;
+            FormatToolbar.Padding = _useCompactToolbar
+                ? new Thickness(4, 4, 4, 4)
+                : new Thickness(7, 5, 7, 5);
         }
 
         private void ToolbarPinButton_Click(object sender, RoutedEventArgs e)
@@ -830,6 +955,11 @@ namespace KeyMapper
             Note.IsToolbarPinned = !Note.IsToolbarPinned;
             ApplyToolbarLayout();
             SaveNoteState();
+        }
+
+        private void CompactMoreButton_Click(object sender, RoutedEventArgs e)
+        {
+            ToolbarMorePopup.IsOpen = !ToolbarMorePopup.IsOpen;
         }
 
         private void PinButton_Click(object sender, RoutedEventArgs e) => SetPinnedState(!Note.IsPinned);
@@ -872,8 +1002,10 @@ namespace KeyMapper
         // FONT FAMILY SELECTOR
         private void FontFamilyCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (_isUpdatingUi) return;
-            if (FontFamilyCombo.SelectedItem is ComboBoxItem item && item.Content is string fontName)
+            if (_isUpdatingUi || _isSynchronizingFontSelectors || RichEditor == null) return;
+            if (sender is ComboBox selector &&
+                selector.SelectedItem is ComboBoxItem item &&
+                item.Content is string fontName)
             {
                 TextSelection sel = RichEditor.Selection;
                 if (sel != null && !sel.IsEmpty)
@@ -884,6 +1016,12 @@ namespace KeyMapper
                 {
                     RichEditor.FontFamily = new FontFamily(fontName);
                 }
+                SynchronizeComboSelection(
+                    selector,
+                    ReferenceEquals(selector, FontFamilyCombo)
+                        ? CompactFontFamilyCombo
+                        : FontFamilyCombo,
+                    fontName);
                 SaveNoteState();
             }
         }
@@ -891,8 +1029,10 @@ namespace KeyMapper
         // FONT SIZE SELECTOR
         private void FontSizeCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (_isUpdatingUi) return;
-            if (FontSizeCombo.SelectedItem is ComboBoxItem item && double.TryParse(item.Content?.ToString(), out double size))
+            if (_isUpdatingUi || _isSynchronizingFontSelectors || RichEditor == null) return;
+            if (sender is ComboBox selector &&
+                selector.SelectedItem is ComboBoxItem item &&
+                double.TryParse(item.Content?.ToString(), out double size))
             {
                 TextSelection sel = RichEditor.Selection;
                 if (sel != null && !sel.IsEmpty)
@@ -903,7 +1043,39 @@ namespace KeyMapper
                 {
                     RichEditor.FontSize = size;
                 }
+                SynchronizeComboSelection(
+                    selector,
+                    ReferenceEquals(selector, FontSizeCombo)
+                        ? CompactFontSizeCombo
+                        : FontSizeCombo,
+                    item.Content?.ToString() ?? string.Empty);
                 SaveNoteState();
+            }
+        }
+
+        private void SynchronizeComboSelection(
+            ComboBox source,
+            ComboBox target,
+            string selectedText)
+        {
+            if (target == null || ReferenceEquals(source, target)) return;
+
+            ComboBoxItem? matchingItem = target.Items
+                .OfType<ComboBoxItem>()
+                .FirstOrDefault(candidate => string.Equals(
+                    candidate.Content?.ToString(),
+                    selectedText,
+                    StringComparison.Ordinal));
+            if (matchingItem == null || ReferenceEquals(target.SelectedItem, matchingItem)) return;
+
+            _isSynchronizingFontSelectors = true;
+            try
+            {
+                target.SelectedItem = matchingItem;
+            }
+            finally
+            {
+                _isSynchronizingFontSelectors = false;
             }
         }
 
@@ -962,11 +1134,63 @@ namespace KeyMapper
 
         private void BtnH1_Click(object sender, RoutedEventArgs e) => ApplyFontSize(20, FontWeights.Bold);
         private void BtnH2_Click(object sender, RoutedEventArgs e) => ApplyFontSize(16, FontWeights.Bold);
-        private void BtnBullet_Click(object sender, RoutedEventArgs e) => ToggleFormatting(EditingCommands.ToggleBullets);
+        private void BtnBullet_Click(object sender, RoutedEventArgs e)
+        {
+            ApplyNativeList(EditingCommands.ToggleBullets);
+        }
+
+        private void BtnListMenu_Click(object sender, RoutedEventArgs e)
+        {
+            ToolbarMorePopup.IsOpen = false;
+            ListPopup.PlacementTarget = sender as UIElement;
+            ListPopup.IsOpen = true;
+        }
+
+        private void ListBullets_Click(object sender, RoutedEventArgs e)
+        {
+            ListPopup.IsOpen = false;
+            ApplyNativeList(EditingCommands.ToggleBullets);
+        }
+
+        private void ListNumbered_Click(object sender, RoutedEventArgs e)
+        {
+            ListPopup.IsOpen = false;
+            ApplyNativeList(EditingCommands.ToggleNumbering);
+        }
+
+        private void ListChecklist_Click(object sender, RoutedEventArgs e)
+        {
+            ListPopup.IsOpen = false;
+            ToolbarMorePopup.IsOpen = false;
+
+            List<Paragraph> paragraphs = GetSelectedParagraphs();
+            if (paragraphs.Count == 0) return;
+
+            bool removeChecklist = paragraphs.All(
+                paragraph => GetChecklistPrefixLength(paragraph) > 0);
+
+            if (!removeChecklist && paragraphs.Any(IsInsideNativeList))
+            {
+                RemoveCurrentNativeList(paragraphs[0]);
+                paragraphs = GetSelectedParagraphs();
+            }
+
+            foreach (Paragraph paragraph in paragraphs)
+            {
+                RemoveChecklistMarker(paragraph);
+                if (!removeChecklist)
+                {
+                    InsertChecklistMarker(paragraph, "☐ ");
+                }
+            }
+
+            SaveNoteState();
+        }
 
         private void BtnAlignLeft_Click(object sender, RoutedEventArgs e) => ApplyAlignment(TextAlignment.Left);
         private void BtnAlignCenter_Click(object sender, RoutedEventArgs e) => ApplyAlignment(TextAlignment.Center);
         private void BtnAlignRight_Click(object sender, RoutedEventArgs e) => ApplyAlignment(TextAlignment.Right);
+        private void BtnAlignJustify_Click(object sender, RoutedEventArgs e) => ApplyAlignment(TextAlignment.Justify);
 
         // MS WORD-STYLE ¶ LTR AND ¶ RTL PARAGRAPH DIRECTION BUTTONS
         private void BtnLtrParagraph_Click(object sender, RoutedEventArgs e) => ApplyParagraphFlowDirection(FlowDirection.LeftToRight);
@@ -982,6 +1206,215 @@ namespace KeyMapper
         }
 
         private void ToggleFormatting(RoutedUICommand cmd) => cmd.Execute(null, RichEditor);
+
+        private void ApplyNativeList(RoutedUICommand command)
+        {
+            ToolbarMorePopup.IsOpen = false;
+            List<Paragraph> paragraphs = GetSelectedParagraphs();
+            foreach (Paragraph paragraph in paragraphs)
+            {
+                RemoveChecklistMarker(paragraph);
+            }
+            command.Execute(null, RichEditor);
+            SaveNoteState();
+        }
+
+        private void RemoveCurrentNativeList(Paragraph paragraph)
+        {
+            System.Windows.Documents.List? parentList = FindParentList(paragraph);
+            if (parentList == null) return;
+
+            RoutedUICommand command = IsNumberedMarker(parentList.MarkerStyle)
+                ? EditingCommands.ToggleNumbering
+                : EditingCommands.ToggleBullets;
+            command.Execute(null, RichEditor);
+        }
+
+        private static bool IsInsideNativeList(Paragraph paragraph) =>
+            FindParentList(paragraph) != null;
+
+        private static System.Windows.Documents.List? FindParentList(Paragraph paragraph)
+        {
+            DependencyObject? current = paragraph.Parent;
+            while (current != null)
+            {
+                if (current is System.Windows.Documents.List documentList)
+                {
+                    return documentList;
+                }
+                current = current is FrameworkContentElement contentElement
+                    ? contentElement.Parent
+                    : null;
+            }
+            return null;
+        }
+
+        private static bool IsNumberedMarker(TextMarkerStyle markerStyle) => markerStyle is
+            TextMarkerStyle.Decimal or
+            TextMarkerStyle.LowerLatin or
+            TextMarkerStyle.UpperLatin or
+            TextMarkerStyle.LowerRoman or
+            TextMarkerStyle.UpperRoman;
+
+        private List<Paragraph> GetSelectedParagraphs()
+        {
+            TextSelection selection = RichEditor.Selection;
+            Paragraph? currentParagraph = selection.Start.Paragraph;
+            if (selection.IsEmpty)
+            {
+                return currentParagraph == null
+                    ? new List<Paragraph>()
+                    : new List<Paragraph> { currentParagraph };
+            }
+
+            TextPointer selectionStart = selection.Start;
+            TextPointer selectionEnd = selection.End;
+            return EnumerateParagraphs(RichEditor.Document.Blocks)
+                .Where(paragraph =>
+                    paragraph.ContentEnd.CompareTo(selectionStart) >= 0 &&
+                    paragraph.ContentStart.CompareTo(selectionEnd) <= 0)
+                .ToList();
+        }
+
+        private static IEnumerable<Paragraph> EnumerateParagraphs(BlockCollection blocks)
+        {
+            foreach (Block block in blocks)
+            {
+                if (block is Paragraph paragraph)
+                {
+                    yield return paragraph;
+                }
+                else if (block is Section section)
+                {
+                    foreach (Paragraph child in EnumerateParagraphs(section.Blocks))
+                    {
+                        yield return child;
+                    }
+                }
+                else if (block is System.Windows.Documents.List documentList)
+                {
+                    foreach (ListItem listItem in documentList.ListItems)
+                    {
+                        foreach (Paragraph child in EnumerateParagraphs(listItem.Blocks))
+                        {
+                            yield return child;
+                        }
+                    }
+                }
+                else if (block is Table table)
+                {
+                    foreach (TableRowGroup rowGroup in table.RowGroups)
+                    {
+                        foreach (TableRow row in rowGroup.Rows)
+                        {
+                            foreach (TableCell cell in row.Cells)
+                            {
+                                foreach (Paragraph child in EnumerateParagraphs(cell.Blocks))
+                                {
+                                    yield return child;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private static int GetChecklistPrefixLength(Paragraph paragraph)
+        {
+            string text = new TextRange(
+                paragraph.ContentStart,
+                paragraph.ContentEnd).Text;
+            if (string.IsNullOrEmpty(text) || (text[0] != '☐' && text[0] != '☑'))
+            {
+                return 0;
+            }
+
+            int length = 1;
+            while (length < text.Length &&
+                   char.IsWhiteSpace(text[length]) &&
+                   text[length] != '\r' &&
+                   text[length] != '\n')
+            {
+                length++;
+            }
+            return length;
+        }
+
+        private static void InsertChecklistMarker(Paragraph paragraph, string marker)
+        {
+            var markerRun = new Run(marker);
+            Inline? firstInline = paragraph.Inlines.FirstInline;
+            if (firstInline == null)
+            {
+                paragraph.Inlines.Add(markerRun);
+            }
+            else
+            {
+                paragraph.Inlines.InsertBefore(firstInline, markerRun);
+            }
+        }
+
+        private static void RemoveChecklistMarker(Paragraph paragraph)
+        {
+            int prefixLength = GetChecklistPrefixLength(paragraph);
+            if (prefixLength == 0) return;
+
+            TextPointer? start = GetFirstTextPosition(paragraph);
+            if (start == null) return;
+            TextPointer? end = MoveForwardByTextCharacters(
+                start,
+                paragraph.ContentEnd,
+                prefixLength);
+            if (end != null && start.CompareTo(end) < 0)
+            {
+                new TextRange(start, end).Text = string.Empty;
+            }
+        }
+
+        private static TextPointer? GetFirstTextPosition(Paragraph paragraph)
+        {
+            TextPointer? current = paragraph.ContentStart;
+            while (current != null && current.CompareTo(paragraph.ContentEnd) < 0)
+            {
+                if (current.GetPointerContext(LogicalDirection.Forward) ==
+                    TextPointerContext.Text)
+                {
+                    return current;
+                }
+                current = current.GetNextContextPosition(LogicalDirection.Forward);
+            }
+            return null;
+        }
+
+        private static TextPointer? MoveForwardByTextCharacters(
+            TextPointer start,
+            TextPointer limit,
+            int characterCount)
+        {
+            TextPointer? current = start;
+            int remaining = characterCount;
+            while (current != null &&
+                   current.CompareTo(limit) < 0 &&
+                   remaining > 0)
+            {
+                if (current.GetPointerContext(LogicalDirection.Forward) ==
+                    TextPointerContext.Text)
+                {
+                    string text = current.GetTextInRun(LogicalDirection.Forward);
+                    int take = Math.Min(remaining, text.Length);
+                    current = current.GetPositionAtOffset(
+                        take,
+                        LogicalDirection.Forward);
+                    remaining -= take;
+                }
+                else
+                {
+                    current = current.GetNextContextPosition(LogicalDirection.Forward);
+                }
+            }
+            return remaining == 0 ? current : null;
+        }
 
         private void ApplyFontSize(double size, FontWeight weight)
         {
@@ -1010,13 +1443,11 @@ namespace KeyMapper
             {
                 RichEditor.Document.ColumnWidth = 110;
                 RichEditor.Document.ColumnGap = 12;
-                ColToggleBtn.Content = "▦";
                 ColToggleBtn.ToolTip = "Use one column";
             }
             else
             {
                 RichEditor.Document.ColumnWidth = double.NaN;
-                ColToggleBtn.Content = "▥";
                 ColToggleBtn.ToolTip = "Use two columns";
             }
             SaveNoteState();

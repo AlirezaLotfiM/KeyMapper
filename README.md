@@ -82,8 +82,8 @@ The local music player is part of the companion experience, not a separate skin:
 - Library rows show a clean duration column without play counters or scrollbar clipping.
 - Cover art is normalized at load time: accidental white capture borders are trimmed without cropping intentionally white artwork.
 - Mini-player elapsed and total times use compact high-contrast labels, so the position remains readable over bright cover art.
-- The mini-player now uses a compact glass time capsule with a live elapsed/total readout, without a second line under the seek bar.
-- Mini-player volume stays visually quiet until needed: a single speaker button opens a large vertical pill with a live percentage and direct drag control.
+- Mini-player time and speaker controls automatically switch to a light or dark foreground sampled from the current cover, and landscape time stays aligned with the seek control instead of floating in its center.
+- Mini-player volume stays visually quiet until needed: a bare speaker icon opens a compact Samsung Flex-inspired capsule with a theme-derived frosted track, bottom-up diffused illumination, soft glow, fine grain, direct tap and drag control, keyboard support, and live synchronization with Windows volume changes.
 - Favorites use a solid heart whose fill follows the selected theme.
 - Song titles use the active theme's text color, so the library remains readable in both light and dark palettes.
 - Repeat clearly cycles through three supplied icons: Off, Repeat all, and Repeat one.
@@ -99,7 +99,8 @@ The local music player is part of the companion experience, not a separate skin:
 - Sticky-note translation choices use a clipped, rounded, theme-aware flyout with readable language rows and no exposed black popup edges.
 - Sticky-note AI Tools uses the same polished flyout treatment, with clear summarize and grammar actions instead of default gray Windows buttons.
 - Starting a text selection closes the note palette so it cannot cover the writing surface.
-- The writing toolbar uses compact icon-first groups for AI, formatting, color, paragraph layout, and inserts. Full names live in tooltips, while font family and size remain directly selectable. It still wraps, scrolls, and remembers its pinned state per note.
+- The writing toolbar uses crisp theme-colored vector icons for AI, formatting, lists, paragraph layout, and inserts. Font family and size use dedicated selection space, so two-digit sizes remain readable. Wide notes use a deliberate two-row ribbon, while narrow notes switch to a compact core row with overflow tools instead of clipping or wrapping at random. The pinned-toolbar choice remains saved per note.
+- The list control offers bullets, numbering, and RTF-safe checklists that survive a restart.
 - Table Tools uses the active palette, rounded controls, grouped actions, and a scrollable surface instead of the old flat gray popup.
 - Notes are saved locally as formatted RTF plus plain text after edits and again when the window closes, so content, formatting, title, position, and preferences return on the next launch.
 - Delete confirmation uses a compact themed dialog with a clear cancel action instead of the default Windows message box.

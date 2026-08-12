@@ -1,6 +1,7 @@
 <Window x:Class="KeyMapper.PetOverlayWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:KeyMapper"
         Title="Desktop Pet Assistant"
         Icon="/Resources/app_icon.ico"
         Height="280" Width="360"
@@ -143,6 +144,15 @@
     <Window.ContextMenu>
         <ContextMenu Background="{DynamicResource AppBackgroundBrush}" Foreground="{DynamicResource AppTextBrush}" BorderBrush="{DynamicResource AppTextBrush}" BorderThickness="2" Padding="2" FontFamily="Segoe UI" FontSize="12">
             <ContextMenu.Resources>
+                <Style x:Key="PetMenuIcon" TargetType="{x:Type local:SvgIcon}">
+                    <Setter Property="Width" Value="16"/>
+                    <Setter Property="Height" Value="16"/>
+                    <Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type MenuItem}}}"/>
+                    <Setter Property="IsHitTestVisible" Value="False"/>
+                    <Setter Property="Focusable" Value="False"/>
+                    <Setter Property="SnapsToDevicePixels" Value="True"/>
+                    <Setter Property="UseLayoutRounding" Value="True"/>
+                </Style>
                 <Style TargetType="{x:Type MenuItem}">
                     <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}"/>
                     <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}"/>
@@ -154,17 +164,31 @@
                                     <Border x:Name="PixelCell" Background="{TemplateBinding Background}" BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="0,0,0,1" SnapsToDevicePixels="True">
                                         <Grid Height="29">
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="8"/>
-                                                <ColumnDefinition Width="24"/>
-                                                <ColumnDefinition Width="*"/>
                                                 <ColumnDefinition Width="22"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="20"/>
                                             </Grid.ColumnDefinitions>
-                                            <Rectangle x:Name="PixelMarker" Grid.Column="0" Fill="{DynamicResource AppAccentBrush}" Visibility="Collapsed"/>
-                                            <ContentPresenter Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" ContentSource="Icon"/>
-                                            <ContentPresenter Grid.Column="2" Margin="5,0,4,0" VerticalAlignment="Center" ContentSource="Header" RecognizesAccessKey="True"/>
-                                            <TextBlock x:Name="Arrow" Grid.Column="3" Text="..." FontSize="13" FontWeight="Bold" Foreground="{DynamicResource AppAccentBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed"/>
+                                            <ContentPresenter Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" ContentSource="Icon"/>
+                                            <ContentPresenter Grid.Column="1" Margin="4,0" VerticalAlignment="Center" ContentSource="Header" RecognizesAccessKey="True"/>
+                                            <local:SvgIcon x:Name="MoreIndicator"
+                                                           Grid.Column="2"
+                                                           Style="{StaticResource PetMenuIcon}"
+                                                           Source="/Resources/Icons/dot-menu-more-2-svgrepo-com.svg"
+                                                           Width="13"
+                                                           Height="13"
+                                                           Foreground="{DynamicResource AppAccentBrush}"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"
+                                                           Visibility="Collapsed"/>
                                         </Grid>
                                     </Border>
+                                    <Rectangle x:Name="PixelMarker"
+                                               Width="3"
+                                               Margin="0,1"
+                                               HorizontalAlignment="Left"
+                                               Fill="{DynamicResource AppAccentBrush}"
+                                               IsHitTestVisible="False"
+                                               Visibility="Collapsed"/>
                                     <Popup x:Name="PART_Popup" Placement="Right" HorizontalOffset="-2" VerticalOffset="-2" AllowsTransparency="True" Focusable="False" IsOpen="{Binding IsSubmenuOpen, RelativeSource={RelativeSource TemplatedParent}}">
                                         <Border Background="{DynamicResource AppBackgroundBrush}" BorderBrush="{DynamicResource AppTextBrush}" BorderThickness="2" Padding="2" SnapsToDevicePixels="True">
                                             <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Cycle"/>
@@ -173,7 +197,7 @@
                                 </Grid>
                                 <ControlTemplate.Triggers>
                                     <Trigger Property="HasItems" Value="True">
-                                        <Setter TargetName="Arrow" Property="Visibility" Value="Visible"/>
+                                        <Setter TargetName="MoreIndicator" Property="Visibility" Value="Visible"/>
                                     </Trigger>
                                     <Trigger Property="IsHighlighted" Value="True">
                                         <Setter TargetName="PixelCell" Property="Background" Value="{DynamicResource AppAccentSoftBrush}"/>
@@ -192,39 +216,84 @@
                         <Setter.Value><ControlTemplate TargetType="{x:Type Separator}"><Border Background="{DynamicResource AppBorderBrush}" Height="1"/></ControlTemplate></Setter.Value>
                     </Setter>
                 </Style>
-                <Style x:Key="PetMenuIcon" TargetType="Rectangle">
-                    <Setter Property="Width" Value="15"/>
-                    <Setter Property="Height" Value="15"/>
-                    <Setter Property="Fill" Value="{DynamicResource AppAccentBrush}"/>
-                    <Setter Property="SnapsToDevicePixels" Value="True"/>
-                </Style>
             </ContextMenu.Resources>
 
             <!-- 1. STICKY NOTES SUBMENU -->
-            <MenuItem Header="📝 Sticky Notes">
-                <MenuItem Header="➕ Add New Note" Click="MenuNewStickyNote_Click"/>
-                <MenuItem Header="👁️ Show All Notes" Click="MenuShowAllStickyNotes_Click"/>
-                <MenuItem Header="🙈 Hide All Notes" Click="MenuHideAllStickyNotes_Click"/>
-                <MenuItem Header="⚙️ Manage Notes" Click="MenuManageStickyNotes_Click"/>
+            <MenuItem Header="Sticky Notes">
+                <MenuItem.Icon>
+                    <local:SvgIcon Style="{StaticResource PetMenuIcon}" Source="/Resources/Icons/note-sticky-svgrepo-com.svg"/>
+                </MenuItem.Icon>
+                <MenuItem Header="Add New Note" Click="MenuNewStickyNote_Click"/>
+                <MenuItem Header="Show All Notes" Click="MenuShowAllStickyNotes_Click">
+                    <MenuItem.Icon>
+                        <local:SvgIcon Style="{StaticResource PetMenuIcon}" Source="/Resources/Icons/show-svgrepo-com.svg"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Hide All Notes" Click="MenuHideAllStickyNotes_Click">
+                    <MenuItem.Icon>
+                        <local:SvgIcon Style="{StaticResource PetMenuIcon}" Source="/Resources/Icons/hide-svgrepo-com.svg"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Manage Notes" Click="MenuManageStickyNotes_Click">
+                    <MenuItem.Icon>
+                        <local:SvgIcon Style="{StaticResource PetMenuIcon}" Source="/Resources/Icons/tool-svgrepo-com.svg"/>
+                    </MenuItem.Icon>
+                </MenuItem>
             </MenuItem>
 
             <!-- 2. MEDIA PLAYER SUBMENU -->
-            <MenuItem Header="🎵 Media Player">
-                <MenuItem Header="🎧 Open Music Player" Click="MenuMusicPlayer_Click"/>
-                <MenuItem x:Name="MusicNotesToggleMenuItem" Header="💃 Dance (Ambience): On" Click="MenuToggleMusicNotes_Click"/>
+            <MenuItem Header="Music Player">
+                <MenuItem.Icon>
+                    <local:SvgIcon Style="{StaticResource PetMenuIcon}" Source="/Resources/Icons/music-player-music-and-multimedia-svgrepo-com.svg"/>
+                </MenuItem.Icon>
+                <MenuItem Header="Open Music Player" Click="MenuMusicPlayer_Click">
+                    <MenuItem.Icon>
+                        <local:SvgIcon Style="{StaticResource PetMenuIcon}" Source="/Resources/Icons/music-note-slider-svgrepo-com.svg"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem x:Name="MusicNotesToggleMenuItem" Header="Music Ambience: On" Click="MenuToggleMusicNotes_Click">
+                    <MenuItem.Icon>
+                        <local:SvgIcon Style="{StaticResource PetMenuIcon}" Source="/Resources/Icons/nature-svgrepo-com.svg"/>
+                    </MenuItem.Icon>
+                </MenuItem>
             </MenuItem>
 
             <!-- 3. TEXT TOOLS SUBMENU -->
-            <MenuItem Header="🔤 Text Tools">
-                <MenuItem Header="🌐 Translate Selected Text" Click="MenuTranslate_Click"/>
-                <MenuItem Header="📷 OCR Screen Snipper" Click="MenuOcr_Click"/>
-                <MenuItem Header="🔄 De-gibberish Layout Fix" Click="MenuDeGibberish_Click"/>
+            <MenuItem Header="Text Tools">
+                <MenuItem.Icon>
+                    <local:SvgIcon Style="{StaticResource PetMenuIcon}" Source="/Resources/Icons/text-svgrepo-com.svg"/>
+                </MenuItem.Icon>
+                <MenuItem Header="Translate Selected Text" Click="MenuTranslate_Click">
+                    <MenuItem.Icon>
+                        <local:SvgIcon Style="{StaticResource PetMenuIcon}" Source="/Resources/Icons/translate-01-svgrepo-com.svg"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="OCR Screen Snapper" Click="MenuOcr_Click">
+                    <MenuItem.Icon>
+                        <local:SvgIcon Style="{StaticResource PetMenuIcon}" Source="/Resources/Icons/scanner-svgrepo-com.svg"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="De-gibberish Layout Fix" Click="MenuDeGibberish_Click">
+                    <MenuItem.Icon>
+                        <local:SvgIcon Style="{StaticResource PetMenuIcon}" Source="/Resources/Icons/convert-3d-cube-svgrepo-com.svg"/>
+                    </MenuItem.Icon>
+                </MenuItem>
             </MenuItem>
 
             <!-- 4. DESKTOP PET SUBMENU -->
-            <MenuItem Header="🐾 Desktop Pet">
-                <MenuItem Header="💬 Talk to Character" Click="MenuAsk_Click"/>
-                <MenuItem Header="🎭 Switch Character">
+            <MenuItem Header="Desktop Pet">
+                <MenuItem.Icon>
+                    <local:SvgIcon Style="{StaticResource PetMenuIcon}" Source="/Resources/Icons/pet-svgrepo-com.svg"/>
+                </MenuItem.Icon>
+                <MenuItem Header="Talk to Character" Click="MenuAsk_Click">
+                    <MenuItem.Icon>
+                        <local:SvgIcon Style="{StaticResource PetMenuIcon}" Source="/Resources/Icons/chat-dots-svgrepo-com.svg"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Switch Character">
+                    <MenuItem.Icon>
+                        <local:SvgIcon Style="{StaticResource PetMenuIcon}" Source="/Resources/Icons/switch-svgrepo-com.svg"/>
+                    </MenuItem.Icon>
                     <MenuItem Header="Pink Monster" Click="MenuCharPink_Click"/>
                     <MenuItem Header="Owlet Monster" Click="MenuCharOwlet_Click"/>
                     <MenuItem Header="Dude Monster" Click="MenuCharDude_Click"/>
@@ -234,7 +303,10 @@
                     <MenuItem Header="Monkey D. Luffy" Click="MenuCharLuffy_Click"/>
                 </MenuItem>
                 <Separator/>
-                <MenuItem Header="💬 Comments">
+                <MenuItem Header="Comments">
+                    <MenuItem.Icon>
+                        <local:SvgIcon Style="{StaticResource PetMenuIcon}" Source="/Resources/Icons/chat-unread-svgrepo-com.svg"/>
+                    </MenuItem.Icon>
                     <MenuItem x:Name="CommentsToggleMenuItem" Header="Enable Comments: On" Click="MenuToggleComments_Click"/>
                     <MenuItem Header="Comment Frequency">
                         <MenuItem x:Name="CommentsQuietMenuItem" Header="Quiet (Rare)" Tag="Quiet" Click="MenuSetCommentFrequency_Click"/>
@@ -243,7 +315,10 @@
                     </MenuItem>
                     <MenuItem x:Name="AiCommentsToggleMenuItem" Header="AI Ambient Comments: On" Click="MenuToggleAiComments_Click"/>
                 </MenuItem>
-                <MenuItem Header="🚶 Walking">
+                <MenuItem Header="Walking">
+                    <MenuItem.Icon>
+                        <local:SvgIcon Style="{StaticResource PetMenuIcon}" Source="/Resources/Icons/walk-svgrepo-com.svg"/>
+                    </MenuItem.Icon>
                     <MenuItem x:Name="WalkingToggleMenuItem" Header="Enable Walking: On" Click="MenuToggleWalking_Click"/>
                     <MenuItem x:Name="HorizontalWalkingToggleMenuItem" Header="Horizontal Only: Off" Click="MenuToggleHorizontalWalking_Click"/>
                     <MenuItem Header="Movement Speed">
@@ -258,20 +333,43 @@
                     </MenuItem>
                 </MenuItem>
                 <Separator/>
-                <MenuItem Header="⚙️ Pet Settings" Click="MenuSettings_Click"/>
-                <MenuItem Header="👁️ Hide Desktop Pet" Click="MenuHide_Click"/>
+                <MenuItem Header="Pet Settings" Click="MenuSettings_Click">
+                    <MenuItem.Icon>
+                        <local:SvgIcon Style="{StaticResource PetMenuIcon}" Source="/Resources/Icons/tool-svgrepo-com.svg"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Hide Desktop Pet" Click="MenuHide_Click">
+                    <MenuItem.Icon>
+                        <local:SvgIcon Style="{StaticResource PetMenuIcon}" Source="/Resources/Icons/hide-svgrepo-com.svg"/>
+                    </MenuItem.Icon>
+                </MenuItem>
             </MenuItem>
 
             <!-- 5. KEYMAPPER SETTINGS SUBMENU -->
-            <MenuItem Header="⚙️ KeyMapper Settings">
-                <MenuItem Header="⚡ Text Expansions &amp; Shortcuts" Click="MenuExpansions_Click"/>
-                <MenuItem Header="🔧 All Settings" Click="MenuSettings_Click"/>
+            <MenuItem Header="KeyMapper Settings">
+                <MenuItem.Icon>
+                    <local:SvgIcon Style="{StaticResource PetMenuIcon}" Source="/Resources/Icons/setting-2-svgrepo-com.svg"/>
+                </MenuItem.Icon>
+                <MenuItem Header="Text Expansions &amp; Shortcuts" Click="MenuExpansions_Click">
+                    <MenuItem.Icon>
+                        <local:SvgIcon Style="{StaticResource PetMenuIcon}" Source="/Resources/Icons/shortcut-maker-svgrepo-com.svg"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="All Settings" Click="MenuSettings_Click">
+                    <MenuItem.Icon>
+                        <local:SvgIcon Style="{StaticResource PetMenuIcon}" Source="/Resources/Icons/tool-svgrepo-com.svg"/>
+                    </MenuItem.Icon>
+                </MenuItem>
             </MenuItem>
 
             <Separator/>
 
             <!-- 6. EXIT -->
-            <MenuItem Header="🚪 Exit KeyMapper" Click="MenuExitApp_Click" Foreground="#B53D64"/>
+            <MenuItem Header="Exit KeyMapper" Click="MenuExitApp_Click" Foreground="#B53D64">
+                <MenuItem.Icon>
+                    <local:SvgIcon Style="{StaticResource PetMenuIcon}" Source="/Resources/Icons/exit-svgrepo-com.svg"/>
+                </MenuItem.Icon>
+            </MenuItem>
         </ContextMenu>
     </Window.ContextMenu>
 </Window>

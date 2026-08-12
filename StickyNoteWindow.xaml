@@ -136,6 +136,164 @@
             <Setter Property="Padding" Value="2"/>
             <Setter Property="Margin" Value="2"/>
         </Style>
+        <Style x:Key="RibbonSplitArrowButton" TargetType="Button" BasedOn="{StaticResource RibbonIconButton}">
+            <Setter Property="Width" Value="18"/>
+            <Setter Property="Margin" Value="0,1,1,1"/>
+        </Style>
+        <Style x:Key="CompactComboBoxItem" TargetType="ComboBoxItem">
+            <Setter Property="Foreground" Value="{DynamicResource AppTextBrush}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Padding" Value="8,5"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBoxItem">
+                        <Border x:Name="ItemChrome"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="5"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsHighlighted" Value="True">
+                                <Setter TargetName="ItemChrome" Property="Background" Value="{DynamicResource AppAccentSoftBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="ItemChrome" Property="Background" Value="{DynamicResource AppAccentSoftBrush}"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <!-- The native WPF ComboBox arrow consumed most of the old 48-DIP size field.
+             This template reserves a real content column and a fixed arrow column. -->
+        <Style x:Key="CompactComboBox" TargetType="ComboBox">
+            <Setter Property="Height" Value="28"/>
+            <Setter Property="Padding" Value="7,0,3,0"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="10.5"/>
+            <Setter Property="Foreground" Value="{Binding ElementName=TitleTextBox, Path=Foreground}"/>
+            <Setter Property="Background" Value="#14FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#35000000"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="ItemContainerStyle" Value="{StaticResource CompactComboBoxItem}"/>
+            <Setter Property="MaxDropDownHeight" Value="240"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid SnapsToDevicePixels="True" UseLayoutRounding="True">
+                            <Border x:Name="ComboChrome"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="6">
+                                <Grid IsHitTestVisible="False">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="18"/>
+                                    </Grid.ColumnDefinitions>
+                                    <ContentPresenter Grid.Column="0"
+                                                      Margin="{TemplateBinding Padding}"
+                                                      Content="{TemplateBinding SelectionBoxItem}"
+                                                      ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                                      ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
+                                                      HorizontalAlignment="Left"
+                                                      VerticalAlignment="Center"
+                                                      TextElement.Foreground="{TemplateBinding Foreground}"/>
+                                    <Path Grid.Column="1"
+                                          Width="7" Height="4"
+                                          Data="M 0 0 L 3.5 4 L 7 0 Z"
+                                          Fill="{TemplateBinding Foreground}"
+                                          Opacity="0.72"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"/>
+                                </Grid>
+                            </Border>
+                            <ToggleButton Focusable="False"
+                                          ClickMode="Press"
+                                          IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
+                                <ToggleButton.Template>
+                                    <ControlTemplate TargetType="ToggleButton">
+                                        <Border Background="Transparent"/>
+                                    </ControlTemplate>
+                                </ToggleButton.Template>
+                            </ToggleButton>
+                            <Popup x:Name="PART_Popup"
+                                   AllowsTransparency="True"
+                                   Focusable="False"
+                                   IsOpen="{TemplateBinding IsDropDownOpen}"
+                                   Placement="Bottom"
+                                   PopupAnimation="Fade">
+                                <Border MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"
+                                        MaxHeight="{TemplateBinding MaxDropDownHeight}"
+                                        Margin="0,3,0,0"
+                                        Padding="3"
+                                        Background="{DynamicResource AppSurfaceBrush}"
+                                        BorderBrush="{DynamicResource AppBorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="8">
+                                    <Border.Effect>
+                                        <DropShadowEffect BlurRadius="12" ShadowDepth="3" Direction="270" Color="#000000" Opacity="0.18"/>
+                                    </Border.Effect>
+                                    <ScrollViewer CanContentScroll="True" VerticalScrollBarVisibility="Auto">
+                                        <ItemsPresenter/>
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ComboChrome" Property="BorderBrush" Value="{DynamicResource AppAccentBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                <Setter TargetName="ComboChrome" Property="BorderBrush" Value="{DynamicResource AppAccentBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="ComboChrome" Property="Opacity" Value="0.48"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="RibbonPopupButton" TargetType="Button">
+            <Setter Property="Height" Value="34"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Margin" Value="0,1"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Foreground" Value="{Binding ElementName=TitleTextBox, Path=Foreground}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="PopupActionChrome"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="7"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="PopupActionChrome" Property="Background" Value="{DynamicResource AppAccentSoftBrush}"/>
+                                <Setter TargetName="PopupActionChrome" Property="BorderBrush" Value="{DynamicResource AppAccentBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="PopupActionChrome" Property="Opacity" Value="0.72"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
         <!-- Circle Swatch Button Style -->
         <Style x:Key="PaletteCircleButton" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
@@ -325,98 +483,156 @@
                              TextChanged="TitleTextBox_TextChanged"/>
                 </Grid>
 
-                <!-- FORMATTING TOOLBAR (EDIT MODE OR PINNED - SPACED, MULTILINE, SCROLLABLE) -->
+                <!-- Stable Word-style ribbon. Wide notes use two deliberate rows; narrow notes use one core row and More. -->
                 <Border Grid.Row="1" x:Name="FormatToolbar" Background="#12000000" Padding="7,5" BorderThickness="0,0,0,1" BorderBrush="#15000000" Visibility="Collapsed">
                     <DockPanel LastChildFill="True">
-                        <!-- Word-style pin: the toolbar can stay open after editing ends. -->
                         <Button x:Name="ToolbarPinButton"
                                 DockPanel.Dock="Right"
                                 Style="{StaticResource FormatToolButton}"
-                                Width="32"
-                                Height="25"
-                                Margin="5,2,0,2"
-                                Content="📌"
+                                Width="28"
+                                Height="28"
+                                Margin="3,2,0,2"
                                 ToolTip="Pin writing tools"
-                                Click="ToolbarPinButton_Click"/>
-                        <ScrollViewer x:Name="FormatToolbarScrollViewer"
-                                      MaxHeight="104"
-                                      VerticalScrollBarVisibility="Auto"
-                                      HorizontalScrollBarVisibility="Disabled"
-                                      PreviewMouseWheel="FormatToolbarScrollViewer_PreviewMouseWheel">
-                            <WrapPanel Orientation="Horizontal" Margin="1,1,3,1">
-                            <Border Style="{StaticResource RibbonGroup}">
-                                <StackPanel Orientation="Horizontal">
-                                    <Button Style="{StaticResource RibbonIconButton}" ToolTip="Translate note or selection" Click="TranslateButton_Click">
-                                        <Rectangle Width="15" Height="15" Fill="{Binding ElementName=TitleTextBox, Path=Foreground}"><Rectangle.OpacityMask><ImageBrush ImageSource="/Resources/Icons/translate.png"/></Rectangle.OpacityMask></Rectangle>
-                                    </Button>
-                                    <Button Style="{StaticResource RibbonIconButton}" ToolTip="AI tools" Click="AiButton_Click">
-                                        <Rectangle Width="15" Height="15" Fill="{Binding ElementName=TitleTextBox, Path=Foreground}"><Rectangle.OpacityMask><ImageBrush ImageSource="/Resources/Icons/ai.png"/></Rectangle.OpacityMask></Rectangle>
-                                    </Button>
+                                Click="ToolbarPinButton_Click">
+                            <local:SvgIcon x:Name="ToolbarPinIcon"
+                                           Width="15" Height="15"
+                                           Source="/Resources/Icons/pin.svg.svg"
+                                           Foreground="{Binding ElementName=TitleTextBox, Path=Foreground}"/>
+                        </Button>
+
+                        <Grid>
+                            <!-- Normal density: the groups never wrap or change order. -->
+                            <Grid x:Name="ToolbarNormalLayout" HorizontalAlignment="Left">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <StackPanel Grid.Row="0" Orientation="Horizontal">
+                                    <Border Style="{StaticResource RibbonGroup}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button Style="{StaticResource RibbonIconButton}" ToolTip="Translate note or selection" Click="TranslateButton_Click">
+                                                <local:SvgIcon Width="16" Height="16" Source="/Resources/Icons/translate-01-svgrepo-com.svg" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+                                            </Button>
+                                            <Button Style="{StaticResource RibbonIconButton}" ToolTip="AI tools" Click="AiButton_Click">
+                                                <local:SvgIcon Width="16" Height="16" Source="/Resources/Icons/ai-svgrepo-com.svg" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+                                            </Button>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <Border Style="{StaticResource RibbonGroup}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <ComboBox x:Name="FontFamilyCombo" Style="{StaticResource CompactComboBox}" MinWidth="112" Width="112" Margin="1" SelectionChanged="FontFamilyCombo_SelectionChanged" ToolTip="Font family">
+                                                <ComboBoxItem Content="Segoe UI" IsSelected="True"/>
+                                                <ComboBoxItem Content="Vazirmatn"/>
+                                                <ComboBoxItem Content="Arial"/>
+                                                <ComboBoxItem Content="Times New Roman"/>
+                                                <ComboBoxItem Content="Consolas"/>
+                                                <ComboBoxItem Content="Tahoma"/>
+                                                <ComboBoxItem Content="Comic Sans MS"/>
+                                            </ComboBox>
+                                            <ComboBox x:Name="FontSizeCombo" Style="{StaticResource CompactComboBox}" MinWidth="60" Width="60" Margin="1" SelectionChanged="FontSizeCombo_SelectionChanged" ToolTip="Font size">
+                                                <ComboBoxItem Content="10"/>
+                                                <ComboBoxItem Content="12"/>
+                                                <ComboBoxItem Content="13" IsSelected="True"/>
+                                                <ComboBoxItem Content="14"/>
+                                                <ComboBoxItem Content="16"/>
+                                                <ComboBoxItem Content="18"/>
+                                                <ComboBoxItem Content="20"/>
+                                                <ComboBoxItem Content="24"/>
+                                                <ComboBoxItem Content="28"/>
+                                                <ComboBoxItem Content="32"/>
+                                            </ComboBox>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <Border Style="{StaticResource RibbonGroup}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button Style="{StaticResource RibbonIconButton}" ToolTip="Bold (Ctrl+B)" Click="BtnBold_Click"><local:SvgIcon Width="16" Height="16" Source="/Resources/Icons/bold-svgrepo-com.svg" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/></Button>
+                                            <Button Style="{StaticResource RibbonIconButton}" ToolTip="Italic (Ctrl+I)" Click="BtnItalic_Click"><local:SvgIcon Width="16" Height="16" Source="/Resources/Icons/italic-svgrepo-com.svg" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/></Button>
+                                            <Button Style="{StaticResource RibbonIconButton}" ToolTip="Underline (Ctrl+U)" Click="BtnUnderline_Click"><local:SvgIcon Width="16" Height="16" Source="/Resources/Icons/underline-svgrepo-com.svg" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/></Button>
+                                            <Button Style="{StaticResource RibbonIconButton}" ToolTip="Strikethrough" Click="BtnStrikethrough_Click"><local:SvgIcon Width="16" Height="16" Source="/Resources/Icons/strikethrough-svgrepo-com.svg" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/></Button>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <Border Style="{StaticResource RibbonGroup}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button Style="{StaticResource RibbonIconButton}" ToolTip="Text color" Click="BtnTextColor_Click"><Grid Width="18" Height="19"><TextBlock Text="A" FontWeight="SemiBold" HorizontalAlignment="Center"/><Border Height="3" CornerRadius="1.5" Background="#E84B4B" VerticalAlignment="Bottom"/></Grid></Button>
+                                            <Button Style="{StaticResource RibbonIconButton}" ToolTip="Text highlight" Click="BtnHighlight_Click"><Grid Width="18" Height="19"><TextBlock Text="ab" FontSize="10" HorizontalAlignment="Center"/><Border Height="5" CornerRadius="1.5" Background="#FFE66D" VerticalAlignment="Bottom"/></Grid></Button>
+                                        </StackPanel>
+                                    </Border>
                                 </StackPanel>
-                            </Border>
 
-                            <Border Style="{StaticResource RibbonGroup}">
-                                <StackPanel Orientation="Horizontal">
-                            <ComboBox x:Name="FontFamilyCombo" Width="92" Height="24" FontSize="10" Margin="1" SelectionChanged="FontFamilyCombo_SelectionChanged" ToolTip="Font family">
-                                <ComboBoxItem Content="Segoe UI" IsSelected="True"/>
-                                <ComboBoxItem Content="Vazirmatn"/>
-                                <ComboBoxItem Content="Arial"/>
-                                <ComboBoxItem Content="Times New Roman"/>
-                                <ComboBoxItem Content="Consolas"/>
-                                <ComboBoxItem Content="Tahoma"/>
-                                <ComboBoxItem Content="Comic Sans MS"/>
-                            </ComboBox>
+                                <StackPanel Grid.Row="1" Orientation="Horizontal">
+                                    <Border Style="{StaticResource RibbonGroup}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button Style="{StaticResource RibbonIconButton}" Content="H1" FontWeight="SemiBold" ToolTip="Heading 1" Click="BtnH1_Click"/>
+                                            <Button Style="{StaticResource RibbonIconButton}" Content="H2" FontSize="10" FontWeight="SemiBold" ToolTip="Heading 2" Click="BtnH2_Click"/>
+                                        </StackPanel>
+                                    </Border>
 
-                            <!-- Font Size Selector -->
-                            <ComboBox x:Name="FontSizeCombo" Width="48" Height="24" FontSize="10" Margin="1" SelectionChanged="FontSizeCombo_SelectionChanged" ToolTip="Font size">
-                                <ComboBoxItem Content="10"/>
-                                <ComboBoxItem Content="12"/>
-                                <ComboBoxItem Content="13" IsSelected="True"/>
-                                <ComboBoxItem Content="14"/>
-                                <ComboBoxItem Content="16"/>
-                                <ComboBoxItem Content="18"/>
-                                <ComboBoxItem Content="20"/>
-                                <ComboBoxItem Content="24"/>
-                                <ComboBoxItem Content="28"/>
-                                <ComboBoxItem Content="32"/>
-                            </ComboBox>
+                                    <Border Style="{StaticResource RibbonGroup}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button Style="{StaticResource RibbonIconButton}" Margin="1,1,0,1" ToolTip="Toggle bullet list" Click="BtnBullet_Click"><local:SvgIcon Width="16" Height="16" Source="/Resources/Icons/list-svgrepo-com.svg" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/></Button>
+                                            <Button Style="{StaticResource RibbonSplitArrowButton}" ToolTip="Choose list type" Click="BtnListMenu_Click"><local:SvgIcon Width="9" Height="9" Source="/Resources/Icons/down-chevron-svgrepo-com.svg" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/></Button>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <Border Style="{StaticResource RibbonGroup}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button Style="{StaticResource RibbonIconButton}" ToolTip="Align left" Click="BtnAlignLeft_Click"><local:SvgIcon Width="16" Height="16" Source="/Resources/Icons/justify-left-svgrepo-com.svg" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/></Button>
+                                            <Button Style="{StaticResource RibbonIconButton}" ToolTip="Align center" Click="BtnAlignCenter_Click"><local:SvgIcon Width="16" Height="16" Source="/Resources/Icons/justify-center-svgrepo-com.svg" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/></Button>
+                                            <Button Style="{StaticResource RibbonIconButton}" ToolTip="Align right" Click="BtnAlignRight_Click"><local:SvgIcon Width="16" Height="16" Source="/Resources/Icons/justify-right-svgrepo-com.svg" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/></Button>
+                                            <Button Style="{StaticResource RibbonIconButton}" ToolTip="Justify" Click="BtnAlignJustify_Click"><local:SvgIcon Width="16" Height="16" Source="/Resources/Icons/justify-fill-svgrepo-com.svg" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/></Button>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <Border Style="{StaticResource RibbonGroup}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button Style="{StaticResource RibbonIconButton}" ToolTip="Left-to-right paragraph" Click="BtnLtrParagraph_Click"><local:SvgIcon Width="16" Height="16" Source="/Resources/Icons/text-direction-ltr-svgrepo-com.svg" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/></Button>
+                                            <Button Style="{StaticResource RibbonIconButton}" ToolTip="Right-to-left paragraph" Click="BtnRtlParagraph_Click"><local:SvgIcon Width="16" Height="16" Source="/Resources/Icons/text-direction-rtl-svgrepo-com.svg" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/></Button>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <Border Style="{StaticResource RibbonGroup}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button x:Name="ColToggleBtn" Style="{StaticResource RibbonIconButton}" ToolTip="Use two columns" Click="ColToggleBtn_Click">
+                                                <Grid Width="16" Height="16"><Border BorderBrush="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" BorderThickness="1.2" CornerRadius="1"/><Path Data="M 8,1 L 8,15" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1.2"/></Grid>
+                                            </Button>
+                                            <Button Style="{StaticResource RibbonIconButton}" ToolTip="Table tools" Click="BtnTableMenu_Click">
+                                                <Grid Width="16" Height="16"><Border BorderBrush="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" BorderThickness="1.2" CornerRadius="1"/><Path Data="M 1,5.5 L 15,5.5 M 1,10.5 L 15,10.5 M 5.5,1 L 5.5,15 M 10.5,1 L 10.5,15" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1"/></Grid>
+                                            </Button>
+                                            <Button Style="{StaticResource RibbonIconButton}" ToolTip="Insert image" Click="BtnInsertImage_Click"><local:SvgIcon Width="16" Height="16" Source="/Resources/Icons/image-plus-svgrepo-com.svg" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/></Button>
+                                            <Button Style="{StaticResource RibbonIconButton}" ToolTip="Record voice memo" Click="BtnVoiceMemo_Click"><Rectangle Width="15" Height="15" Fill="{Binding ElementName=TitleTextBox, Path=Foreground}"><Rectangle.OpacityMask><ImageBrush ImageSource="/Resources/Icons/music-microphone-large-svgrepo-com.png"/></Rectangle.OpacityMask></Rectangle></Button>
+                                        </StackPanel>
+                                    </Border>
                                 </StackPanel>
-                            </Border>
+                            </Grid>
 
-                            <Border Style="{StaticResource RibbonGroup}"><StackPanel Orientation="Horizontal">
-                                <Button Style="{StaticResource RibbonIconButton}" Content="B" FontWeight="Bold" ToolTip="Bold (Ctrl+B)" Click="BtnBold_Click"/>
-                                <Button Style="{StaticResource RibbonIconButton}" Content="I" FontStyle="Italic" ToolTip="Italic (Ctrl+I)" Click="BtnItalic_Click"/>
-                                <Button Style="{StaticResource RibbonIconButton}" Content="U̲" ToolTip="Underline (Ctrl+U)" Click="BtnUnderline_Click"/>
-                                <Button Style="{StaticResource RibbonIconButton}" Content="S̶" ToolTip="Strikethrough" Click="BtnStrikethrough_Click"/>
-                            </StackPanel></Border>
-
-                            <Border Style="{StaticResource RibbonGroup}"><StackPanel Orientation="Horizontal">
-                                <Button Style="{StaticResource RibbonIconButton}" ToolTip="Text color" Click="BtnTextColor_Click"><Grid Width="18" Height="19"><TextBlock Text="A" FontWeight="SemiBold" HorizontalAlignment="Center"/><Border Height="3" CornerRadius="1.5" Background="#E84B4B" VerticalAlignment="Bottom"/></Grid></Button>
-                                <Button Style="{StaticResource RibbonIconButton}" ToolTip="Text highlight" Click="BtnHighlight_Click"><Grid Width="18" Height="19"><TextBlock Text="ab" FontSize="10" HorizontalAlignment="Center"/><Border Height="5" CornerRadius="1.5" Background="#FFE66D" VerticalAlignment="Bottom"/></Grid></Button>
-                            </StackPanel></Border>
-
-                            <Border Style="{StaticResource RibbonGroup}"><StackPanel Orientation="Horizontal">
-                                <Button Style="{StaticResource RibbonIconButton}" Content="H1" FontWeight="SemiBold" ToolTip="Heading 1" Click="BtnH1_Click"/>
-                                <Button Style="{StaticResource RibbonIconButton}" Content="H2" FontSize="10" FontWeight="SemiBold" ToolTip="Heading 2" Click="BtnH2_Click"/>
-                                <Button Style="{StaticResource RibbonIconButton}" Content="☷" FontSize="17" ToolTip="Bullet list" Click="BtnBullet_Click"/>
-                            </StackPanel></Border>
-
-                            <Border Style="{StaticResource RibbonGroup}"><StackPanel Orientation="Horizontal">
-                                <Button Style="{StaticResource RibbonIconButton}" Content="≡" FontSize="18" HorizontalContentAlignment="Left" ToolTip="Align left" Click="BtnAlignLeft_Click"/>
-                                <Button Style="{StaticResource RibbonIconButton}" Content="≡" FontSize="18" ToolTip="Align center" Click="BtnAlignCenter_Click"/>
-                                <Button Style="{StaticResource RibbonIconButton}" Content="≡" FontSize="18" HorizontalContentAlignment="Right" ToolTip="Align right" Click="BtnAlignRight_Click"/>
-                                <Button Style="{StaticResource RibbonIconButton}" Content="¶→" FontSize="10" ToolTip="Left-to-right paragraph" Click="BtnLtrParagraph_Click"/>
-                                <Button Style="{StaticResource RibbonIconButton}" Content="←¶" FontSize="10" ToolTip="Right-to-left paragraph" Click="BtnRtlParagraph_Click"/>
-                            </StackPanel></Border>
-
-                            <Border Style="{StaticResource RibbonGroup}"><StackPanel Orientation="Horizontal">
-                                <Button x:Name="ColToggleBtn" Style="{StaticResource RibbonIconButton}" Content="▥" FontSize="16" ToolTip="Use two columns" Click="ColToggleBtn_Click"/>
-                                <Button Style="{StaticResource RibbonIconButton}" Content="▦" FontSize="16" ToolTip="Table tools" Click="BtnTableMenu_Click"/>
-                                <Button Style="{StaticResource RibbonIconButton}" Content="▧" FontSize="17" ToolTip="Insert image" Click="BtnInsertImage_Click"/>
-                                <Button Style="{StaticResource RibbonIconButton}" ToolTip="Record voice memo" Click="BtnVoiceMemo_Click"><Rectangle Width="15" Height="15" Fill="{Binding ElementName=TitleTextBox, Path=Foreground}"><Rectangle.OpacityMask><ImageBrush ImageSource="/Resources/Icons/music-microphone-large-svgrepo-com.png"/></Rectangle.OpacityMask></Rectangle></Button>
-                            </StackPanel></Border>
-                            </WrapPanel>
-                        </ScrollViewer>
+                            <!-- Compact density: core actions stay in one row. Less-used actions live in More. -->
+                            <StackPanel x:Name="ToolbarCompactLayout" Orientation="Horizontal" HorizontalAlignment="Left" Visibility="Collapsed">
+                                <Border x:Name="CompactPrimaryActionGroup" Style="{StaticResource RibbonGroup}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button Style="{StaticResource RibbonIconButton}" ToolTip="Translate note or selection" Click="TranslateButton_Click"><local:SvgIcon Width="16" Height="16" Source="/Resources/Icons/translate-01-svgrepo-com.svg" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/></Button>
+                                        <Button Style="{StaticResource RibbonIconButton}" ToolTip="AI tools" Click="AiButton_Click"><local:SvgIcon Width="16" Height="16" Source="/Resources/Icons/ai-svgrepo-com.svg" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/></Button>
+                                    </StackPanel>
+                                </Border>
+                                <Border x:Name="CompactCoreFormattingGroup" Style="{StaticResource RibbonGroup}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button Style="{StaticResource RibbonIconButton}" ToolTip="Bold (Ctrl+B)" Click="BtnBold_Click"><local:SvgIcon Width="16" Height="16" Source="/Resources/Icons/bold-svgrepo-com.svg" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/></Button>
+                                        <Button Style="{StaticResource RibbonIconButton}" ToolTip="Italic (Ctrl+I)" Click="BtnItalic_Click"><local:SvgIcon Width="16" Height="16" Source="/Resources/Icons/italic-svgrepo-com.svg" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/></Button>
+                                        <Button Style="{StaticResource RibbonIconButton}" ToolTip="Underline (Ctrl+U)" Click="BtnUnderline_Click"><local:SvgIcon Width="16" Height="16" Source="/Resources/Icons/underline-svgrepo-com.svg" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/></Button>
+                                    </StackPanel>
+                                </Border>
+                                <Border Style="{StaticResource RibbonGroup}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button Style="{StaticResource RibbonIconButton}" Margin="1,1,0,1" ToolTip="Toggle bullet list" Click="BtnBullet_Click"><local:SvgIcon Width="16" Height="16" Source="/Resources/Icons/list-svgrepo-com.svg" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/></Button>
+                                        <Button Style="{StaticResource RibbonSplitArrowButton}" ToolTip="Choose list type" Click="BtnListMenu_Click"><local:SvgIcon Width="9" Height="9" Source="/Resources/Icons/down-chevron-svgrepo-com.svg" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/></Button>
+                                    </StackPanel>
+                                </Border>
+                                <Button x:Name="CompactMoreButton" Style="{StaticResource RibbonIconButton}" Margin="2" ToolTip="More writing tools" Click="CompactMoreButton_Click"><local:SvgIcon Width="17" Height="17" Source="/Resources/Icons/dot-menu-more-2-svgrepo-com.svg" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/></Button>
+                            </StackPanel>
+                        </Grid>
                     </DockPanel>
                 </Border>
 
@@ -434,6 +650,7 @@
                                  VerticalScrollBarVisibility="Auto" 
                                  HorizontalScrollBarVisibility="Disabled"
                                  PreviewMouseLeftButtonDown="RichEditor_PreviewMouseLeftButtonDown"
+                                 PreviewKeyDown="RichEditor_PreviewKeyDown"
                                  GotKeyboardFocus="RichEditor_GotKeyboardFocus"
                                  MouseDoubleClick="RichEditor_MouseDoubleClick"
                                  SelectionChanged="RichEditor_SelectionChanged"
@@ -517,7 +734,7 @@
                 <StackPanel x:Name="HeaderActionPanel" Orientation="Vertical" VerticalAlignment="Top">
                     <!-- Done Button (Edit Mode Only - Top of Sidebar) -->
                     <Button x:Name="DoneSidebarButton" Style="{StaticResource SidebarIconButton}" ToolTip="Finish Editing (Done)" Click="DoneEditButton_Click" Visibility="Collapsed">
-                        <TextBlock Text="✔" Foreground="#2E7D32" FontWeight="Bold" FontSize="14"/>
+                        <local:SvgIcon x:Name="DoneSidebarIcon" Width="15" Height="15" Source="/Resources/Icons/check-svgrepo-com.svg" Foreground="#2E7D32"/>
                     </Button>
 
                     <!-- Pin Toggle Button -->
@@ -548,7 +765,7 @@
 
                     <!-- Fold Button -->
                     <Button x:Name="FoldButton" Style="{StaticResource SidebarIconButton}" ToolTip="Fold / Expand" Click="FoldButton_Click">
-                        <TextBlock x:Name="FoldIconText" Text="🔼"/>
+                        <local:SvgIcon x:Name="FoldSvgIcon" Width="15" Height="15" Source="/Resources/Icons/up-chevron-svgrepo-com.svg" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
                     </Button>
 
                     <!-- Delete Button -->
@@ -632,6 +849,111 @@
                     <Button Width="22" Height="22" Margin="2" Background="#F8BBD0" Click="HighlightOption_Click" Tag="#F8BBD0" ToolTip="Pink"/>
                     <Button Width="22" Height="22" Margin="2" Background="#FFCC80" Click="HighlightOption_Click" Tag="#FFCC80" ToolTip="Orange"/>
                 </WrapPanel>
+            </Border>
+        </Popup>
+
+        <!-- List type chooser shared by both normal and compact split buttons. -->
+        <Popup x:Name="ListPopup" StaysOpen="False" AllowsTransparency="True" PopupAnimation="Fade" Placement="Bottom">
+            <Border Width="196"
+                    Margin="3"
+                    Padding="6"
+                    Background="{Binding ElementName=NoteCardBorder, Path=Background}"
+                    BorderBrush="{DynamicResource AppBorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="10">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="14" ShadowDepth="3" Direction="270" Color="#000000" Opacity="0.20"/>
+                </Border.Effect>
+                <StackPanel>
+                    <Button Style="{StaticResource RibbonPopupButton}" Click="ListBullets_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <local:SvgIcon Width="17" Height="17" Source="/Resources/Icons/list-svgrepo-com.svg" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+                            <TextBlock Text="Bullet list" Margin="9,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource RibbonPopupButton}" Click="ListNumbered_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <local:SvgIcon Width="17" Height="17" Source="/Resources/Icons/list-ol-svgrepo-com.svg" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+                            <TextBlock Text="Numbered list" Margin="9,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource RibbonPopupButton}" Click="ListChecklist_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <local:SvgIcon Width="17" Height="17" Source="/Resources/Icons/list-check-svgrepo-com.svg" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+                            <TextBlock Text="Checklist" Margin="9,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Border>
+        </Popup>
+
+        <!-- Overflow for the compact toolbar. It keeps the note narrow without hiding capability. -->
+        <Popup x:Name="ToolbarMorePopup"
+               StaysOpen="False"
+               AllowsTransparency="True"
+               PopupAnimation="Fade"
+               PlacementTarget="{Binding ElementName=CompactMoreButton}"
+               Placement="Bottom">
+            <Border Width="252"
+                    Margin="3"
+                    Padding="9"
+                    Background="{Binding ElementName=NoteCardBorder, Path=Background}"
+                    BorderBrush="{DynamicResource AppBorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="11">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="16" ShadowDepth="4" Direction="270" Color="#000000" Opacity="0.22"/>
+                </Border.Effect>
+                <StackPanel>
+                    <TextBlock Text="Font" FontSize="9.5" FontWeight="SemiBold" Foreground="{Binding ElementName=TitleTextBox, Path=Foreground}" Opacity="0.65" Margin="2,0,2,4"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,7">
+                        <ComboBox x:Name="CompactFontFamilyCombo" Style="{StaticResource CompactComboBox}" MinWidth="158" Width="158" Margin="1" SelectionChanged="FontFamilyCombo_SelectionChanged" ToolTip="Font family">
+                            <ComboBoxItem Content="Segoe UI" IsSelected="True"/>
+                            <ComboBoxItem Content="Vazirmatn"/>
+                            <ComboBoxItem Content="Arial"/>
+                            <ComboBoxItem Content="Times New Roman"/>
+                            <ComboBoxItem Content="Consolas"/>
+                            <ComboBoxItem Content="Tahoma"/>
+                            <ComboBoxItem Content="Comic Sans MS"/>
+                        </ComboBox>
+                        <ComboBox x:Name="CompactFontSizeCombo" Style="{StaticResource CompactComboBox}" MinWidth="60" Width="60" Margin="1" SelectionChanged="FontSizeCombo_SelectionChanged" ToolTip="Font size">
+                            <ComboBoxItem Content="10"/>
+                            <ComboBoxItem Content="12"/>
+                            <ComboBoxItem Content="13" IsSelected="True"/>
+                            <ComboBoxItem Content="14"/>
+                            <ComboBoxItem Content="16"/>
+                            <ComboBoxItem Content="18"/>
+                            <ComboBoxItem Content="20"/>
+                            <ComboBoxItem Content="24"/>
+                            <ComboBoxItem Content="28"/>
+                            <ComboBoxItem Content="32"/>
+                        </ComboBox>
+                    </StackPanel>
+
+                    <TextBlock Text="More tools" FontSize="9.5" FontWeight="SemiBold" Foreground="{Binding ElementName=TitleTextBox, Path=Foreground}" Opacity="0.65" Margin="2,0,2,3"/>
+                    <WrapPanel Width="224">
+                        <Button Style="{StaticResource RibbonIconButton}" ToolTip="Translate note or selection" Click="TranslateButton_Click"><local:SvgIcon Width="16" Height="16" Source="/Resources/Icons/translate-01-svgrepo-com.svg" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/></Button>
+                        <Button Style="{StaticResource RibbonIconButton}" ToolTip="AI tools" Click="AiButton_Click"><local:SvgIcon Width="16" Height="16" Source="/Resources/Icons/ai-svgrepo-com.svg" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/></Button>
+                        <Button Style="{StaticResource RibbonIconButton}" ToolTip="Bold (Ctrl+B)" Click="BtnBold_Click"><local:SvgIcon Width="16" Height="16" Source="/Resources/Icons/bold-svgrepo-com.svg" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/></Button>
+                        <Button Style="{StaticResource RibbonIconButton}" ToolTip="Italic (Ctrl+I)" Click="BtnItalic_Click"><local:SvgIcon Width="16" Height="16" Source="/Resources/Icons/italic-svgrepo-com.svg" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/></Button>
+                        <Button Style="{StaticResource RibbonIconButton}" ToolTip="Underline (Ctrl+U)" Click="BtnUnderline_Click"><local:SvgIcon Width="16" Height="16" Source="/Resources/Icons/underline-svgrepo-com.svg" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/></Button>
+                        <Button Style="{StaticResource RibbonIconButton}" ToolTip="Strikethrough" Click="BtnStrikethrough_Click"><local:SvgIcon Width="16" Height="16" Source="/Resources/Icons/strikethrough-svgrepo-com.svg" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/></Button>
+                        <Button Style="{StaticResource RibbonIconButton}" ToolTip="Text color" Click="BtnTextColor_Click"><Grid Width="18" Height="19"><TextBlock Text="A" FontWeight="SemiBold" HorizontalAlignment="Center"/><Border Height="3" CornerRadius="1.5" Background="#E84B4B" VerticalAlignment="Bottom"/></Grid></Button>
+                        <Button Style="{StaticResource RibbonIconButton}" ToolTip="Text highlight" Click="BtnHighlight_Click"><Grid Width="18" Height="19"><TextBlock Text="ab" FontSize="10" HorizontalAlignment="Center"/><Border Height="5" CornerRadius="1.5" Background="#FFE66D" VerticalAlignment="Bottom"/></Grid></Button>
+                        <Button Style="{StaticResource RibbonIconButton}" Content="H1" FontWeight="SemiBold" ToolTip="Heading 1" Click="BtnH1_Click"/>
+                        <Button Style="{StaticResource RibbonIconButton}" Content="H2" FontSize="10" FontWeight="SemiBold" ToolTip="Heading 2" Click="BtnH2_Click"/>
+                        <Button Style="{StaticResource RibbonIconButton}" ToolTip="Align left" Click="BtnAlignLeft_Click"><local:SvgIcon Width="16" Height="16" Source="/Resources/Icons/justify-left-svgrepo-com.svg" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/></Button>
+                        <Button Style="{StaticResource RibbonIconButton}" ToolTip="Align center" Click="BtnAlignCenter_Click"><local:SvgIcon Width="16" Height="16" Source="/Resources/Icons/justify-center-svgrepo-com.svg" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/></Button>
+                        <Button Style="{StaticResource RibbonIconButton}" ToolTip="Align right" Click="BtnAlignRight_Click"><local:SvgIcon Width="16" Height="16" Source="/Resources/Icons/justify-right-svgrepo-com.svg" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/></Button>
+                        <Button Style="{StaticResource RibbonIconButton}" ToolTip="Justify" Click="BtnAlignJustify_Click"><local:SvgIcon Width="16" Height="16" Source="/Resources/Icons/justify-fill-svgrepo-com.svg" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/></Button>
+                        <Button Style="{StaticResource RibbonIconButton}" ToolTip="Left-to-right paragraph" Click="BtnLtrParagraph_Click"><local:SvgIcon Width="16" Height="16" Source="/Resources/Icons/text-direction-ltr-svgrepo-com.svg" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/></Button>
+                        <Button Style="{StaticResource RibbonIconButton}" ToolTip="Right-to-left paragraph" Click="BtnRtlParagraph_Click"><local:SvgIcon Width="16" Height="16" Source="/Resources/Icons/text-direction-rtl-svgrepo-com.svg" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/></Button>
+                        <Button Style="{StaticResource RibbonIconButton}" ToolTip="Toggle columns" Click="ColToggleBtn_Click"><Grid Width="16" Height="16"><Border BorderBrush="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" BorderThickness="1.2" CornerRadius="1"/><Path Data="M 8,1 L 8,15" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1.2"/></Grid></Button>
+                        <Button Style="{StaticResource RibbonIconButton}" ToolTip="Table tools" Click="BtnTableMenu_Click"><Grid Width="16" Height="16"><Border BorderBrush="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" BorderThickness="1.2" CornerRadius="1"/><Path Data="M 1,5.5 L 15,5.5 M 1,10.5 L 15,10.5 M 5.5,1 L 5.5,15 M 10.5,1 L 10.5,15" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1"/></Grid></Button>
+                        <Button Style="{StaticResource RibbonIconButton}" ToolTip="Insert image" Click="BtnInsertImage_Click"><local:SvgIcon Width="16" Height="16" Source="/Resources/Icons/image-plus-svgrepo-com.svg" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/></Button>
+                        <Button Style="{StaticResource RibbonIconButton}" ToolTip="Record voice memo" Click="BtnVoiceMemo_Click"><Rectangle Width="15" Height="15" Fill="{Binding ElementName=TitleTextBox, Path=Foreground}"><Rectangle.OpacityMask><ImageBrush ImageSource="/Resources/Icons/music-microphone-large-svgrepo-com.png"/></Rectangle.OpacityMask></Rectangle></Button>
+                    </WrapPanel>
+                </StackPanel>
             </Border>
         </Popup>
 

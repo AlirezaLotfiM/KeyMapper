@@ -1,0 +1,147 @@
+<UserControl x:Class="KeyMapper.FlexVolumeControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Name="Root"
+             Width="46"
+             Height="126"
+             MinWidth="36"
+             MinHeight="96"
+             Focusable="True"
+             Cursor="Hand"
+             AutomationProperties.Name="System volume"
+             PreviewKeyDown="Root_PreviewKeyDown"
+             PreviewMouseWheel="Root_PreviewMouseWheel"
+             SizeChanged="Root_SizeChanged">
+    <Grid>
+        <!-- The bloom is the only light allowed outside the capsule. -->
+        <Border x:Name="OuterBloom"
+                Margin="6"
+                VerticalAlignment="Bottom"
+                Background="{DynamicResource AppAccentBrush}"
+                Opacity="0.18"
+                IsHitTestVisible="False">
+            <Border.Effect>
+                <BlurEffect Radius="9"/>
+            </Border.Effect>
+        </Border>
+
+        <Border x:Name="CapsuleShell"
+                Margin="4"
+                Background="{DynamicResource AppSurfaceAltBrush}"
+                BorderBrush="{DynamicResource AppBorderBrush}"
+                BorderThickness="1"
+                ClipToBounds="True"
+                SnapsToDevicePixels="True"
+                PreviewMouseLeftButtonDown="Capsule_PreviewMouseLeftButtonDown"
+                PreviewMouseMove="Capsule_PreviewMouseMove"
+                PreviewMouseLeftButtonUp="Capsule_PreviewMouseLeftButtonUp"
+                LostMouseCapture="Capsule_LostMouseCapture">
+            <Grid x:Name="CapsuleSurface" Background="Transparent">
+                <Grid.Clip>
+                    <RectangleGeometry x:Name="CapsuleClip"/>
+                </Grid.Clip>
+                <Border Background="{DynamicResource AppSurfaceBrush}" Opacity="0.52"/>
+
+                <!-- State-driven illumination layers. -->
+                <Canvas x:Name="LightingCanvas" ClipToBounds="True" IsHitTestVisible="False">
+                    <Border x:Name="FillCore"
+                            Background="{DynamicResource AppAccentFillBrush}"/>
+                    <Border x:Name="FillFeather"
+                            Background="{DynamicResource AppAccentBrush}">
+                        <Border.OpacityMask>
+                            <LinearGradientBrush StartPoint="0,1" EndPoint="0,0">
+                                <GradientStop Color="#FF000000" Offset="0"/>
+                                <GradientStop Color="#D9000000" Offset="0.38"/>
+                                <GradientStop Color="#60000000" Offset="0.72"/>
+                                <GradientStop Color="#00000000" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.OpacityMask>
+                    </Border>
+                    <Border x:Name="BoundaryGlow"
+                            Background="{DynamicResource AppAccentBrush}"
+                            Opacity="0.44">
+                        <Border.Effect>
+                            <BlurEffect Radius="10"/>
+                        </Border.Effect>
+                    </Border>
+                </Canvas>
+
+                <!-- Theme-derived texture, clipped by CapsuleShell. -->
+                <Rectangle Fill="{DynamicResource AppTextBrush}"
+                           Opacity="0.055"
+                           IsHitTestVisible="False">
+                    <Rectangle.OpacityMask>
+                        <DrawingBrush TileMode="Tile"
+                                      Viewport="0,0,5,5"
+                                      ViewportUnits="Absolute"
+                                      Viewbox="0,0,5,5"
+                                      ViewboxUnits="Absolute">
+                            <DrawingBrush.Drawing>
+                                <DrawingGroup>
+                                    <GeometryDrawing Brush="#DFFFFFFF" Geometry="M0.4,0.7 A0.45,0.45 0 1 1 1.3,0.7 A0.45,0.45 0 1 1 0.4,0.7"/>
+                                    <GeometryDrawing Brush="#8FFFFFFF" Geometry="M3.1,2.6 A0.35,0.35 0 1 1 3.8,2.6 A0.35,0.35 0 1 1 3.1,2.6"/>
+                                    <GeometryDrawing Brush="#AFFFFFFF" Geometry="M1.7,4.2 A0.3,0.3 0 1 1 2.3,4.2 A0.3,0.3 0 1 1 1.7,4.2"/>
+                                </DrawingGroup>
+                            </DrawingBrush.Drawing>
+                        </DrawingBrush>
+                    </Rectangle.OpacityMask>
+                </Rectangle>
+
+                <Border BorderBrush="{DynamicResource AppTextBrush}"
+                        BorderThickness="1"
+                        Opacity="0.10"
+                        IsHitTestVisible="False"/>
+
+                <StackPanel x:Name="MoreDots"
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Top"
+                            Margin="0,12,0,0"
+                            IsHitTestVisible="False">
+                    <Ellipse Width="3" Height="3" Fill="{DynamicResource AppTextBrush}" Margin="1.5,0"/>
+                    <Ellipse Width="3" Height="3" Fill="{DynamicResource AppTextBrush}" Margin="1.5,0"/>
+                    <Ellipse Width="3" Height="3" Fill="{DynamicResource AppTextBrush}" Margin="1.5,0"/>
+                </StackPanel>
+
+                <Grid Width="17"
+                      Height="17"
+                      Margin="0,0,0,11"
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Bottom"
+                      IsHitTestVisible="False">
+                    <Rectangle x:Name="VolumeIcon"
+                               Width="15"
+                               Height="15"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               Fill="{DynamicResource AppTextBrush}">
+                        <Rectangle.OpacityMask>
+                            <ImageBrush ImageSource="/Resources/Icons/music-volume-loud-svgrepo-com.png"/>
+                        </Rectangle.OpacityMask>
+                    </Rectangle>
+                    <Line x:Name="MuteSlash"
+                          X1="2"
+                          Y1="2"
+                          X2="15"
+                          Y2="15"
+                          Stroke="{DynamicResource AppTextBrush}"
+                          StrokeThickness="1.8"
+                          StrokeStartLineCap="Round"
+                          StrokeEndLineCap="Round"
+                          Visibility="Collapsed"/>
+                </Grid>
+
+                <!-- Invisible native range surface keeps keyboard and automation behavior. -->
+                <Slider x:Name="NativeSlider"
+                        Orientation="Vertical"
+                        Minimum="0"
+                        Maximum="100"
+                        Value="{Binding Value, ElementName=Root, Mode=TwoWay}"
+                        IsMoveToPointEnabled="True"
+                        Opacity="0.01"
+                        Focusable="False"
+                        IsHitTestVisible="False"/>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

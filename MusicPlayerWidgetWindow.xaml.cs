@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -26,6 +27,11 @@ namespace KeyMapper
         private double _groovePhase;
         private bool _isRestoringPreferences = true;
         private bool _playlistVisiblePreference = true;
+        private readonly SystemVolumeService _systemVolumeService =
+            SystemVolumeService.Instance;
+        private bool _syncingSystemVolume;
+        private Color? _lastMiniArtworkColor;
+        private DependencyPropertyDescriptor? _themeProbeDescriptor;
 
         public MusicPlayerWidgetWindow()
         {
@@ -51,6 +57,16 @@ namespace KeyMapper
             LocalAudioPlayerService.Instance.OnCustomPlaylistsUpdated += Instance_OnCustomPlaylistsUpdated;
             LocalAudioPlayerService.Instance.OnHistoryUpdated += Instance_OnHistoryUpdated;
             LocalAudioPlayerService.Instance.OnPlayCountsUpdated += Instance_OnPlayCountsUpdated;
+            _systemVolumeService.VolumeChanged += Instance_OnSystemVolumeChanged;
+            Closed += MusicPlayerWidgetWindow_Closed;
+
+            _themeProbeDescriptor = DependencyPropertyDescriptor.FromProperty(
+                Border.BackgroundProperty,
+                typeof(Border));
+            _themeProbeDescriptor.AddValueChanged(
+                MiniThemeProbe,
+                MiniThemeProbe_ValueChanged);
+            UpdateMiniAdaptiveContrast(null);
 
             AppSettings settings = ConfigManager.Load();
             _activeTab = NormalizeMusicTab(settings.MusicPlayerActiveTab);
@@ -76,15 +92,33 @@ namespace KeyMapper
             }
             double currentVol = LocalAudioPlayerService.Instance.CurrentVolume * 100.0;
             if (VolumeSlider != null) VolumeSlider.Value = currentVol;
-            if (MiniVolumeSlider != null) MiniVolumeSlider.Value = currentVol;
-            if (MiniVolumeSliderH != null) MiniVolumeSliderH.Value = currentVol;
-            if (MiniVolumePopupSlider != null) MiniVolumePopupSlider.Value = currentVol;
-            UpdateMiniPopupVolume(currentVol);
+            SyncMiniSystemVolume(
+                _systemVolumeService.IsAvailable
+                    ? _systemVolumeService.VolumePercent
+                    : currentVol,
+                _systemVolumeService.IsAvailable && _systemVolumeService.IsMuted);
 
             UpdateTabStyles();
             _isRestoringPreferences = false;
 
             _ = InitializeLibraryAsync();
+        }
+
+        private void MusicPlayerWidgetWindow_Closed(object? sender, EventArgs e)
+        {
+            _systemVolumeService.VolumeChanged -= Instance_OnSystemVolumeChanged;
+            if (_themeProbeDescriptor != null)
+            {
+                _themeProbeDescriptor.RemoveValueChanged(
+                    MiniThemeProbe,
+                    MiniThemeProbe_ValueChanged);
+                _themeProbeDescriptor = null;
+            }
+        }
+
+        private void MiniThemeProbe_ValueChanged(object? sender, EventArgs e)
+        {
+            UpdateMiniAdaptiveContrast(_lastMiniArtworkColor);
         }
 
         private void GrooveTimer_Tick(object? sender, EventArgs e)
@@ -538,31 +572,28 @@ namespace KeyMapper
             MiniVolumePopup.IsOpen = !MiniVolumePopup.IsOpen;
             if (MiniVolumePopup.IsOpen)
             {
-                double current = LocalAudioPlayerService.Instance.CurrentVolume * 100.0;
-                if (Math.Abs(MiniVolumePopupSlider.Value - current) > 0.5)
-                {
-                    MiniVolumePopupSlider.Value = current;
-                }
-                UpdateMiniPopupVolume(current);
+                double current = _systemVolumeService.IsAvailable
+                    ? _systemVolumeService.VolumePercent
+                    : LocalAudioPlayerService.Instance.CurrentVolume * 100.0;
+                SyncMiniSystemVolume(
+                    current,
+                    _systemVolumeService.IsAvailable &&
+                    _systemVolumeService.IsMuted);
             }
         }
 
-        private void VolumePopupSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private void MiniFlexVolume_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            LocalAudioPlayerService.Instance.SetVolume(e.NewValue);
-            UpdateMiniPopupVolume(e.NewValue);
-        }
-
-        private void UpdateMiniPopupVolume(double volumePercent)
-        {
-            double clamped = Math.Clamp(volumePercent, 0, 100);
-            if (MiniPopupVolumeFill != null)
+            if (_syncingSystemVolume)
             {
-                MiniPopupVolumeFill.Height = 154 * clamped / 100.0;
+                return;
             }
-            if (MiniPopupVolumeText != null)
+
+            if (!_systemVolumeService.TrySetVolumePercent(e.NewValue))
             {
-                MiniPopupVolumeText.Text = $"{Math.Round(clamped):0}%";
+                // Keep the control useful on systems where Core Audio is
+                // temporarily unavailable, without changing normal behavior.
+                LocalAudioPlayerService.Instance.SetVolume(e.NewValue);
             }
         }
 
@@ -574,20 +605,47 @@ namespace KeyMapper
                 {
                     VolumeSlider.Value = volumePercent;
                 }
-                if (MiniVolumeSlider != null && Math.Abs(MiniVolumeSlider.Value - volumePercent) > 0.5)
+                if (!_systemVolumeService.IsAvailable)
                 {
-                    MiniVolumeSlider.Value = volumePercent;
+                    SyncMiniSystemVolume(volumePercent, false);
                 }
-                if (MiniVolumeSliderH != null && Math.Abs(MiniVolumeSliderH.Value - volumePercent) > 0.5)
-                {
-                    MiniVolumeSliderH.Value = volumePercent;
-                }
-                if (MiniVolumePopupSlider != null && Math.Abs(MiniVolumePopupSlider.Value - volumePercent) > 0.5)
-                {
-                    MiniVolumePopupSlider.Value = volumePercent;
-                }
-                UpdateMiniPopupVolume(volumePercent);
             });
+        }
+
+        private void Instance_OnSystemVolumeChanged(
+            double volumePercent,
+            bool isMuted)
+        {
+            if (Dispatcher.HasShutdownStarted || Dispatcher.HasShutdownFinished)
+            {
+                return;
+            }
+
+            Dispatcher.BeginInvoke(new Action(() =>
+                SyncMiniSystemVolume(volumePercent, isMuted)));
+        }
+
+        private void SyncMiniSystemVolume(double volumePercent, bool isMuted)
+        {
+            if (MiniFlexVolume == null)
+            {
+                return;
+            }
+
+            _syncingSystemVolume = true;
+            try
+            {
+                double clamped = Math.Clamp(volumePercent, 0d, 100d);
+                if (Math.Abs(MiniFlexVolume.Value - clamped) > 0.05d)
+                {
+                    MiniFlexVolume.Value = clamped;
+                }
+                MiniFlexVolume.IsMuted = isMuted;
+            }
+            finally
+            {
+                _syncingSystemVolume = false;
+            }
         }
 
         private void Instance_OnTrackChanged(AudioTrackItem? track)
@@ -733,6 +791,7 @@ namespace KeyMapper
                     (Brush)FindResource("AppAccentSoftBrush");
                 MiniArtworkGradient.Opacity =
                     _isMiniHorizontal ? 0.24 : 0.38;
+                UpdateMiniAdaptiveContrast(null);
                 return;
             }
 
@@ -798,6 +857,7 @@ namespace KeyMapper
                 MiniArtworkGradient.Fill = gradient;
                 MiniArtworkGradient.Opacity =
                     _isMiniHorizontal ? 0.24 : 0.42;
+                UpdateMiniAdaptiveContrast(lower);
             }
             catch
             {
@@ -805,7 +865,96 @@ namespace KeyMapper
                     (Brush)FindResource("AppAccentSoftBrush");
                 MiniArtworkGradient.Opacity =
                     _isMiniHorizontal ? 0.24 : 0.38;
+                UpdateMiniAdaptiveContrast(null);
             }
+        }
+
+        private void UpdateMiniAdaptiveContrast(Color? artworkColor)
+        {
+            _lastMiniArtworkColor = artworkColor;
+
+            Color background = artworkColor ?? GetThemeColor(
+                "AppAccentSoftBrush",
+                Color.FromRgb(45, 64, 82));
+
+            // Match the actual backdrop: album color is seen through the
+            // fixed dark readability overlay before controls are composited.
+            double darkOverlayOpacity = Math.Clamp(
+                MiniBackdropDarkOverlay?.Opacity ?? 0.52d,
+                0d,
+                1d);
+            background = Color.FromRgb(
+                (byte)Math.Round(background.R * (1d - darkOverlayOpacity)),
+                (byte)Math.Round(background.G * (1d - darkOverlayOpacity)),
+                (byte)Math.Round(background.B * (1d - darkOverlayOpacity)));
+
+            Color themeText = GetThemeColor(
+                "AppTextBrush",
+                Color.FromRgb(248, 250, 252));
+            Color themeBackground = GetThemeColor(
+                "AppBackgroundBrush",
+                Color.FromRgb(18, 24, 36));
+
+            double textContrast = ContrastRatio(themeText, background);
+            double backgroundContrast = ContrastRatio(themeBackground, background);
+            Color foreground = textContrast >= backgroundContrast
+                ? themeText
+                : themeBackground;
+            double foregroundContrast = Math.Max(textContrast, backgroundContrast);
+
+            // Theme tokens normally provide both a light and dark candidate.
+            // Keep a standards-compliant fallback for custom themes that do not.
+            if (foregroundContrast < 4.5d)
+            {
+                Color light = Color.FromRgb(248, 250, 252);
+                Color dark = Color.FromRgb(20, 27, 38);
+                foreground = ContrastRatio(light, background) >=
+                             ContrastRatio(dark, background)
+                    ? light
+                    : dark;
+            }
+
+            var foregroundBrush = new SolidColorBrush(foreground);
+            foregroundBrush.Freeze();
+            var mutedBrush = new SolidColorBrush(Color.FromArgb(
+                255,
+                foreground.R,
+                foreground.G,
+                foreground.B));
+            mutedBrush.Freeze();
+
+            Resources["MiniAdaptiveForegroundBrush"] = foregroundBrush;
+            Resources["MiniAdaptiveMutedBrush"] = mutedBrush;
+        }
+
+        private Color GetThemeColor(string resourceKey, Color fallback)
+        {
+            return TryFindResource(resourceKey) is SolidColorBrush brush
+                ? brush.Color
+                : fallback;
+        }
+
+        private static double ContrastRatio(Color first, Color second)
+        {
+            double firstLuminance = RelativeLuminance(first);
+            double secondLuminance = RelativeLuminance(second);
+            return (Math.Max(firstLuminance, secondLuminance) + 0.05d) /
+                   (Math.Min(firstLuminance, secondLuminance) + 0.05d);
+        }
+
+        private static double RelativeLuminance(Color color)
+        {
+            static double Linearize(byte channel)
+            {
+                double value = channel / 255d;
+                return value <= 0.04045d
+                    ? value / 12.92d
+                    : Math.Pow((value + 0.055d) / 1.055d, 2.4d);
+            }
+
+            return (0.2126d * Linearize(color.R)) +
+                   (0.7152d * Linearize(color.G)) +
+                   (0.0722d * Linearize(color.B));
         }
 
         private static ImageBrush CreateMiniGrainBrush()
