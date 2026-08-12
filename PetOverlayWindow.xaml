@@ -244,7 +244,7 @@
             <!-- 2. DESKTOP FENCES SUBMENU -->
             <MenuItem Header="Desktop Fences">
                 <MenuItem.Icon>
-                    <local:SvgIcon Style="{StaticResource PetMenuIcon}" Source="/Resources/Icons/grid-svgrepo-com.svg"/>
+                    <local:SvgIcon Style="{StaticResource PetMenuIcon}" Source="/Resources/Icons/fence.svg"/>
                 </MenuItem.Icon>
                 <MenuItem Header="New Shortcuts Fence" Click="MenuNewCustomFence_Click"/>
                 <MenuItem Header="New Folder Portal..." Click="MenuNewFolderPortalFence_Click">
