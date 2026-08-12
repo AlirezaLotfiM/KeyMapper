@@ -241,6 +241,25 @@
                 </MenuItem>
             </MenuItem>
 
+            <!-- 2. DESKTOP FENCES SUBMENU -->
+            <MenuItem Header="Desktop Fences">
+                <MenuItem.Icon>
+                    <local:SvgIcon Style="{StaticResource PetMenuIcon}" Source="/Resources/Icons/grid-svgrepo-com.svg"/>
+                </MenuItem.Icon>
+                <MenuItem Header="New Shortcuts Fence" Click="MenuNewCustomFence_Click"/>
+                <MenuItem Header="New Folder Portal..." Click="MenuNewFolderPortalFence_Click">
+                    <MenuItem.Icon>
+                        <local:SvgIcon Style="{StaticResource PetMenuIcon}" Source="/Resources/Icons/folder-svgrepo-com.svg"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <Separator/>
+                <MenuItem Header="Toggle Fences Visibility" Click="MenuToggleFencesVisibility_Click">
+                    <MenuItem.Icon>
+                        <local:SvgIcon Style="{StaticResource PetMenuIcon}" Source="/Resources/Icons/show-svgrepo-com.svg"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+            </MenuItem>
+
             <!-- 2. MEDIA PLAYER SUBMENU -->
             <MenuItem Header="Music Player">
                 <MenuItem.Icon>

@@ -4,44 +4,28 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Windows;
+using System.Windows.Threading;
 
 namespace KeyMapper
 {
-    public sealed class DesktopFenceManager
+    public class DesktopFenceManager
     {
-        private static readonly Lazy<DesktopFenceManager> LazyInstance = new(() => new DesktopFenceManager());
-        public static DesktopFenceManager Instance => LazyInstance.Value;
+        private static readonly Lazy<DesktopFenceManager> _instance = new Lazy<DesktopFenceManager>(() => new DesktopFenceManager());
+        public static DesktopFenceManager Instance => _instance.Value;
 
-        private readonly string _appDataDir;
-        private readonly string _fencesFilePath;
-        private readonly Dictionary<string, DesktopFenceWindow> _openWindows = new();
-        private DesktopFencesContainer _container = new();
+        private readonly string _configFilePath;
+        private DesktopFencesContainer _container = new DesktopFencesContainer();
+        private readonly Dictionary<string, DesktopFenceWindow> _activeWindows = new Dictionary<string, DesktopFenceWindow>();
 
         public bool AreFencesVisible => _container.AreFencesVisible;
         public IReadOnlyList<DesktopFenceConfig> Fences => _container.Fences.AsReadOnly();
 
-        public event Action? OnFencesUpdated;
-
         private DesktopFenceManager()
         {
-            _appDataDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "KeyMapper");
-            Directory.CreateDirectory(_appDataDir);
-            _fencesFilePath = Path.Combine(_appDataDir, "desktop_fences.json");
-        }
-
-        private static void EnsureOnDispatcher(Action action)
-        {
-            if (Application.Current != null)
-            {
-                if (!Application.Current.Dispatcher.CheckAccess())
-                {
-                    Application.Current.Dispatcher.Invoke(action);
-                }
-                else
-                {
-                    action();
-                }
-            }
+            string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            string dir = Path.Combine(appData, "KeyMapper");
+            Directory.CreateDirectory(dir);
+            _configFilePath = Path.Combine(dir, "desktop_fences.json");
         }
 
         public void Initialize()
@@ -50,71 +34,30 @@ namespace KeyMapper
             {
                 LoadFences();
 
-                if (_container.Fences.Count == 0)
-                {
-                    CreateDefaultFences();
-                }
-
-                if (_container.AreFencesVisible)
+                if (_container.AreFencesVisible && _container.Fences.Count > 0)
                 {
                     ShowAllFencesInternal();
                 }
             });
         }
 
-        private void CreateDefaultFences()
+        private void LoadFences()
         {
-            var fence1 = new DesktopFenceConfig
+            try
             {
-                Title = "⚡ Quick Launch",
-                Type = FenceType.CustomShortcuts,
-                Left = 80,
-                Top = 120,
-                Width = 290,
-                Height = 320,
-                ColorTheme = "Lavender",
-                FenceOpacity = 0.85,
-                Items = new List<DesktopFenceItem>
+                if (File.Exists(_configFilePath))
                 {
-                    new DesktopFenceItem { Title = "Notepad", TargetPath = "notepad.exe" },
-                    new DesktopFenceItem { Title = "Calculator", TargetPath = "calc.exe" },
-                    new DesktopFenceItem { Title = "Command Prompt", TargetPath = "cmd.exe" }
-                }
-            };
-
-            string userDownloads = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
-            var fence2 = new DesktopFenceConfig
-            {
-                Title = "📁 Downloads Portal",
-                Type = Directory.Exists(userDownloads) ? FenceType.FolderPortal : FenceType.CustomShortcuts,
-                FolderPortalPath = userDownloads,
-                Left = 400,
-                Top = 120,
-                Width = 320,
-                Height = 360,
-                ColorTheme = "Pastel Pink",
-                FenceOpacity = 0.85
-            };
-
-            _container.Fences.Add(fence1);
-            _container.Fences.Add(fence2);
-            SaveFences();
-        }
-
-        public void LoadFences()
-        {
-            if (File.Exists(_fencesFilePath))
-            {
-                try
-                {
-                    string json = File.ReadAllText(_fencesFilePath);
+                    string json = File.ReadAllText(_configFilePath);
                     var loaded = JsonSerializer.Deserialize<DesktopFencesContainer>(json);
                     if (loaded != null)
                     {
                         _container = loaded;
                     }
                 }
-                catch { }
+            }
+            catch
+            {
+                _container = new DesktopFencesContainer();
             }
         }
 
@@ -122,144 +65,152 @@ namespace KeyMapper
         {
             try
             {
-                EnsureOnDispatcher(() =>
-                {
-                    foreach (var kvp in _openWindows)
-                    {
-                        var win = kvp.Value;
-                        var config = _container.Fences.FirstOrDefault(f => f.Id == kvp.Key);
-                        if (config != null && win.IsLoaded)
-                        {
-                            config.Left = win.Left;
-                            config.Top = win.Top;
-                            config.Width = win.Width;
-                            config.Height = win.Height;
-                            config.IsCollapsed = win.IsCollapsed;
-                        }
-                    }
-                });
-
                 string json = JsonSerializer.Serialize(_container, new JsonSerializerOptions { WriteIndented = true });
-                File.WriteAllText(_fencesFilePath, json);
+                File.WriteAllText(_configFilePath, json);
             }
             catch { }
-
-            EnsureOnDispatcher(() => OnFencesUpdated?.Invoke());
         }
 
-        public void ShowAllFences()
+        public void CreateFence(string title = "New Fence", FenceType type = FenceType.CustomShortcuts)
         {
             EnsureOnDispatcher(() =>
             {
-                ShowAllFencesInternal();
-            });
-        }
-
-        private void ShowAllFencesInternal()
-        {
-            _container.AreFencesVisible = true;
-            foreach (var config in _container.Fences)
-            {
-                ShowFenceWindowInternal(config);
-            }
-            SaveFences();
-        }
-
-        public void HideAllFences()
-        {
-            EnsureOnDispatcher(() =>
-            {
-                _container.AreFencesVisible = false;
-                foreach (var win in _openWindows.Values.ToList())
+                var config = new DesktopFenceConfig
                 {
-                    win.Close();
-                }
-                _openWindows.Clear();
-                SaveFences();
-            });
-        }
-
-        public void ToggleFencesVisibility()
-        {
-            EnsureOnDispatcher(() =>
-            {
-                if (_container.AreFencesVisible)
-                {
-                    HideAllFences();
-                }
-                else
-                {
-                    ShowAllFencesInternal();
-                }
-            });
-        }
-
-        public DesktopFenceConfig CreateNewFence(string title = "New Fence", FenceType type = FenceType.CustomShortcuts, string folderPath = "")
-        {
-            DesktopFenceConfig config = null!;
-            EnsureOnDispatcher(() =>
-            {
-                config = new DesktopFenceConfig
-                {
-                    Title = string.IsNullOrWhiteSpace(title) ? "New Fence" : title,
+                    Title = title,
                     Type = type,
-                    FolderPortalPath = folderPath,
-                    Left = 150 + (_container.Fences.Count * 30),
-                    Top = 150 + (_container.Fences.Count * 30),
-                    Width = 300,
+                    Left = 200 + (_container.Fences.Count * 20),
+                    Top = 180 + (_container.Fences.Count * 20),
+                    Width = 310,
                     Height = 340,
-                    ColorTheme = GetRandomTheme()
+                    ColorTheme = "Warm Yellow"
                 };
 
                 _container.Fences.Add(config);
-                _container.AreFencesVisible = true;
                 SaveFences();
-                ShowFenceWindowInternal(config);
-            });
 
-            return config;
+                if (_container.AreFencesVisible)
+                {
+                    var win = new DesktopFenceWindow(config);
+                    _activeWindows[config.Id] = win;
+                    win.Show();
+                }
+            });
         }
 
-        public void RemoveFence(string fenceId)
+        public void CreateNewFence() => CreateFence();
+
+        public void CreateFolderPortalFence(string title, string folderPath)
         {
             EnsureOnDispatcher(() =>
             {
-                if (_openWindows.TryGetValue(fenceId, out var win))
+                var config = new DesktopFenceConfig
                 {
-                    _openWindows.Remove(fenceId);
+                    Title = string.IsNullOrWhiteSpace(title) ? "Folder Portal" : title,
+                    Type = FenceType.FolderPortal,
+                    FolderPortalPath = folderPath,
+                    Left = 200 + (_container.Fences.Count * 20),
+                    Top = 180 + (_container.Fences.Count * 20),
+                    Width = 310,
+                    Height = 340,
+                    ColorTheme = "Warm Yellow"
+                };
+
+                _container.Fences.Add(config);
+                SaveFences();
+
+                if (_container.AreFencesVisible)
+                {
+                    var win = new DesktopFenceWindow(config);
+                    _activeWindows[config.Id] = win;
+                    win.Show();
+                }
+            });
+        }
+
+        public void RemoveFence(string id)
+        {
+            EnsureOnDispatcher(() =>
+            {
+                if (_activeWindows.TryGetValue(id, out var win))
+                {
+                    _activeWindows.Remove(id);
                     win.Close();
                 }
 
-                _container.Fences.RemoveAll(f => f.Id == fenceId);
+                _container.Fences.RemoveAll(x => x.Id == id);
                 SaveFences();
             });
         }
 
-        public void RegisterWindowClosed(string fenceId)
+        public void ToggleVisibility()
         {
-            _openWindows.Remove(fenceId);
-        }
-
-        private void ShowFenceWindowInternal(DesktopFenceConfig config)
-        {
-            if (_openWindows.TryGetValue(config.Id, out var existingWindow))
+            EnsureOnDispatcher(() =>
             {
-                existingWindow.Show();
-                existingWindow.WindowState = WindowState.Normal;
-                existingWindow.Activate();
-                return;
-            }
+                _container.AreFencesVisible = !_container.AreFencesVisible;
+                SaveFences();
 
-            var window = new DesktopFenceWindow(config);
-            _openWindows[config.Id] = window;
-            window.Show();
-            window.Activate();
+                if (_container.AreFencesVisible)
+                {
+                    ShowAllFencesInternal();
+                }
+                else
+                {
+                    HideAllFencesInternal();
+                }
+            });
         }
 
-        private static string GetRandomTheme()
+        public void ToggleFencesVisibility() => ToggleVisibility();
+
+        private void ShowAllFencesInternal()
         {
-            string[] themes = { "Lavender", "Sky Blue", "Pastel Pink", "Soft Mint", "Warm Yellow", "Dark Carbon" };
-            return themes[Random.Shared.Next(themes.Length)];
+            foreach (var config in _container.Fences)
+            {
+                if (!_activeWindows.ContainsKey(config.Id))
+                {
+                    var win = new DesktopFenceWindow(config);
+                    _activeWindows[config.Id] = win;
+                    win.Show();
+                }
+                else
+                {
+                    _activeWindows[config.Id].Show();
+                }
+            }
+        }
+
+        private void HideAllFencesInternal()
+        {
+            foreach (var kvp in _activeWindows.ToList())
+            {
+                kvp.Value.Close();
+            }
+            _activeWindows.Clear();
+        }
+
+        public void RegisterWindowClosed(string id)
+        {
+            _activeWindows.Remove(id);
+        }
+
+        private void EnsureOnDispatcher(Action action)
+        {
+            if (Application.Current != null && Application.Current.Dispatcher != null)
+            {
+                if (Application.Current.Dispatcher.CheckAccess())
+                {
+                    action();
+                }
+                else
+                {
+                    Application.Current.Dispatcher.Invoke(action);
+                }
+            }
+            else
+            {
+                action();
+            }
         }
     }
 }

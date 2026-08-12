@@ -2528,5 +2528,30 @@ namespace KeyMapper
             SpeechBubble.Visibility = Visibility.Collapsed;
             ReminderButtonsPanel.Visibility = Visibility.Collapsed;
         }
+
+        #region Desktop Fences Menu Handlers
+        private void MenuNewCustomFence_Click(object sender, RoutedEventArgs e)
+        {
+            DesktopFenceManager.Instance.CreateFence("New Fence", FenceType.CustomShortcuts);
+        }
+
+        private void MenuNewFolderPortalFence_Click(object sender, RoutedEventArgs e)
+        {
+            using var dialog = new System.Windows.Forms.FolderBrowserDialog
+            {
+                Description = "Select folder for Live Folder Portal Fence"
+            };
+            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                string folder = dialog.SelectedPath;
+                DesktopFenceManager.Instance.CreateFolderPortalFence(Path.GetFileName(folder), folder);
+            }
+        }
+
+        private void MenuToggleFencesVisibility_Click(object sender, RoutedEventArgs e)
+        {
+            DesktopFenceManager.Instance.ToggleVisibility();
+        }
+        #endregion
     }
 }
