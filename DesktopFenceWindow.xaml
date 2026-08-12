@@ -2,7 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Name="FenceRoot"
-        Title="Desktop Fence" Height="340" Width="310"
+        Title="Desktop Fence" Height="340" Width="330"
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         ShowInTaskbar="False" WindowStartupLocation="Manual"
         AllowDrop="True"
@@ -40,7 +40,7 @@
         <!-- Sidebar Floating Action Icon Button -->
         <Style x:Key="SidebarIconButton" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="#E2E8F0"/>
+            <Setter Property="Foreground" Value="#333333"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="Width" Value="26"/>
@@ -55,8 +55,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="bd" Property="Background" Value="#33FFFFFF"/>
-                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                                <Setter TargetName="bd" Property="Background" Value="#25000000"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -71,12 +70,12 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type Thumb}">
-                        <Border CornerRadius="3" Background="#55FFFFFF" Margin="1,0">
+                        <Border CornerRadius="3" Background="#55000000" Margin="1,0">
                             <Border.Style>
                                 <Style TargetType="Border">
                                     <Style.Triggers>
                                         <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Background" Value="#99FFFFFF"/>
+                                            <Setter Property="Background" Value="#99000000"/>
                                         </Trigger>
                                     </Style.Triggers>
                                 </Style>
@@ -125,15 +124,18 @@
         </Style>
     </Window.Resources>
 
-    <!-- Root grid background is 100% transparent to eliminate square border bleed -->
-    <Grid x:Name="RootGrid" Background="Transparent" Margin="2">
-        <!-- Single Container with Perfect 16px Clip Rounding (NO GlowBorder box leak) -->
+    <!-- Root grid has right margin reserved so the Sidebar Menu floats cleanly OUTSIDE the main fence container -->
+    <Grid x:Name="RootGrid" Background="Transparent" Margin="4,4,36,4">
+        <!-- Main Shell Container matching Sticky Notes Style & Perfect 16px Clip Rounding -->
         <Border x:Name="MainShell"
                 CornerRadius="16"
-                Background="#181824"
-                BorderBrush="#33FFFFFF"
+                Background="#FFF59D"
+                BorderBrush="#FFEE58"
                 BorderThickness="1.2"
                 SnapsToDevicePixels="True">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="12" ShadowDepth="3" Direction="270" Color="#000000" Opacity="0.20"/>
+            </Border.Effect>
             <Border CornerRadius="16" ClipToBounds="True" Background="Transparent">
                 <Grid x:Name="ShellContentGrid">
                     <Grid.RowDefinitions>
@@ -141,18 +143,18 @@
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <!-- CLEAN HEADER BAR (ONLY TITLE TEXT, NO CLUTTER BUTTONS) -->
+                    <!-- CLEAN HEADER BAR (MATCHING STICKY NOTES TITLE BAR) -->
                     <Border Grid.Row="0"
                             x:Name="HeaderBorder"
-                            Background="#221E1E2E"
-                            BorderBrush="#1AFFFFFF"
+                            Background="#15000000"
+                            BorderBrush="#15000000"
                             BorderThickness="0,0,0,1"
                             MouseLeftButtonDown="Header_MouseLeftButtonDown">
                         <Grid Margin="12,0,12,0">
                             <!-- Title Text -->
                             <TextBlock x:Name="TitleTxt"
                                        Text="Fence Title"
-                                       Foreground="#F1F5F9"
+                                       Foreground="#222222"
                                        FontSize="12.5"
                                        FontWeight="Bold"
                                        VerticalAlignment="Center"
@@ -161,9 +163,9 @@
                                        MouseDown="TitleTxt_MouseDown"/>
                             <TextBox x:Name="TitleEditBox"
                                      Text="Fence Title"
-                                     Foreground="#FFFFFF"
-                                     Background="#2A2A40"
-                                     BorderBrush="#A855F7"
+                                     Foreground="#222222"
+                                     Background="#FFFFFF"
+                                     BorderBrush="#CA8A04"
                                      BorderThickness="1"
                                      FontSize="12"
                                      Padding="4,2"
@@ -188,12 +190,12 @@
                                         </ItemsControl.ItemsPanel>
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
-                                                <Border Width="86" Height="88" Margin="4" CornerRadius="12" Background="Transparent" Cursor="Hand" ToolTip="{Binding TargetPath}" MouseLeftButtonDown="ShortcutItem_Click" MouseRightButtonUp="ShortcutItem_RightClick">
+                                                <Border Width="84" Height="86" Margin="4" CornerRadius="12" Background="Transparent" Cursor="Hand" ToolTip="{Binding TargetPath}" MouseLeftButtonDown="ShortcutItem_Click" MouseRightButtonUp="ShortcutItem_RightClick">
                                                     <Border.Style>
                                                         <Style TargetType="Border">
                                                             <Style.Triggers>
                                                                 <Trigger Property="IsMouseOver" Value="True">
-                                                                    <Setter Property="Background" Value="#22FFFFFF"/>
+                                                                    <Setter Property="Background" Value="#20000000"/>
                                                                 </Trigger>
                                                             </Style.Triggers>
                                                         </Style>
@@ -205,16 +207,12 @@
                                                         </Grid.RowDefinitions>
 
                                                         <!-- Real Target Icon / Image Thumbnail Container -->
-                                                        <Border Grid.Row="0" Width="42" Height="42" HorizontalAlignment="Center" VerticalAlignment="Center" CornerRadius="8" ClipToBounds="True">
+                                                        <Border Grid.Row="0" Width="40" Height="40" HorizontalAlignment="Center" VerticalAlignment="Center" CornerRadius="8" ClipToBounds="True">
                                                             <Image Source="{Binding ShellIcon}" Stretch="UniformToFill" SnapsToDevicePixels="True"/>
                                                         </Border>
 
-                                                        <!-- Title Label with DropShadow for Desktop Readability -->
-                                                        <TextBlock Grid.Row="1" Text="{Binding Title}" Foreground="{Binding ElementName=TitleTxt, Path=Foreground}" FontSize="10.5" FontWeight="SemiBold" TextAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,3,0,0">
-                                                            <TextBlock.Effect>
-                                                                <DropShadowEffect BlurRadius="3" ShadowDepth="1" Color="#000000" Opacity="0.8"/>
-                                                            </TextBlock.Effect>
-                                                        </TextBlock>
+                                                        <!-- Title Label -->
+                                                        <TextBlock Grid.Row="1" Text="{Binding Title}" Foreground="{Binding ElementName=TitleTxt, Path=Foreground}" FontSize="10.5" FontWeight="SemiBold" TextAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,3,0,0"/>
                                                     </Grid>
                                                 </Border>
                                             </DataTemplate>
@@ -224,7 +222,7 @@
                                     <!-- Folder Portal Desktop Grid -->
                                     <StackPanel x:Name="FolderPortalPanel" Visibility="Collapsed">
                                         <!-- Optional Folder Portal Path Bar (Toggled via Eye Icon) -->
-                                        <Border x:Name="FolderPortalPathBar" Background="#1AFFFFFF" CornerRadius="8" Padding="8,4" Margin="4,2,4,8" Visibility="Collapsed">
+                                        <Border x:Name="FolderPortalPathBar" Background="#20000000" CornerRadius="8" Padding="8,4" Margin="4,2,4,8" Visibility="Collapsed">
                                             <TextBlock x:Name="FolderPortalPathTxt" Text="Portal: C:\Downloads" Foreground="{Binding ElementName=TitleTxt, Path=Foreground}" FontSize="10.5" FontWeight="Bold" TextTrimming="CharacterEllipsis"/>
                                         </Border>
                                         <ItemsControl x:Name="FolderPortalItemsControl">
@@ -235,12 +233,12 @@
                                             </ItemsControl.ItemsPanel>
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate>
-                                                    <Border Width="86" Height="88" Margin="4" CornerRadius="12" Background="Transparent" Cursor="Hand" ToolTip="{Binding TargetPath}" MouseLeftButtonDown="PortalItem_Click" MouseRightButtonUp="PortalItem_RightClick">
+                                                    <Border Width="84" Height="86" Margin="4" CornerRadius="12" Background="Transparent" Cursor="Hand" ToolTip="{Binding TargetPath}" MouseLeftButtonDown="PortalItem_Click" MouseRightButtonUp="PortalItem_RightClick">
                                                         <Border.Style>
                                                             <Style TargetType="Border">
                                                                 <Style.Triggers>
                                                                     <Trigger Property="IsMouseOver" Value="True">
-                                                                        <Setter Property="Background" Value="#22FFFFFF"/>
+                                                                        <Setter Property="Background" Value="#20000000"/>
                                                                     </Trigger>
                                                                 </Style.Triggers>
                                                             </Style>
@@ -252,16 +250,12 @@
                                                             </Grid.RowDefinitions>
 
                                                             <!-- Real Native Icon / Image Thumbnail Container -->
-                                                            <Border Grid.Row="0" Width="42" Height="42" HorizontalAlignment="Center" VerticalAlignment="Center" CornerRadius="8" ClipToBounds="True">
+                                                            <Border Grid.Row="0" Width="40" Height="40" HorizontalAlignment="Center" VerticalAlignment="Center" CornerRadius="8" ClipToBounds="True">
                                                                 <Image Source="{Binding ShellIcon}" Stretch="UniformToFill" SnapsToDevicePixels="True"/>
                                                             </Border>
 
                                                             <!-- File / Folder Title -->
-                                                            <TextBlock Grid.Row="1" Text="{Binding Title}" Foreground="{Binding ElementName=TitleTxt, Path=Foreground}" FontSize="10.5" FontWeight="SemiBold" TextAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,3,0,0">
-                                                                <TextBlock.Effect>
-                                                                    <DropShadowEffect BlurRadius="3" ShadowDepth="1" Color="#000000" Opacity="0.8"/>
-                                                                </TextBlock.Effect>
-                                                            </TextBlock>
+                                                            <TextBlock Grid.Row="1" Text="{Binding Title}" Foreground="{Binding ElementName=TitleTxt, Path=Foreground}" FontSize="10.5" FontWeight="SemiBold" TextAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,3,0,0"/>
                                                         </Grid>
                                                     </Border>
                                                 </DataTemplate>
@@ -270,7 +264,7 @@
                                     </StackPanel>
 
                                     <!-- Empty Drop Prompt -->
-                                    <TextBlock x:Name="EmptyPromptTxt" Text="Drag &amp; Drop files or apps here" Foreground="#94A3B8" FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,40" Visibility="Collapsed"/>
+                                    <TextBlock x:Name="EmptyPromptTxt" Text="Drag &amp; Drop files or apps here" Foreground="{Binding ElementName=TitleTxt, Path=Foreground}" Opacity="0.6" FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,40" Visibility="Collapsed"/>
                                 </Grid>
                             </Border>
                         </ScrollViewer>
@@ -280,7 +274,7 @@
                             <Thumb.Template>
                                 <ControlTemplate TargetType="Thumb">
                                     <Grid Background="Transparent">
-                                        <Path Data="M 8,14 L 14,8 M 11,14 L 14,11 M 14,14 L 14,14" Stroke="#94A3B8" StrokeThickness="1.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                                        <Path Data="M 8,14 L 14,8 M 11,14 L 14,11 M 14,14 L 14,14" Stroke="#777777" StrokeThickness="1.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
                                     </Grid>
                                 </ControlTemplate>
                             </Thumb.Template>
@@ -290,20 +284,20 @@
             </Border>
         </Border>
 
-        <!-- FLOATING SIDEBAR MENU (APPEARS ON WINDOW HOVER, MATCHING STICKY NOTES) -->
+        <!-- FLOATING SIDEBAR MENU PLACED OUTSIDE THE FENCE CONTAINER (MATCHING STICKY NOTES) -->
         <Border x:Name="SidebarMenuBorder"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Top"
-                Margin="0,38,10,0"
-                Background="#2A181824"
-                BorderBrush="#33FFFFFF"
+                Margin="0,10,-32,0"
+                Background="#FFFFFF"
+                BorderBrush="#DDDDDD"
                 BorderThickness="1"
-                CornerRadius="10"
-                Padding="4"
+                CornerRadius="8"
+                Padding="3"
                 Opacity="0.0"
                 IsHitTestVisible="True">
             <Border.Effect>
-                <DropShadowEffect BlurRadius="12" ShadowDepth="3" Direction="270" Color="#000000" Opacity="0.3"/>
+                <DropShadowEffect BlurRadius="10" ShadowDepth="2" Direction="270" Color="#000000" Opacity="0.2"/>
             </Border.Effect>
             <StackPanel Orientation="Vertical">
                 <!-- Color Theme Swatch Picker (Popup Toggle) -->
@@ -338,29 +332,31 @@
             </StackPanel>
         </Border>
 
-        <!-- COLOR PALETTE & DARK/LIGHT POPUP (MATCHING STICKY NOTES) -->
+        <!-- COLOR PALETTE & DARK/LIGHT POPUP (MATCHING STICKY NOTES EXACT PALETTE) -->
         <Popup x:Name="PalettePopup" StaysOpen="False" AllowsTransparency="True" PopupAnimation="Fade" PlacementTarget="{Binding ElementName=PaletteMenuBtn}" Placement="Left">
-            <Border Background="#1E1E2C" BorderBrush="#33FFFFFF" BorderThickness="1.2" CornerRadius="12" Padding="8" Margin="4">
+            <Border Background="#FFFFFF" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="12" Padding="8" Margin="4">
                 <Border.Effect>
-                    <DropShadowEffect BlurRadius="16" ShadowDepth="4" Direction="270" Color="#000000" Opacity="0.35"/>
+                    <DropShadowEffect BlurRadius="16" ShadowDepth="4" Direction="270" Color="#000000" Opacity="0.2"/>
                 </Border.Effect>
                 <StackPanel Width="170">
-                    <TextBlock Text="Color Theme" FontSize="10" FontWeight="Bold" Foreground="#94A3B8" Margin="2,0,0,4"/>
+                    <TextBlock Text="Color Theme" FontSize="10" FontWeight="Bold" Foreground="#666666" Margin="2,0,0,4"/>
 
-                    <!-- Swatches Row 1 -->
+                    <!-- Sticky Notes Color Swatches -->
                     <WrapPanel HorizontalAlignment="Center" Margin="0,0,0,6">
-                        <Button Style="{StaticResource PaletteCircleButton}" Background="#E9D5FF" ToolTip="Lavender" Click="ThemeCircle_Click" Tag="Lavender"/>
-                        <Button Style="{StaticResource PaletteCircleButton}" Background="#BAE6FD" ToolTip="Sky Blue" Click="ThemeCircle_Click" Tag="Sky Blue"/>
-                        <Button Style="{StaticResource PaletteCircleButton}" Background="#FBCFE8" ToolTip="Pastel Pink" Click="ThemeCircle_Click" Tag="Pastel Pink"/>
-                        <Button Style="{StaticResource PaletteCircleButton}" Background="#A7F3D0" ToolTip="Soft Mint" Click="ThemeCircle_Click" Tag="Soft Mint"/>
-                        <Button Style="{StaticResource PaletteCircleButton}" Background="#FEF08A" ToolTip="Warm Yellow" Click="ThemeCircle_Click" Tag="Warm Yellow"/>
-                        <Button Style="{StaticResource PaletteCircleButton}" Background="#FEF3C7" ToolTip="Warm Cream" Click="ThemeCircle_Click" Tag="Warm Cream"/>
-                        <Button Style="{StaticResource PaletteCircleButton}" Background="#334155" ToolTip="Dark Carbon" Click="ThemeCircle_Click" Tag="Dark Carbon"/>
+                        <Button Style="{StaticResource PaletteCircleButton}" Background="#FFF59D" ToolTip="Warm Yellow" Click="ThemeCircle_Click" Tag="Warm Yellow"/>
+                        <Button Style="{StaticResource PaletteCircleButton}" Background="#F8BBD0" ToolTip="Pastel Pink" Click="ThemeCircle_Click" Tag="Pastel Pink"/>
+                        <Button Style="{StaticResource PaletteCircleButton}" Background="#A5D6A7" ToolTip="Soft Mint" Click="ThemeCircle_Click" Tag="Soft Mint"/>
+                        <Button Style="{StaticResource PaletteCircleButton}" Background="#80DEEA" ToolTip="Sky Blue" Click="ThemeCircle_Click" Tag="Sky Blue"/>
+                        <Button Style="{StaticResource PaletteCircleButton}" Background="#E1BEE7" ToolTip="Lavender" Click="ThemeCircle_Click" Tag="Lavender"/>
+                        <Button Style="{StaticResource PaletteCircleButton}" Background="#FFF8E7" ToolTip="Warm Cream" Click="ThemeCircle_Click" Tag="Warm Cream"/>
+                        <Button Style="{StaticResource PaletteCircleButton}" Background="#2C2C2C" ToolTip="Dark Carbon" Click="ThemeCircle_Click" Tag="Dark Carbon"/>
+                        <Button Style="{StaticResource PaletteCircleButton}" Background="#FF8A80" ToolTip="Coral" Click="ThemeCircle_Click" Tag="Coral"/>
+                        <Button Style="{StaticResource PaletteCircleButton}" Background="#FFD180" ToolTip="Peach" Click="ThemeCircle_Click" Tag="Peach"/>
                     </WrapPanel>
 
                     <!-- Dark / Light Mode Toggle Button -->
-                    <Border Background="#2A2A3E" CornerRadius="6" Padding="4,2" Margin="0,2">
-                        <Button x:Name="DarkLightToggleBtn" Background="Transparent" BorderThickness="0" Foreground="#F1F5F9" FontSize="11" FontWeight="SemiBold" Cursor="Hand" Click="DarkLightToggleBtn_Click">
+                    <Border Background="#F3F4F6" CornerRadius="6" Padding="4,2" Margin="0,2">
+                        <Button x:Name="DarkLightToggleBtn" Background="Transparent" BorderThickness="0" Foreground="#333333" FontSize="11" FontWeight="SemiBold" Cursor="Hand" Click="DarkLightToggleBtn_Click">
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                 <TextBlock x:Name="DarkLightIconTxt" Text="🌙" Margin="0,0,6,0"/>
                                 <TextBlock x:Name="DarkLightTextTxt" Text="Dark Mode"/>
@@ -373,12 +369,12 @@
 
         <!-- TRANSPARENCY POPUP -->
         <Popup x:Name="OpacityPopup" StaysOpen="False" AllowsTransparency="True" PopupAnimation="Fade" PlacementTarget="{Binding ElementName=OpacityMenuBtn}" Placement="Left">
-            <Border Background="#1E1E2C" BorderBrush="#33FFFFFF" BorderThickness="1.2" CornerRadius="12" Padding="8" Margin="4">
+            <Border Background="#FFFFFF" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="12" Padding="8" Margin="4">
                 <Border.Effect>
-                    <DropShadowEffect BlurRadius="16" ShadowDepth="4" Direction="270" Color="#000000" Opacity="0.35"/>
+                    <DropShadowEffect BlurRadius="16" ShadowDepth="4" Direction="270" Color="#000000" Opacity="0.2"/>
                 </Border.Effect>
                 <StackPanel Width="150">
-                    <TextBlock Text="Background Opacity" FontSize="10" FontWeight="Bold" Foreground="#94A3B8" Margin="2,0,0,6"/>
+                    <TextBlock Text="Background Opacity" FontSize="10" FontWeight="Bold" Foreground="#666666" Margin="2,0,0,6"/>
                     <Button Style="{StaticResource SidebarIconButton}" Width="134" HorizontalContentAlignment="Left" Content=" 100% Solid" Click="OpacityOption_Click" Tag="1.0"/>
                     <Button Style="{StaticResource SidebarIconButton}" Width="134" HorizontalContentAlignment="Left" Content=" 85% Soft Glass" Click="OpacityOption_Click" Tag="0.85"/>
                     <Button Style="{StaticResource SidebarIconButton}" Width="134" HorizontalContentAlignment="Left" Content=" 65% Translucent" Click="OpacityOption_Click" Tag="0.65"/>
