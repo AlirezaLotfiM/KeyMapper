@@ -5,7 +5,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace KeyMapper
 {
-    public class VpnServerProfile
+    public partial class VpnServerProfile : ObservableObject
     {
         public string Id { get; set; } = Guid.NewGuid().ToString("N");
         public string Name { get; set; } = "New Server";
@@ -31,18 +31,222 @@ namespace KeyMapper
         public string HeaderType { get; set; } = "";
 
         // Status & Metadata
-        public int PingMs { get; set; } = -1; // -1 means untested, 9999 means timeout
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(PingDisplay))]
+        [NotifyPropertyChangedFor(nameof(PingColorBrush))]
+        [NotifyPropertyChangedFor(nameof(PingBackgroundBrush))]
+        private int _pingMs = -1; // -1 means untested, 9999 means timeout
+
         public string CountryCode2Letter { get; set; } = "un";
-        public string Flag { get; set; } = "🌐";
+        
+        private string _flag = "🌐";
+        public string Flag
+        {
+            get
+            {
+                if (!string.IsNullOrEmpty(_flag) && _flag != "🌐")
+                    return _flag;
+
+                var extracted = ExtractFlagEmoji(Name);
+                if (!string.IsNullOrEmpty(extracted))
+                    return extracted;
+
+                string cc = !string.IsNullOrEmpty(CountryCode2Letter) && !CountryCode2Letter.Equals("un", StringComparison.OrdinalIgnoreCase)
+                    ? CountryCode2Letter
+                    : DetectCountryCode(Name, Address);
+
+                if (!string.IsNullOrEmpty(cc) && cc.Length == 2 && !cc.Equals("un", StringComparison.OrdinalIgnoreCase))
+                {
+                    return CountryCodeToFlagEmoji(cc);
+                }
+
+                return "🌐";
+            }
+            set => _flag = value;
+        }
+
+        public static string ExtractFlagEmoji(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return string.Empty;
+            for (int i = 0; i < text.Length - 1; i++)
+            {
+                int codePoint = char.ConvertToUtf32(text, i);
+                if (codePoint >= 0x1F1E6 && codePoint <= 0x1F1FF)
+                {
+                    if (char.IsSurrogatePair(text, i) && i + 3 < text.Length)
+                    {
+                        int nextCodePoint = char.ConvertToUtf32(text, i + 2);
+                        if (nextCodePoint >= 0x1F1E6 && nextCodePoint <= 0x1F1FF)
+                        {
+                            return text.Substring(i, 4);
+                        }
+                    }
+                }
+                if (char.IsSurrogatePair(text, i)) i++;
+            }
+            return string.Empty;
+        }
+
+        public static string CountryCodeToFlagEmoji(string countryCode)
+        {
+            if (string.IsNullOrEmpty(countryCode) || countryCode.Length != 2) return "🌐";
+            countryCode = countryCode.ToUpperInvariant();
+            if (countryCode == "UN") return "🌐";
+
+            try
+            {
+                int firstChar = 0x1F1E6 + (countryCode[0] - 'A');
+                int secondChar = 0x1F1E6 + (countryCode[1] - 'A');
+                return char.ConvertFromUtf32(firstChar) + char.ConvertFromUtf32(secondChar);
+            }
+            catch
+            {
+                return "🌐";
+            }
+        }
+
+        public static string DetectCountryCode(string name, string address)
+        {
+            // 1. Try to extract country code from regional flag emoji in the Name
+            var flagEmoji = ExtractFlagEmoji(name);
+            if (!string.IsNullOrEmpty(flagEmoji) && flagEmoji.Length >= 4)
+            {
+                try
+                {
+                    int cp1 = char.ConvertToUtf32(flagEmoji, 0);
+                    int cp2 = char.ConvertToUtf32(flagEmoji, 2);
+                    if (cp1 >= 0x1F1E6 && cp1 <= 0x1F1FF && cp2 >= 0x1F1E6 && cp2 <= 0x1F1FF)
+                    {
+                        char c1 = (char)('A' + (cp1 - 0x1F1E6));
+                        char c2 = (char)('A' + (cp2 - 0x1F1E6));
+                        return $"{c1}{c2}".ToUpperInvariant();
+                    }
+                }
+                catch { }
+            }
+
+            string nameUpper = (name ?? "").ToUpperInvariant();
+
+            // 2. High Priority: Detect Country from Config NAME first (before checking address / client ISP)
+            // Remove common ISP / network provider keywords that contain "IR" or "IRAN" like "IRANCELL", "IRAN CELL" from matching
+            string nameForDetection = System.Text.RegularExpressions.Regex.Replace(nameUpper, @"\b(IRANCELL|IRAN\s*CELL|HAMRAH|MCI|RIGHTEL|SHATEL|ASIATECH|MOKHABERAT|DIRECT|VLESS|VMESS|TROJAN|SS|SHADOWSOCKS)\b", " ");
+
+            if (System.Text.RegularExpressions.Regex.IsMatch(nameForDetection, @"\b(DE|GERMANY|GERMAN|FRANKFURT|BERLIN|NUREMBERG|DUSSELDORF)\b")) return "DE";
+            if (System.Text.RegularExpressions.Regex.IsMatch(nameForDetection, @"\b(IT|ITALY|ITALIAN|MILAN|MILANO|ROME|ROMA)\b")) return "IT";
+            if (System.Text.RegularExpressions.Regex.IsMatch(nameForDetection, @"\b(FR|FRANCE|FRENCH|PARIS|MARSEILLE|LYON|STRASBOURG)\b")) return "FR";
+            if (System.Text.RegularExpressions.Regex.IsMatch(nameForDetection, @"\b(NL|NETHERLANDS|DUTCH|AMSTERDAM|ROTTERDAM|HAARLEM)\b")) return "NL";
+            if (System.Text.RegularExpressions.Regex.IsMatch(nameForDetection, @"\b(US|USA|AMERICA|AMERICAN|UNITED STATES|NEW YORK|LOS ANGELES|DALLAS|MIAMI|SEATTLE|CHICAGO|CALIFORNIA|ASHBURN|SILICON)\b")) return "US";
+            if (System.Text.RegularExpressions.Regex.IsMatch(nameForDetection, @"\b(GB|UK|ENGLAND|ENGLISH|LONDON|MANCHESTER|UNITED KINGDOM|BRITAIN|BRITISH)\b")) return "GB";
+            if (System.Text.RegularExpressions.Regex.IsMatch(nameForDetection, @"\b(TR|TURKEY|TURKISH|ISTANBUL|ANKARA|BURSA|IZMIR)\b")) return "TR";
+            if (System.Text.RegularExpressions.Regex.IsMatch(nameForDetection, @"\b(FI|FINLAND|FINNISH|HELSINKI)\b")) return "FI";
+            if (System.Text.RegularExpressions.Regex.IsMatch(nameForDetection, @"\b(JP|JAPAN|JAPANESE|TOKYO|OSAKA)\b")) return "JP";
+            if (System.Text.RegularExpressions.Regex.IsMatch(nameForDetection, @"\b(CA|CANADA|CANADIAN|TORONTO|VANCOUVER|MONTREAL)\b")) return "CA";
+            if (System.Text.RegularExpressions.Regex.IsMatch(nameForDetection, @"\b(SG|SINGAPORE)\b")) return "SG";
+            if (System.Text.RegularExpressions.Regex.IsMatch(nameForDetection, @"\b(AE|UAE|DUBAI|ABU DHABI)\b")) return "AE";
+            if (System.Text.RegularExpressions.Regex.IsMatch(nameForDetection, @"\b(SE|SWEDEN|SWEDISH|STOCKHOLM)\b")) return "SE";
+            if (System.Text.RegularExpressions.Regex.IsMatch(nameForDetection, @"\b(CH|SWITZERLAND|SWISS|ZURICH|GENEVA)\b")) return "CH";
+            if (System.Text.RegularExpressions.Regex.IsMatch(nameForDetection, @"\b(ES|SPAIN|SPANISH|MADRID|BARCELONA)\b")) return "ES";
+            if (System.Text.RegularExpressions.Regex.IsMatch(nameForDetection, @"\b(PL|POLAND|POLISH|WARSAW)\b")) return "PL";
+            if (System.Text.RegularExpressions.Regex.IsMatch(nameForDetection, @"\b(RU|RUSSIA|RUSSIAN|MOSCOW|SAINT PETERSBURG)\b")) return "RU";
+            if (System.Text.RegularExpressions.Regex.IsMatch(nameForDetection, @"\b(UA|UKRAINE|UKRAINIAN|KYIV)\b")) return "UA";
+            if (System.Text.RegularExpressions.Regex.IsMatch(nameForDetection, @"\b(AU|AUSTRALIA|AUSTRALIAN|SYDNEY|MELBOURNE)\b")) return "AU";
+            if (System.Text.RegularExpressions.Regex.IsMatch(nameForDetection, @"\b(KR|KOREA|KOREAN|SEOUL)\b")) return "KR";
+            if (System.Text.RegularExpressions.Regex.IsMatch(nameForDetection, @"\b(HK|HONG KONG|HONGKONG)\b")) return "HK";
+            if (System.Text.RegularExpressions.Regex.IsMatch(nameForDetection, @"\b(TW|TAIWAN|TAIPEI)\b")) return "TW";
+            if (System.Text.RegularExpressions.Regex.IsMatch(nameForDetection, @"\b(NO|NORWAY|NORWEGIAN|OSLO)\b")) return "NO";
+            if (System.Text.RegularExpressions.Regex.IsMatch(nameForDetection, @"\b(AT|AUSTRIA|AUSTRIAN|VIENNA)\b")) return "AT";
+            if (System.Text.RegularExpressions.Regex.IsMatch(nameForDetection, @"\b(RO|ROMANIA|ROMANIAN|BUCHAREST)\b")) return "RO";
+            if (System.Text.RegularExpressions.Regex.IsMatch(nameForDetection, @"\b(BR|BRAZIL|BRAZILIAN|SAO PAULO)\b")) return "BR";
+            if (System.Text.RegularExpressions.Regex.IsMatch(nameForDetection, @"\b(IN|INDIA|INDIAN|MUMBAI|DELHI|BANGALORE)\b")) return "IN";
+            if (System.Text.RegularExpressions.Regex.IsMatch(nameForDetection, @"\b(IR|IRAN|TEHRAN|SHIRAZ|ISFAHAN|TABRIZ|MASHHAD|MELLI|INTRANET)\b")) return "IR";
+
+            // 3. Address Domain-based fallback
+            string addressUpper = (address ?? "").ToUpperInvariant();
+            if (System.Text.RegularExpressions.Regex.IsMatch(addressUpper, @"(^|\.)(DE|FRANKFURT|BERLIN)\.")) return "DE";
+            if (System.Text.RegularExpressions.Regex.IsMatch(addressUpper, @"(^|\.)(IT|MILAN|ROMA)\.")) return "IT";
+            if (System.Text.RegularExpressions.Regex.IsMatch(addressUpper, @"(^|\.)(FR|PARIS)\.")) return "FR";
+            if (System.Text.RegularExpressions.Regex.IsMatch(addressUpper, @"(^|\.)(NL|AMSTERDAM)\.")) return "NL";
+            if (System.Text.RegularExpressions.Regex.IsMatch(addressUpper, @"(^|\.)(US|USA)\.")) return "US";
+            if (System.Text.RegularExpressions.Regex.IsMatch(addressUpper, @"(^|\.)(UK|GB|LONDON)\.")) return "GB";
+            if (System.Text.RegularExpressions.Regex.IsMatch(addressUpper, @"(^|\.)(TR|ISTANBUL)\.")) return "TR";
+            if (System.Text.RegularExpressions.Regex.IsMatch(addressUpper, @"(^|\.)(FI|HELSINKI)\.")) return "FI";
+
+            return "UN";
+        }
+
         public string SubscriptionName { get; set; } = "Manual";
         public string RawUri { get; set; } = "";
         public DateTime LastTested { get; set; } = DateTime.MinValue;
-        public bool IsActive { get; set; } = false;
 
-        public string FlagImageUrl => $"https://flagcdn.com/w40/{CountryCode2Letter.ToLowerInvariant()}.png";
+        [ObservableProperty]
+        private bool _isActive = false;
+
+        public string EffectiveCountryCode
+        {
+            get
+            {
+                if (!string.IsNullOrWhiteSpace(CountryCode2Letter) && !CountryCode2Letter.Equals("un", StringComparison.OrdinalIgnoreCase))
+                    return CountryCode2Letter.ToLowerInvariant();
+
+                string detected = DetectCountryCode(Name, Address);
+                if (!string.IsNullOrWhiteSpace(detected) && !detected.Equals("un", StringComparison.OrdinalIgnoreCase))
+                    return detected.ToLowerInvariant();
+
+                return "un";
+            }
+        }
+
+        public string CountryCodeDisplay => EffectiveCountryCode.ToUpperInvariant();
+        public string FlagImageUrl => $"https://flagcdn.com/w40/{EffectiveCountryCode}.png";
+
+        public string CleanName
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(Name)) return "";
+                string n = Name.Trim();
+
+                // Remove leading unicode regional indicator symbols if present
+                n = System.Text.RegularExpressions.Regex.Replace(n, @"^[\uD83C\uDDE6-\uD83C\uDDFF]{2}\s*", "");
+
+                // Strip redundant 2-letter uppercase country code prefix like "FR ", "FI ", "AE ", "NL-", "IT "
+                var cleaned = System.Text.RegularExpressions.Regex.Replace(n, @"^([A-Za-z]{2})\s*[-_|\/:]*\s*", "");
+                if (!string.IsNullOrWhiteSpace(cleaned) && cleaned.Length >= 2)
+                {
+                    return cleaned;
+                }
+
+                return n;
+            }
+        }
+
         public string PingDisplay => PingMs < 0 ? "Untested" : (PingMs >= 9999 ? "Timeout" : $"{PingMs} ms");
         public string ProtocolBadge => Protocol.ToUpperInvariant();
         public string AddressDisplay => $"{Address}:{Port}";
+
+        public Brush PingColorBrush
+        {
+            get
+            {
+                if (PingMs < 0) return new SolidColorBrush(Color.FromArgb(220, 148, 163, 184)); // Slate 400
+                if (PingMs >= 9999) return new SolidColorBrush(Color.FromArgb(230, 239, 68, 68)); // Red 500
+                if (PingMs < 150) return new SolidColorBrush(Color.FromArgb(240, 16, 185, 129)); // Emerald 500
+                if (PingMs < 350) return new SolidColorBrush(Color.FromArgb(240, 245, 158, 11)); // Amber 500
+                return new SolidColorBrush(Color.FromArgb(230, 239, 68, 68)); // Red 500
+            }
+        }
+
+        public Brush PingBackgroundBrush
+        {
+            get
+            {
+                if (PingMs < 0) return new SolidColorBrush(Color.FromArgb(30, 148, 163, 184));
+                if (PingMs >= 9999) return new SolidColorBrush(Color.FromArgb(35, 239, 68, 68));
+                if (PingMs < 150) return new SolidColorBrush(Color.FromArgb(40, 16, 185, 129));
+                if (PingMs < 350) return new SolidColorBrush(Color.FromArgb(40, 245, 158, 11));
+                return new SolidColorBrush(Color.FromArgb(35, 239, 68, 68));
+            }
+        }
     }
 
     public class VpnSubscription

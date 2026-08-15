@@ -12,7 +12,19 @@ namespace KeyMapper
     /// </summary>
     public sealed class SmoothScrollViewer : ScrollViewer
     {
-        private const double WheelDistance = 88;
+        public static readonly DependencyProperty WheelDistanceProperty =
+            DependencyProperty.Register(
+                nameof(WheelDistance),
+                typeof(double),
+                typeof(SmoothScrollViewer),
+                new PropertyMetadata(44d));
+
+        public double WheelDistance
+        {
+            get => (double)GetValue(WheelDistanceProperty);
+            set => SetValue(WheelDistanceProperty, value);
+        }
+
         private double _targetOffset;
         private bool _isAnimating;
 

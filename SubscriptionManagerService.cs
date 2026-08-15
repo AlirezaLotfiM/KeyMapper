@@ -51,6 +51,26 @@ namespace KeyMapper
             return (nodes, subscription);
         }
 
+        public static async Task UpdateAllSubscriptionsAsync()
+        {
+            var vpn = VpnService.Instance;
+            if (vpn.Subscriptions.Count == 0) return;
+
+            foreach (var sub in System.Linq.Enumerable.ToList(vpn.Subscriptions))
+            {
+                var (nodes, updatedSub) = await FetchSubscriptionAsync(sub);
+                if (nodes != null && nodes.Count > 0)
+                {
+                    var toRemove = System.Linq.Enumerable.ToList(System.Linq.Enumerable.Where(vpn.Servers, s => s.SubscriptionName.Equals(sub.Name, StringComparison.OrdinalIgnoreCase)));
+                    foreach (var r in toRemove) vpn.Servers.Remove(r);
+                    foreach (var n in nodes) vpn.Servers.Add(n);
+                }
+            }
+
+            vpn.SaveServers();
+            vpn.SaveSubscriptions();
+        }
+
         private static void ParseUserInfoHeader(string header, VpnSubscription sub)
         {
             var pairs = header.Split(';');

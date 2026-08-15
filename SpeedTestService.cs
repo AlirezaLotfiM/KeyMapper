@@ -1,19 +1,17 @@
 using System;
 using System.Diagnostics;
-using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Security;
 using System.Net.Sockets;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace KeyMapper
 {
     public static class SpeedTestService
     {
-        public static async Task<int> TestProxyHttpDelayAsync(int proxyPort = 2080, int timeoutMs = 3500)
+        public static async Task<int> TestProxyHttpDelayAsync(int proxyPort = 2080, int timeoutMs = 3000)
         {
             try
             {
@@ -25,7 +23,7 @@ namespace KeyMapper
                 using var client = new HttpClient(handler) { Timeout = TimeSpan.FromMilliseconds(timeoutMs) };
 
                 var sw = Stopwatch.StartNew();
-                var response = await client.GetAsync("http://www.gstatic.com/generate_204");
+                var response = await client.GetAsync("http://cp.cloudflare.com/generate_204");
                 sw.Stop();
 
                 if (response.IsSuccessStatusCode || (int)response.StatusCode == 204)
@@ -38,7 +36,7 @@ namespace KeyMapper
             return 9999;
         }
 
-        public static async Task<int> TestServerRealDelayAsync(VpnServerProfile server, int httpProxyPort = 2080, bool isCurrentlyConnectedServer = false, int timeoutMs = 3500)
+        public static async Task<int> TestServerRealDelayAsync(VpnServerProfile server, int httpProxyPort = 2080, bool isCurrentlyConnectedServer = false, int timeoutMs = 3000)
         {
             if (string.IsNullOrWhiteSpace(server.Address)) return 9999;
 
@@ -49,50 +47,58 @@ namespace KeyMapper
                 if (proxyDelay < 9999) return proxyDelay;
             }
 
-            // 2. Real Handshake Delay (TLS ClientHello/ServerHello Handshake or TCP Connect RTT)
+            // 2. Measure actual TCP Handshake Latency (Syn -> SynAck RTT)
+            int tcpRtt = 9999;
             try
             {
-                var sw = Stopwatch.StartNew();
                 using var tcpClient = new TcpClient();
+                using var cts = new CancellationTokenSource(timeoutMs);
 
+                var sw = Stopwatch.StartNew();
                 var connectTask = tcpClient.ConnectAsync(server.Address, server.Port);
-                if (await Task.WhenAny(connectTask, Task.Delay(timeoutMs)) != connectTask || !tcpClient.Connected)
+
+                if (await Task.WhenAny(connectTask, Task.Delay(timeoutMs, cts.Token)) != connectTask || !tcpClient.Connected)
                 {
                     return 9999;
                 }
 
-                string sniHost = !string.IsNullOrWhiteSpace(server.Sni) 
-                    ? server.Sni 
-                    : (!string.IsNullOrWhiteSpace(server.Host) ? server.Host : server.Address);
+                sw.Stop();
+                tcpRtt = Math.Max(1, (int)sw.ElapsedMilliseconds);
 
-                bool isTls = server.Security == "tls" ||
-                             server.Security == "reality" ||
-                             server.Protocol.Equals("trojan", StringComparison.OrdinalIgnoreCase) ||
-                             server.Protocol.Equals("hysteria2", StringComparison.OrdinalIgnoreCase) ||
-                             server.Protocol.Equals("hy2", StringComparison.OrdinalIgnoreCase) ||
-                             server.Protocol.Equals("tuic", StringComparison.OrdinalIgnoreCase);
+                // If standard TLS is used (not reality or UDP-based), optionally test full TLS handshake
+                bool isStandardTls = server.Security.Equals("tls", StringComparison.OrdinalIgnoreCase) ||
+                                     server.Protocol.Equals("trojan", StringComparison.OrdinalIgnoreCase);
 
-                if (isTls)
+                if (isStandardTls)
                 {
-                    using var stream = tcpClient.GetStream();
-                    stream.ReadTimeout = timeoutMs;
-                    stream.WriteTimeout = timeoutMs;
-
-                    using var sslStream = new SslStream(stream, false, (sender, cert, chain, errors) => true);
-                    var sslTask = sslStream.AuthenticateAsClientAsync(sniHost);
-                    
-                    if (await Task.WhenAny(sslTask, Task.Delay(timeoutMs)) == sslTask)
+                    try
                     {
-                        sw.Stop();
-                        return (int)sw.ElapsedMilliseconds;
+                        string sniHost = !string.IsNullOrWhiteSpace(server.Sni)
+                            ? server.Sni
+                            : (!string.IsNullOrWhiteSpace(server.Host) ? server.Host : server.Address);
+
+                        using var stream = tcpClient.GetStream();
+                        stream.ReadTimeout = 1500;
+                        stream.WriteTimeout = 1500;
+
+                        using var sslStream = new SslStream(stream, false, (s, cert, chain, errs) => true);
+                        var tlsSw = Stopwatch.StartNew();
+                        var sslTask = sslStream.AuthenticateAsClientAsync(sniHost);
+
+                        if (await Task.WhenAny(sslTask, Task.Delay(1500)) == sslTask && sslStream.IsAuthenticated)
+                        {
+                            tlsSw.Stop();
+                            return Math.Max(1, (int)tlsSw.ElapsedMilliseconds);
+                        }
                     }
-                    return 9999;
+                    catch
+                    {
+                        // Fallback to TCP RTT if TLS handshake fails
+                        return tcpRtt;
+                    }
                 }
-                else
-                {
-                    sw.Stop();
-                    return (int)sw.ElapsedMilliseconds;
-                }
+
+                return tcpRtt;
             }
             catch
             {

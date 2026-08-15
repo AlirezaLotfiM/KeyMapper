@@ -496,5 +496,13 @@ namespace KeyMapper
             _vpn.Logs.Clear();
             UpdateLogsView();
         }
+
+        private void ToggleOverlayWidget_Click(object sender, RoutedEventArgs e)
+        {
+            if (Application.Current.MainWindow is MainWindow mainWin)
+            {
+                mainWin.ToggleVpnOverlayWidget();
+            }
+        }
     }
 }

@@ -58,8 +58,10 @@ namespace KeyMapper
             var vpnSelectServerItem = new ToolStripMenuItem("🌐 Select Server...", null, (s, e) => _mainWindow.OpenVpnTab(focusServerSelection: true));
             var vpnOpenSectionItem = new ToolStripMenuItem("🛡️ Open VPN", null, (s, e) => _mainWindow.OpenVpnTab(focusServerSelection: false));
 
+            var vpnFloatingWidgetItem = new ToolStripMenuItem("🔮 VPN Floating Widget (ویجت شناور)", null, (s, e) => _mainWindow.ToggleVpnOverlayWidget());
             vpnMenu.DropDownItems.Add(vpnStatusItem);
             vpnMenu.DropDownItems.Add(vpnActionItem);
+            vpnMenu.DropDownItems.Add(vpnFloatingWidgetItem);
             vpnMenu.DropDownItems.Add(new ToolStripSeparator());
             vpnMenu.DropDownItems.Add(vpnSelectServerItem);
             vpnMenu.DropDownItems.Add(vpnOpenSectionItem);

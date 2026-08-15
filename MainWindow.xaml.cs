@@ -28,6 +28,7 @@ namespace KeyMapper
         private readonly MouseHook _mouseHook;
         private readonly OverlayWindow _overlayWindow;
         private readonly PetOverlayWindow _petOverlayWindow;
+        private readonly VpnOverlayWidgetWindow _vpnOverlayWidgetWindow;
         private readonly TrayIconManager _trayManager;
         private readonly AudioDeviceMonitor _audioDeviceMonitor;
         private AppSettings _settings;
@@ -163,6 +164,11 @@ namespace KeyMapper
             if (_settings.ShowPetOverlay)
             {
                 _petOverlayWindow.Show();
+            }
+            _vpnOverlayWidgetWindow = new VpnOverlayWidgetWindow();
+            if (_settings.ShowVpnOverlay)
+            {
+                _vpnOverlayWidgetWindow.Show();
             }
             _trayManager = new TrayIconManager(this, _hook);
 
@@ -2503,6 +2509,55 @@ namespace KeyMapper
             _settings.ShowPetOverlay = false;
             ConfigManager.Save(_settings);
             _petOverlayWindow?.Hide();
+        }
+
+        public void ShowVpnOverlayWidget()
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (_vpnOverlayWidgetWindow != null)
+                {
+                    _settings.ShowVpnOverlay = true;
+                    ConfigManager.Save(_settings);
+                    _vpnOverlayWidgetWindow.Show();
+                    _vpnOverlayWidgetWindow.WindowState = WindowState.Normal;
+                    _vpnOverlayWidgetWindow.Topmost = true;
+                    _vpnOverlayWidgetWindow.Activate();
+                    _vpnOverlayWidgetWindow.RefreshUI();
+                    _vpnOverlayWidgetWindow.RefreshServers();
+                }
+            });
+        }
+
+        public void HideVpnOverlayWidget()
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (_vpnOverlayWidgetWindow != null)
+                {
+                    _settings.ShowVpnOverlay = false;
+                    ConfigManager.Save(_settings);
+                    _vpnOverlayWidgetWindow.Hide();
+                }
+            });
+        }
+
+        public void ToggleVpnOverlayWidget()
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (_vpnOverlayWidgetWindow != null)
+                {
+                    if (_vpnOverlayWidgetWindow.IsVisible)
+                    {
+                        HideVpnOverlayWidget();
+                    }
+                    else
+                    {
+                        ShowVpnOverlayWidget();
+                    }
+                }
+            });
         }
 
         public void OpenVpnTab(bool focusServerSelection = false)

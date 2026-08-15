@@ -66,6 +66,9 @@ namespace KeyMapper
         public int MusicPlayerSortIndex { get; set; } = 0;
         public double MusicPlayerVolume { get; set; } = 80.0;
         public string UserName { get; set; } = string.Empty;
+        public bool ShowVpnOverlay { get; set; } = true;
+        public double? VpnOverlayLeft { get; set; }
+        public double? VpnOverlayTop { get; set; }
     }
 
     public class OldAppSettings
