@@ -24,26 +24,31 @@ namespace KeyMapper
         private const int WS_EX_TOOLWINDOW = 0x00000080;
 
         private readonly VpnService _vpn = VpnService.Instance;
-        private readonly DispatcherTimer _connectingAnimationTimer;
         private readonly DispatcherTimer _trafficTimer;
 
         private bool _isDragging = false;
         private Point _dragStartPoint;
-        private double _connectingAngle = 0;
+        private double _dragStartTop;
 
         public VpnOverlayWidgetWindow()
         {
             InitializeComponent();
 
-            _connectingAnimationTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(30) };
-            _connectingAnimationTimer.Tick += ConnectingAnimationTimer_Tick;
-
             _trafficTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
             _trafficTimer.Tick += (s, e) => UpdateTrafficStats();
             _trafficTimer.Start();
 
+            // VPN Service events
             _vpn.StateChanged += () => Dispatcher.Invoke(RefreshUI);
             _vpn.Servers.CollectionChanged += (s, e) => Dispatcher.Invoke(RefreshServers);
+
+            // Music Service events
+            try
+            {
+                LocalAudioPlayerService.Instance.OnTrackChanged += track => Dispatcher.Invoke(RefreshMusicUI);
+                LocalAudioPlayerService.Instance.OnPlaybackStateChanged += isPlaying => Dispatcher.Invoke(RefreshMusicUI);
+            }
+            catch { }
         }
 
         protected override void OnSourceInitialized(EventArgs e)
@@ -63,6 +68,7 @@ namespace KeyMapper
             RestorePosition();
             RefreshUI();
             RefreshServers();
+            RefreshMusicUI();
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -72,35 +78,33 @@ namespace KeyMapper
 
         private void Window_Deactivated(object? sender, EventArgs e)
         {
-            if (ServerFlyoutPopup.IsOpen && !IsMouseOver)
+            if (!IsMouseOver && (Level1Panel.Visibility == Visibility.Visible || Level2Panel.Visibility == Visibility.Visible))
             {
-                ServerFlyoutPopup.IsOpen = false;
+                CloseAllPanels();
             }
         }
+
+        #region Positioning (Screen Right Edge Glued)
 
         private void RestorePosition()
         {
             var settings = ConfigManager.Load();
-            double screenWidth = SystemParameters.WorkArea.Width;
             double screenHeight = SystemParameters.WorkArea.Height;
-            double screenLeft = SystemParameters.WorkArea.Left;
             double screenTop = SystemParameters.WorkArea.Top;
+            double screenRight = SystemParameters.WorkArea.Right;
 
-            if (settings.VpnOverlayLeft.HasValue && settings.VpnOverlayTop.HasValue)
+            // X is always flush against the right screen edge
+            Left = screenRight - Width;
+
+            if (settings.VpnOverlayTop.HasValue)
             {
-                double left = settings.VpnOverlayLeft.Value;
                 double top = settings.VpnOverlayTop.Value;
-
-                left = Math.Max(screenLeft + 10, Math.Min(left, screenLeft + screenWidth - 85));
-                top = Math.Max(screenTop + 10, Math.Min(top, screenTop + screenHeight - 85));
-
-                Left = left;
+                top = Math.Max(screenTop + 10, Math.Min(top, screenTop + screenHeight - Height - 10));
                 Top = top;
             }
             else
             {
-                Left = screenLeft + screenWidth - 95;
-                Top = screenTop + screenHeight - 110;
+                Top = screenTop + (screenHeight / 2) - (Height / 2);
             }
         }
 
@@ -109,69 +113,207 @@ namespace KeyMapper
             try
             {
                 var settings = ConfigManager.Load();
-                settings.VpnOverlayLeft = Left;
                 settings.VpnOverlayTop = Top;
                 ConfigManager.Save(settings);
             }
             catch { }
         }
 
+        #endregion
+
+        #region Edge Handle Dragging & Panel Toggling
+
+        private void EdgeHandle_MouseEnter(object sender, MouseEventArgs e)
+        {
+            var anim = new DoubleAnimation(0.95, TimeSpan.FromMilliseconds(150));
+            EdgeHandle.BeginAnimation(UIElement.OpacityProperty, anim);
+        }
+
+        private void EdgeHandle_MouseLeave(object sender, MouseEventArgs e)
+        {
+            if (Level1Panel.Visibility != Visibility.Visible && Level2Panel.Visibility != Visibility.Visible && !_isDragging)
+            {
+                var anim = new DoubleAnimation(0.45, TimeSpan.FromMilliseconds(250));
+                EdgeHandle.BeginAnimation(UIElement.OpacityProperty, anim);
+            }
+        }
+
+        private void EdgeHandle_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            _isDragging = false;
+            _dragStartPoint = e.GetPosition(this);
+            _dragStartTop = Top;
+            EdgeHandle.CaptureMouse();
+        }
+
+        private void EdgeHandle_PreviewMouseMove(object sender, MouseEventArgs e)
+        {
+            if (EdgeHandle.IsMouseCaptured)
+            {
+                var currentPoint = e.GetPosition(this);
+                double deltaY = currentPoint.Y - _dragStartPoint.Y;
+
+                if (Math.Abs(deltaY) > 3)
+                {
+                    _isDragging = true;
+                    if (Level1Panel.Visibility == Visibility.Visible || Level2Panel.Visibility == Visibility.Visible)
+                    {
+                        CloseAllPanels();
+                    }
+
+                    double screenTop = SystemParameters.WorkArea.Top;
+                    double screenHeight = SystemParameters.WorkArea.Height;
+                    double newTop = _dragStartTop + deltaY;
+                    newTop = Math.Max(screenTop + 10, Math.Min(newTop, screenTop + screenHeight - Height - 10));
+
+                    Top = newTop;
+                    SavePosition();
+                }
+            }
+        }
+
+        private void EdgeHandle_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            EdgeHandle.ReleaseMouseCapture();
+
+            if (_isDragging)
+            {
+                _isDragging = false;
+                SavePosition();
+                e.Handled = true;
+                return;
+            }
+
+            // Click -> Toggle Level 1 Edge Panel
+            ToggleLevel1Panel();
+        }
+
+        private void EdgeHandle_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            ToggleLevel1Panel();
+            e.Handled = true;
+        }
+
+        private void ToggleLevel1Panel()
+        {
+            if (Level1Panel.Visibility == Visibility.Visible || Level2Panel.Visibility == Visibility.Visible)
+            {
+                CloseAllPanels();
+            }
+            else
+            {
+                OpenLevel1Panel();
+            }
+        }
+
+        private void OpenLevel1Panel()
+        {
+            Level2Panel.Visibility = Visibility.Collapsed;
+            Level1Panel.Visibility = Visibility.Visible;
+            EdgeHandle.Opacity = 0.95;
+            RefreshUI();
+            RefreshMusicUI();
+        }
+
+        private void CloseAllPanels()
+        {
+            Level1Panel.Visibility = Visibility.Collapsed;
+            Level2Panel.Visibility = Visibility.Collapsed;
+            if (!IsMouseOver)
+            {
+                var fadeAnim = new DoubleAnimation(0.45, TimeSpan.FromMilliseconds(200));
+                EdgeHandle.BeginAnimation(UIElement.OpacityProperty, fadeAnim);
+            }
+        }
+
+        private void ClosePanel_Click(object sender, RoutedEventArgs e)
+        {
+            CloseAllPanels();
+        }
+
+        #endregion
+
+        #region Level 2 Navigation & Transitions (Smooth Slide-In)
+
+        private void OpenVpnServersLevel2_Click(object sender, RoutedEventArgs e)
+        {
+            Level1Panel.Visibility = Visibility.Collapsed;
+            Level2Panel.Visibility = Visibility.Visible;
+
+            RefreshServers();
+            RefreshUI();
+
+            // Smooth Slide-in Animation from Right (280 -> 0)
+            var slideAnim = new DoubleAnimation
+            {
+                From = 280,
+                To = 0,
+                Duration = TimeSpan.FromMilliseconds(220),
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
+            };
+            Level2SlideTransform.BeginAnimation(TranslateTransform.XProperty, slideAnim);
+        }
+
+        private void BackToLevel1_Click(object sender, RoutedEventArgs e)
+        {
+            // Smooth Slide-out Animation to Right (0 -> 280)
+            var slideAnim = new DoubleAnimation
+            {
+                From = 0,
+                To = 280,
+                Duration = TimeSpan.FromMilliseconds(180),
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn }
+            };
+            slideAnim.Completed += (s, ev) =>
+            {
+                Level2Panel.Visibility = Visibility.Collapsed;
+                Level1Panel.Visibility = Visibility.Visible;
+            };
+            Level2SlideTransform.BeginAnimation(TranslateTransform.XProperty, slideAnim);
+        }
+
+        #endregion
+
+        #region Module 1: VPN Actions
+
         public void RefreshUI()
         {
             if (_vpn.IsConnected)
             {
-                _connectingAnimationTimer.Stop();
-                OrbConnectingRing.Visibility = Visibility.Collapsed;
-
                 var greenBrush = new SolidColorBrush(Color.FromRgb(16, 185, 129));
-                OrbContainer.BorderBrush = greenBrush;
-                OrbContainer.Background = new SolidColorBrush(Color.FromArgb(40, 16, 185, 129));
-                OrbPowerIcon.Fill = greenBrush;
+                var redBrush = new SolidColorBrush(Color.FromRgb(239, 68, 68));
 
-                FlyoutStatusDot.Fill = greenBrush;
-                FlyoutStatusText.Text = "CONNECTED";
-                FlyoutStatusText.Foreground = greenBrush;
+                VpnLevel1ToggleBtn.Background = redBrush;
+                VpnLevel1BtnText.Text = "Disconnect";
+
+                VpnLevel2ToggleBtn.Background = redBrush;
+                VpnLevel2BtnText.Text = $"Disconnect ({_vpn.ActiveServer?.CountryCodeDisplay ?? "VPN"})";
+
+                EdgeHandle.Background = new SolidColorBrush(Color.FromArgb(160, 16, 185, 129));
             }
             else if (_vpn.IsConnecting)
             {
-                if (!_connectingAnimationTimer.IsEnabled) _connectingAnimationTimer.Start();
-                OrbConnectingRing.Visibility = Visibility.Visible;
-
                 var amberBrush = new SolidColorBrush(Color.FromRgb(245, 158, 11));
-                OrbContainer.BorderBrush = amberBrush;
-                OrbContainer.Background = new SolidColorBrush(Color.FromArgb(40, 245, 158, 11));
-                OrbPowerIcon.Fill = amberBrush;
 
-                FlyoutStatusDot.Fill = amberBrush;
-                FlyoutStatusText.Text = "CONNECTING...";
-                FlyoutStatusText.Foreground = amberBrush;
+                VpnLevel1ToggleBtn.Background = amberBrush;
+                VpnLevel1BtnText.Text = "Connecting...";
+
+                VpnLevel2ToggleBtn.Background = amberBrush;
+                VpnLevel2BtnText.Text = "Connecting...";
+
+                EdgeHandle.Background = new SolidColorBrush(Color.FromArgb(160, 245, 158, 11));
             }
             else
             {
-                _connectingAnimationTimer.Stop();
-                OrbConnectingRing.Visibility = Visibility.Collapsed;
+                var skyBrush = new SolidColorBrush(Color.FromRgb(14, 165, 233));
 
-                var redBrush = new SolidColorBrush(Color.FromRgb(239, 68, 68));
-                OrbContainer.BorderBrush = new SolidColorBrush(Color.FromArgb(120, 239, 68, 68));
-                OrbContainer.Background = new SolidColorBrush(Color.FromArgb(35, 14, 19, 32));
-                OrbPowerIcon.Fill = redBrush;
+                VpnLevel1ToggleBtn.Background = skyBrush;
+                VpnLevel1BtnText.Text = "Connect";
 
-                FlyoutStatusDot.Fill = redBrush;
-                FlyoutStatusText.Text = "DISCONNECTED";
-                FlyoutStatusText.Foreground = redBrush;
-            }
+                VpnLevel2ToggleBtn.Background = skyBrush;
+                VpnLevel2BtnText.Text = "Connect to Selected";
 
-            if (_vpn.ActiveServer != null)
-            {
-                OrbFlagText.Text = _vpn.ActiveServer.CountryCodeDisplay;
-                FlyoutActiveCountryText.Text = _vpn.ActiveServer.CountryCodeDisplay;
-                FlyoutActiveServerText.Text = _vpn.ActiveServer.Name;
-            }
-            else
-            {
-                OrbFlagText.Text = "UN";
-                FlyoutActiveCountryText.Text = "UN";
-                FlyoutActiveServerText.Text = "No Server Selected";
+                EdgeHandle.Background = new SolidColorBrush(Color.FromArgb(100, 255, 255, 255));
             }
 
             UpdateTrafficStats();
@@ -181,13 +323,11 @@ namespace KeyMapper
         {
             if (_vpn.IsConnected && _vpn.Traffic != null)
             {
-                FlyoutUpSpeedText.Text = _vpn.Traffic.UploadSpeedDisplay;
-                FlyoutDownSpeedText.Text = _vpn.Traffic.DownloadSpeedDisplay;
+                L2TrafficText.Text = $"▲ {_vpn.Traffic.UploadSpeedDisplay}   •   ▼ {_vpn.Traffic.DownloadSpeedDisplay}";
             }
             else
             {
-                FlyoutUpSpeedText.Text = "0 B/s";
-                FlyoutDownSpeedText.Text = "0 B/s";
+                L2TrafficText.Text = "▲ 0 B/s   •   ▼ 0 B/s";
             }
         }
 
@@ -195,133 +335,24 @@ namespace KeyMapper
         {
             var list = _vpn.Servers.ToList();
             ServersItemsControl.ItemsSource = list;
-            FlyoutServerCountText.Text = $"{list.Count} Servers";
         }
 
-        private void ConnectingAnimationTimer_Tick(object? sender, EventArgs e)
+        private async void VpnConnectToggle_Click(object sender, RoutedEventArgs e)
         {
-            _connectingAngle = (_connectingAngle + 12) % 360;
-            ConnectingRotate.Angle = _connectingAngle;
-        }
-
-        #region Hover & Visibility
-
-        private void Window_MouseEnter(object sender, MouseEventArgs e)
-        {
-            var anim = new DoubleAnimation(1.0, TimeSpan.FromMilliseconds(180));
-            RootGrid.BeginAnimation(UIElement.OpacityProperty, anim);
-        }
-
-        private void Window_MouseLeave(object sender, MouseEventArgs e)
-        {
-            if (!ServerFlyoutPopup.IsOpen)
+            if (_vpn.IsConnected || _vpn.IsConnecting)
             {
-                var anim = new DoubleAnimation(0.40, TimeSpan.FromMilliseconds(250));
-                RootGrid.BeginAnimation(UIElement.OpacityProperty, anim);
-            }
-        }
-
-        #endregion
-
-        #region Flyout Drawer (Popup)
-
-        private void ToggleFlyout()
-        {
-            if (ServerFlyoutPopup.IsOpen)
-            {
-                ServerFlyoutPopup.IsOpen = false;
+                await _vpn.DisconnectAsync();
             }
             else
             {
-                double screenLeft = SystemParameters.WorkArea.Left;
-                double screenWidth = SystemParameters.WorkArea.Width;
-
-                if (Left < screenLeft + (screenWidth / 2))
+                var target = _vpn.ActiveServer ?? _vpn.Servers.FirstOrDefault();
+                if (target != null)
                 {
-                    ServerFlyoutPopup.Placement = System.Windows.Controls.Primitives.PlacementMode.Right;
-                    ServerFlyoutPopup.HorizontalOffset = 8;
-                }
-                else
-                {
-                    ServerFlyoutPopup.Placement = System.Windows.Controls.Primitives.PlacementMode.Left;
-                    ServerFlyoutPopup.HorizontalOffset = -8;
-                }
-
-                RefreshServers();
-                ServerFlyoutPopup.IsOpen = true;
-            }
-        }
-
-        private void ServerFlyoutPopup_Opened(object? sender, EventArgs e)
-        {
-            RootGrid.Opacity = 1.0;
-        }
-
-        private void ServerFlyoutPopup_Closed(object? sender, EventArgs e)
-        {
-            if (!IsMouseOver)
-            {
-                var fadeAnim = new DoubleAnimation(0.40, TimeSpan.FromMilliseconds(200));
-                RootGrid.BeginAnimation(UIElement.OpacityProperty, fadeAnim);
-            }
-        }
-
-        private void CloseFlyout_Click(object sender, RoutedEventArgs e)
-        {
-            ServerFlyoutPopup.IsOpen = false;
-        }
-
-        #endregion
-
-        #region Drag & Click
-
-        private void Orb_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            _isDragging = false;
-            _dragStartPoint = e.GetPosition(this);
-        }
-
-        private void Orb_PreviewMouseMove(object sender, MouseEventArgs e)
-        {
-            if (e.LeftButton == MouseButtonState.Pressed)
-            {
-                var currentPoint = e.GetPosition(this);
-                if (Math.Abs(currentPoint.X - _dragStartPoint.X) > 4 || Math.Abs(currentPoint.Y - _dragStartPoint.Y) > 4)
-                {
-                    _isDragging = true;
-                    if (ServerFlyoutPopup.IsOpen) ServerFlyoutPopup.IsOpen = false;
-                    try
-                    {
-                        DragMove();
-                        SavePosition();
-                    }
-                    catch { }
+                    await _vpn.ConnectAsync(target);
                 }
             }
+            RefreshUI();
         }
-
-        private async void Orb_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            if (_isDragging)
-            {
-                _isDragging = false;
-                SavePosition();
-                e.Handled = true;
-                return;
-            }
-
-            await _vpn.ToggleConnectionAsync();
-        }
-
-        private void Orb_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            ToggleFlyout();
-            e.Handled = true;
-        }
-
-        #endregion
-
-        #region Server Selection & Actions
 
         private async void ServerRow_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
@@ -329,16 +360,12 @@ namespace KeyMapper
             {
                 _vpn.SelectServer(server);
                 RefreshUI();
-
                 await _vpn.ConnectAsync(server);
             }
         }
 
         private async void PingAll_Click(object sender, RoutedEventArgs e)
         {
-            PingAllBtn.IsEnabled = false;
-            PingAllBtn.Opacity = 0.5;
-
             var serversToTest = _vpn.Servers.ToList();
             var tasks = serversToTest.Select(server => Task.Run(async () =>
             {
@@ -349,32 +376,110 @@ namespace KeyMapper
 
             _vpn.SaveServers();
             RefreshServers();
-            PingAllBtn.Opacity = 1.0;
-            PingAllBtn.IsEnabled = true;
         }
 
         private async void UpdateSubs_Click(object sender, RoutedEventArgs e)
         {
-            UpdateSubsBtn.IsEnabled = false;
-            UpdateSubsBtn.Opacity = 0.5;
-
             await SubscriptionManagerService.UpdateAllSubscriptionsAsync();
-
             RefreshServers();
             RefreshUI();
-
-            UpdateSubsBtn.Opacity = 1.0;
-            UpdateSubsBtn.IsEnabled = true;
         }
 
-        private void OpenVpnManager_Click(object sender, RoutedEventArgs e)
+        #endregion
+
+        #region Module 2: Music Player Actions
+
+        private void RefreshMusicUI()
         {
-            if (Application.Current.MainWindow is MainWindow mainWin)
+            try
             {
-                mainWin.Show();
-                mainWin.WindowState = WindowState.Normal;
-                mainWin.Activate();
-                mainWin.OpenVpnTab(focusServerSelection: false);
+                var player = LocalAudioPlayerService.Instance;
+                var track = player.CurrentTrack;
+
+                if (track != null)
+                {
+                    L1MusicCoverImg.Source = track.AlbumArt;
+                    L1MusicTitleText.Text = track.DisplayTitle;
+                }
+                else
+                {
+                    L1MusicCoverImg.Source = null;
+                    L1MusicTitleText.Text = "No Track Playing";
+                }
+
+                L1MusicPlayPauseText.Text = player.IsPlaying ? "⏸ Pause" : "▶ Play";
+            }
+            catch { }
+        }
+
+        private void MusicPlayPause_Click(object sender, RoutedEventArgs e)
+        {
+            LocalAudioPlayerService.Instance.TogglePlayPause();
+            RefreshMusicUI();
+        }
+
+        private void MusicPrev_Click(object sender, RoutedEventArgs e)
+        {
+            LocalAudioPlayerService.Instance.PlayPrevious();
+            RefreshMusicUI();
+        }
+
+        private void MusicNext_Click(object sender, RoutedEventArgs e)
+        {
+            LocalAudioPlayerService.Instance.PlayNext();
+            RefreshMusicUI();
+        }
+
+        #endregion
+
+        #region Module 3: Fence Actions
+
+        private void CreateNewFence_Click(object sender, RoutedEventArgs e)
+        {
+            DesktopFenceManager.Instance.CreateNewFence();
+        }
+
+        private void CreatePortalFence_Click(object sender, RoutedEventArgs e)
+        {
+            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            DesktopFenceManager.Instance.CreateFolderPortalFence("Desktop Portal", desktopPath);
+        }
+
+        #endregion
+
+        #region Module 4: Sticky Note Actions
+
+        private void CreateNewNote_Click(object sender, RoutedEventArgs e)
+        {
+            StickyNoteManager.Instance.CreateNewNote("Quick Note", "");
+        }
+
+        private void ShowAllNotes_Click(object sender, RoutedEventArgs e)
+        {
+            var noteWindows = Application.Current.Windows.OfType<StickyNoteWindow>().ToList();
+            if (noteWindows.Count > 0)
+            {
+                foreach (var win in noteWindows)
+                {
+                    win.Show();
+                    win.WindowState = WindowState.Normal;
+                }
+            }
+            else
+            {
+                foreach (var note in StickyNoteManager.Instance.Notes)
+                {
+                    StickyNoteManager.Instance.OpenNoteWindow(note);
+                }
+            }
+        }
+
+        private void HideAllNotes_Click(object sender, RoutedEventArgs e)
+        {
+            var noteWindows = Application.Current.Windows.OfType<StickyNoteWindow>().ToList();
+            foreach (var win in noteWindows)
+            {
+                win.Hide();
             }
         }
 

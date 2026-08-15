@@ -69,6 +69,8 @@ namespace KeyMapper
         public bool ShowVpnOverlay { get; set; } = true;
         public double? VpnOverlayLeft { get; set; }
         public double? VpnOverlayTop { get; set; }
+        public bool ShowEdgePanel { get; set; } = true;
+        public double? EdgePanelTop { get; set; }
     }
 
     public class OldAppSettings

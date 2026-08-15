@@ -2,17 +2,15 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:KeyMapper"
-        Title="KeyMapper VPN Widget"
+        Title="KeyMapper Edge Panel"
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
         Topmost="True"
         ShowInTaskbar="False"
         ResizeMode="NoResize"
-        Width="78"
-        Height="78"
-        MouseEnter="Window_MouseEnter"
-        MouseLeave="Window_MouseLeave"
+        Width="320"
+        Height="680"
         Loaded="Window_Loaded"
         Closing="Window_Closing"
         Deactivated="Window_Deactivated">
@@ -21,29 +19,28 @@
         <!-- Shutdown.svg Power Geometry -->
         <PathGeometry x:Key="ShutdownIconGeometry">M14.984375 2.9863281 A 1.0001 1.0001 0 0 0 14 4L14 15 A 1.0001 1.0001 0 1 0 16 15L16 4 A 1.0001 1.0001 0 0 0 14.984375 2.9863281 z M 9.9960938 4.2128906 A 1.0001 1.0001 0 0 0 9.5449219 4.328125C5.6645289 6.3141271 3 10.347825 3 15C3 21.615466 8.3845336 27 15 27C21.615466 27 27 21.615466 27 15C27 10.347825 24.335471 6.3141271 20.455078 4.328125 A 1.0001544 1.0001544 0 1 0 19.544922 6.109375C22.780529 7.7653729 25 11.110175 25 15C25 20.534534 20.534534 25 15 25C9.4654664 25 5 20.534534 5 15C5 11.110175 7.2194712 7.7653729 10.455078 6.109375 A 1.0001 1.0001 0 0 0 9.9960938 4.2128906 z</PathGeometry>
 
-        <!-- Ultra Slim Minimal ScrollBar Style (Clearly Visible & Sleek) -->
+        <!-- Ultra Slim Minimal ScrollBar Style -->
         <Style x:Key="SlimWidgetScrollBar" TargetType="{x:Type ScrollBar}">
             <Setter Property="Stylus.IsPressAndHoldEnabled" Value="false"/>
             <Setter Property="Stylus.IsFlicksEnabled" Value="false"/>
-            <Setter Property="Width" Value="6"/>
-            <Setter Property="MinWidth" Value="6"/>
+            <Setter Property="Width" Value="3"/>
+            <Setter Property="MinWidth" Value="3"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type ScrollBar}">
-                        <Grid x:Name="Bg" SnapsToDevicePixels="true" Margin="1,4,3,4">
-                            <!-- Track Rail -->
-                            <Border Background="#22FFFFFF" CornerRadius="3"/>
+                        <Grid x:Name="Bg" SnapsToDevicePixels="true" Margin="1,2,1,2">
+                            <Border Background="#10000000" CornerRadius="1.5"/>
                             <Track x:Name="PART_Track" IsDirectionReversed="true">
                                 <Track.Thumb>
-                                    <Thumb MinHeight="24">
+                                    <Thumb MinHeight="20">
                                         <Thumb.Template>
                                             <ControlTemplate TargetType="{x:Type Thumb}">
-                                                <Border Background="#A0CBD5E1" CornerRadius="3">
+                                                <Border Background="#55000000" CornerRadius="1.5">
                                                     <Border.Style>
                                                         <Style TargetType="Border">
                                                             <Style.Triggers>
                                                                 <Trigger Property="IsMouseOver" Value="True">
-                                                                    <Setter Property="Background" Value="#FFFFFF"/>
+                                                                    <Setter Property="Background" Value="#88000000"/>
                                                                 </Trigger>
                                                             </Style.Triggers>
                                                         </Style>
@@ -77,276 +74,330 @@
             </Setter>
         </Style>
 
-        <!-- Icon Action Button Style -->
-        <Style x:Key="WidgetIconButton" TargetType="Button">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Foreground" Value="#CBD5E1"/>
+        <!-- Liquid Glass Vertical Action Pill Button Style -->
+        <Style x:Key="LiquidGlassButton" TargetType="Button">
+            <Setter Property="Background" Value="#1A000000"/>
+            <Setter Property="BorderBrush" Value="#25FFFFFF"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Foreground" Value="#0F172A"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Padding" Value="4"/>
+            <Setter Property="Padding" Value="10,7"/>
+            <Setter Property="Margin" Value="0,2.5"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="btnBorder" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                        <Border x:Name="btnBorder" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="12" Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="btnBorder" Property="Background" Value="#30FFFFFF"/>
-                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                                <Setter TargetName="btnBorder" Property="Background" Value="#2E000000"/>
+                                <Setter TargetName="btnBorder" Property="BorderBrush" Value="#60FFFFFF"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="btnBorder" Property="Background" Value="#12000000"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <!-- Accent Colored Button Style -->
+        <Style x:Key="AccentGlassButton" TargetType="Button" BasedOn="{StaticResource LiquidGlassButton}">
+            <Setter Property="Background" Value="#0EA5E9"/>
+            <Setter Property="BorderBrush" Value="#40FFFFFF"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="btnBorder" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="12" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="btnBorder" Property="Opacity" Value="0.92"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="btnBorder" Property="Opacity" Value="0.8"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Module Container Header -->
+        <Style x:Key="ModuleHeaderLabel" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#64748B"/>
+            <Setter Property="Margin" Value="2,8,0,3"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+        </Style>
+
+        <!-- Module Separator -->
+        <Style x:Key="ModuleSeparator" TargetType="Border">
+            <Setter Property="Height" Value="1"/>
+            <Setter Property="Background" Value="#14000000"/>
+            <Setter Property="Margin" Value="4,7,4,3"/>
+        </Style>
     </Window.Resources>
 
-    <Grid x:Name="RootGrid" Margin="10" Opacity="0.40">
-        <!-- Main Power Orb Capsule (Draggable Floating Handle) -->
-        <Border x:Name="OrbContainer"
-                Width="58"
-                Height="58"
-                CornerRadius="29"
-                Background="#2A0E1320"
-                BorderBrush="#38FFFFFF"
-                BorderThickness="1.5"
-                Cursor="Hand"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                PreviewMouseLeftButtonDown="Orb_PreviewMouseLeftButtonDown"
-                PreviewMouseMove="Orb_PreviewMouseMove"
-                PreviewMouseLeftButtonUp="Orb_PreviewMouseLeftButtonUp"
-                MouseRightButtonUp="Orb_MouseRightButtonUp"
-                ToolTip="Left-Click: Connect/Disconnect • Right-Click: Server List">
+    <Grid x:Name="RootGrid" HorizontalAlignment="Right" VerticalAlignment="Stretch">
+
+        <!-- ================= LEVEL 1: NARROW EDGE PANEL (STRICTLY VERTICAL) ================= -->
+        <Border x:Name="Level1Panel"
+                Width="175"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Stretch"
+                Margin="0,0,10,0"
+                Background="#E6F1F5F9"
+                BorderBrush="#75FFFFFF"
+                BorderThickness="1.2,1.2,0,1.2"
+                CornerRadius="28,0,0,28"
+                Visibility="Collapsed"
+                ClipToBounds="True">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="32" ShadowDepth="0" Direction="180" Color="#000000" Opacity="0.22"/>
+            </Border.Effect>
 
             <Grid>
-                <!-- Connecting Rotating Dashed Arc (Visible ONLY when connecting) -->
-                <Ellipse x:Name="OrbConnectingRing"
-                         Width="52"
-                         Height="52"
-                         Stroke="#F59E0B"
-                         StrokeThickness="2"
-                         StrokeDashArray="3 3"
-                         Visibility="Collapsed"
-                         HorizontalAlignment="Center"
-                         VerticalAlignment="Center">
-                    <Ellipse.RenderTransform>
-                        <RotateTransform x:Name="ConnectingRotate" Angle="0" CenterX="26" CenterY="26"/>
-                    </Ellipse.RenderTransform>
-                </Ellipse>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/> <!-- Top Bar -->
+                    <RowDefinition Height="*"/>    <!-- Strictly Vertical Content -->
+                </Grid.RowDefinitions>
 
-                <!-- Single Clean Power Vector Symbol from shutdown.svg -->
-                <Path x:Name="OrbPowerIcon"
-                      Data="{StaticResource ShutdownIconGeometry}"
-                      Fill="#EF4444"
-                      Width="26"
-                      Height="26"
-                      Stretch="Uniform"
-                      HorizontalAlignment="Center"
-                      VerticalAlignment="Center"/>
-
-                <!-- Mini Status / 2-Letter Country Indicator Badge on Orb -->
-                <Border x:Name="OrbFlagBadge"
-                        Width="20"
-                        Height="14"
-                        Background="#1E293B"
-                        BorderBrush="#8838BDF8"
-                        BorderThickness="1"
-                        CornerRadius="3"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Bottom"
-                        Margin="0,0,1,1">
-                    <TextBlock x:Name="OrbFlagText" Text="UN" FontSize="8.5" FontWeight="Bold" Foreground="#38BDF8" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <!-- Top Bar -->
+                <Border Grid.Row="0" Padding="12,8" Background="#10000000" BorderBrush="#12000000" BorderThickness="0,0,0,1">
+                    <Grid>
+                        <TextBlock Text="Edge Panel" FontSize="11.5" FontWeight="Bold" Foreground="#0F172A" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                        <Button HorizontalAlignment="Right" Background="Transparent" BorderThickness="0" Cursor="Hand" Click="ClosePanel_Click" Padding="4">
+                            <TextBlock Text="✕" FontSize="10" Foreground="#64748B"/>
+                        </Button>
+                    </Grid>
                 </Border>
+
+                <!-- STRICTLY VERTICAL STACKED MODULES -->
+                <local:SmoothScrollViewer Grid.Row="1" Style="{StaticResource WidgetScrollViewer}" VerticalScrollBarVisibility="Auto" CanContentScroll="False" Padding="10,6">
+                    <StackPanel>
+
+                        <!-- ================= MODULE 1: VPN ================= -->
+                        <TextBlock Text="VPN" Style="{StaticResource ModuleHeaderLabel}" Foreground="#0284C7"/>
+
+                        <!-- Button 1: Connect / Disconnect -->
+                        <Button x:Name="VpnLevel1ToggleBtn" Style="{StaticResource AccentGlassButton}" Click="VpnConnectToggle_Click" Background="#0EA5E9">
+                            <TextBlock x:Name="VpnLevel1BtnText" Text="Connect" FontWeight="Bold" FontSize="11"/>
+                        </Button>
+
+                        <!-- Button 2: View Servers -->
+                        <Button Style="{StaticResource LiquidGlassButton}" Click="OpenVpnServersLevel2_Click">
+                            <TextBlock Text="View Servers →" FontSize="10.5"/>
+                        </Button>
+
+                        <Border Style="{StaticResource ModuleSeparator}"/>
+
+                        <!-- ================= MODULE 2: MUSIC PLAYER ================= -->
+                        <TextBlock Text="MUSIC" Style="{StaticResource ModuleHeaderLabel}" Foreground="#7C3AED"/>
+
+                        <!-- Cover / Album Art Area -->
+                        <Border Width="80" Height="80" CornerRadius="16" Background="#207C3AED" ClipToBounds="True" HorizontalAlignment="Center" Margin="0,2,0,4">
+                            <Grid>
+                                <TextBlock Text="🎵" FontSize="32" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#8B5CF6"/>
+                                <Image x:Name="L1MusicCoverImg" Stretch="UniformToFill"/>
+                            </Grid>
+                        </Border>
+
+                        <TextBlock x:Name="L1MusicTitleText" Text="No Track Playing" FontSize="10" FontWeight="SemiBold" Foreground="#0F172A" TextAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,0,0,4"/>
+
+                        <!-- Strictly Vertical Controls (One Under The Other) -->
+                        <Button Style="{StaticResource LiquidGlassButton}" Click="MusicPlayPause_Click">
+                            <TextBlock x:Name="L1MusicPlayPauseText" Text="▶ Play" FontWeight="Bold" FontSize="10.5"/>
+                        </Button>
+
+                        <Button Style="{StaticResource LiquidGlassButton}" Click="MusicNext_Click">
+                            <TextBlock Text="⏭ Next Track" FontSize="10.5"/>
+                        </Button>
+
+                        <Button Style="{StaticResource LiquidGlassButton}" Click="MusicPrev_Click">
+                            <TextBlock Text="⏮ Previous Track" FontSize="10.5"/>
+                        </Button>
+
+                        <Border Style="{StaticResource ModuleSeparator}"/>
+
+                        <!-- ================= MODULE 3: FENCE ================= -->
+                        <TextBlock Text="FENCES" Style="{StaticResource ModuleHeaderLabel}" Foreground="#E11D48"/>
+
+                        <!-- Button 1: Add Fence Shortcut -->
+                        <Button Style="{StaticResource LiquidGlassButton}" Click="CreateNewFence_Click">
+                            <TextBlock Text="➕ Add Fence Shortcut" FontSize="10"/>
+                        </Button>
+
+                        <!-- Button 2: Add Fence Folder -->
+                        <Button Style="{StaticResource LiquidGlassButton}" Click="CreatePortalFence_Click">
+                            <TextBlock Text="📁 Add Fence Folder" FontSize="10"/>
+                        </Button>
+
+                        <Border Style="{StaticResource ModuleSeparator}"/>
+
+                        <!-- ================= MODULE 4: STICKY NOTE ================= -->
+                        <TextBlock Text="STICKY NOTES" Style="{StaticResource ModuleHeaderLabel}" Foreground="#059669"/>
+
+                        <!-- Button 1: Add Note -->
+                        <Button Style="{StaticResource LiquidGlassButton}" Click="CreateNewNote_Click">
+                            <TextBlock Text="➕ Add Note" FontWeight="Bold" FontSize="10.5" Foreground="#059669"/>
+                        </Button>
+
+                        <!-- Button 2: Show All Notes -->
+                        <Button Style="{StaticResource LiquidGlassButton}" Click="ShowAllNotes_Click">
+                            <TextBlock Text="👁 Show All" FontSize="10.5"/>
+                        </Button>
+
+                        <!-- Button 3: Hide All Notes -->
+                        <Button Style="{StaticResource LiquidGlassButton}" Click="HideAllNotes_Click">
+                            <TextBlock Text="🚫 Hide All" FontSize="10.5"/>
+                        </Button>
+
+                    </StackPanel>
+                </local:SmoothScrollViewer>
             </Grid>
         </Border>
 
-        <!-- Attached Server Flyout Popup (Opens to Left or Right without moving the Orb!) -->
-        <Popup x:Name="ServerFlyoutPopup"
-               PlacementTarget="{Binding ElementName=OrbContainer}"
-               Placement="Left"
-               AllowsTransparency="True"
-               StaysOpen="False"
-               PopupAnimation="Fade"
-               HorizontalOffset="-10"
-               VerticalOffset="0"
-               Opened="ServerFlyoutPopup_Opened"
-               Closed="ServerFlyoutPopup_Closed">
+        <!-- ================= LEVEL 2: EXPANDED VPN SERVERS PANEL ================= -->
+        <Border x:Name="Level2Panel"
+                Width="265"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Stretch"
+                Margin="0,0,10,0"
+                Background="#EAF1F5F9"
+                BorderBrush="#85FFFFFF"
+                BorderThickness="1.2,1.2,0,1.2"
+                CornerRadius="28,0,0,28"
+                Visibility="Collapsed"
+                ClipToBounds="True">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="36" ShadowDepth="0" Direction="180" Color="#000000" Opacity="0.25"/>
+            </Border.Effect>
+            <Border.RenderTransform>
+                <TranslateTransform x:Name="Level2SlideTransform" X="280"/>
+            </Border.RenderTransform>
 
-            <Border x:Name="FlyoutDrawer"
-                    Width="340"
-                    Background="#FA0D111A"
-                    BorderBrush="#44FFFFFF"
-                    BorderThickness="1.2"
-                    CornerRadius="18"
-                    ClipToBounds="True">
-                <Border.Effect>
-                    <DropShadowEffect BlurRadius="26" ShadowDepth="4" Direction="270" Color="#000000" Opacity="0.8"/>
-                </Border.Effect>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/> <!-- Top Bar / Back -->
+                    <RowDefinition Height="*"/>    <!-- Strictly Vertical Content -->
+                </Grid.RowDefinitions>
 
-                <Grid Width="340" MaxHeight="400">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/> <!-- Header -->
-                        <RowDefinition Height="Auto"/> <!-- Traffic Bar -->
-                        <RowDefinition Height="*"/>    <!-- Server List -->
-                        <RowDefinition Height="Auto"/> <!-- Footer Info -->
-                    </Grid.RowDefinitions>
+                <!-- Top Bar with Back Button -->
+                <Border Grid.Row="0" Padding="10,8" Background="#10000000" BorderBrush="#12000000" BorderThickness="0,0,0,1">
+                    <Grid>
+                        <Button HorizontalAlignment="Left" Background="Transparent" BorderThickness="0" Cursor="Hand" Click="BackToLevel1_Click" Padding="4">
+                            <TextBlock Text="← Back" FontSize="11" FontWeight="Bold" Foreground="#0284C7"/>
+                        </Button>
+                        <TextBlock Text="VPN Servers" FontSize="11.5" FontWeight="Bold" Foreground="#0F172A" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <Button HorizontalAlignment="Right" Background="Transparent" BorderThickness="0" Cursor="Hand" Click="ClosePanel_Click" Padding="4">
+                            <TextBlock Text="✕" FontSize="10" Foreground="#64748B"/>
+                        </Button>
+                    </Grid>
+                </Border>
 
-                    <!-- Header -->
-                    <Border Grid.Row="0" Background="#161C2C" BorderBrush="#30FFFFFF" BorderThickness="0,0,0,1" Padding="12,10">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
+                <!-- STRICTLY VERTICAL EXPANDED PANEL -->
+                <local:SmoothScrollViewer Grid.Row="1" Style="{StaticResource WidgetScrollViewer}" VerticalScrollBarVisibility="Auto" CanContentScroll="False" Padding="12,8">
+                    <StackPanel>
 
-                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Ellipse x:Name="FlyoutStatusDot" Width="8" Height="8" Fill="#EF4444" Margin="0,0,6,0"/>
-                                    <TextBlock x:Name="FlyoutStatusText" Text="DISCONNECTED" FontSize="11" FontWeight="Bold" Foreground="#EF4444" FontFamily="Segoe UI Variable Display, Segoe UI"/>
-                                </StackPanel>
+                        <!-- Main Connect / Disconnect Action Button -->
+                        <Button x:Name="VpnLevel2ToggleBtn" Style="{StaticResource AccentGlassButton}" Click="VpnConnectToggle_Click" Background="#0EA5E9" Height="36" Margin="0,2,0,4">
+                            <TextBlock x:Name="VpnLevel2BtnText" Text="Connect to Selected" FontWeight="Bold" FontSize="11.5"/>
+                        </Button>
 
-                                <StackPanel Orientation="Horizontal" Margin="0,3,0,0" VerticalAlignment="Center">
-                                    <!-- Active Server Country Code Badge -->
-                                    <Border Width="26" Height="18" CornerRadius="4" Background="#1E2B42" BorderBrush="#4038BDF8" BorderThickness="1" Margin="0,0,8,0" VerticalAlignment="Center">
-                                        <TextBlock x:Name="FlyoutActiveCountryText" Text="UN" FontSize="10" FontWeight="Bold" Foreground="#38BDF8" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    </Border>
-                                    <TextBlock x:Name="FlyoutActiveServerText" Text="No Server Selected" FontSize="13" FontWeight="SemiBold" Foreground="#FFFFFF" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
-                                </StackPanel>
+                        <!-- Speed Test Button -->
+                        <Button Style="{StaticResource LiquidGlassButton}" Click="PingAll_Click" Margin="0,2,0,4">
+                            <TextBlock Text="⚡ Speed Test (Ping All)" FontSize="10.5" Foreground="#D97706" FontWeight="SemiBold"/>
+                        </Button>
+
+                        <!-- Update Subscriptions Button -->
+                        <Button Style="{StaticResource LiquidGlassButton}" Click="UpdateSubs_Click" Margin="0,2,0,6">
+                            <TextBlock Text="🔄 Update Subscriptions" FontSize="10.5" Foreground="#0284C7" FontWeight="SemiBold"/>
+                        </Button>
+
+                        <!-- Live Traffic Status -->
+                        <Border Background="#12000000" CornerRadius="10" Padding="8,5" Margin="0,0,0,6">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock x:Name="L2TrafficText" Text="▲ 0 B/s   •   ▼ 0 B/s" FontSize="9.5" FontWeight="Medium" Foreground="#334155" HorizontalAlignment="Center"/>
                             </StackPanel>
+                        </Border>
 
-                            <!-- Top Action Buttons -->
-                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                <Button x:Name="UpdateSubsBtn" Style="{StaticResource WidgetIconButton}" ToolTip="Update All Subscriptions (بروزرسانی اشتراک‌ها)" Click="UpdateSubs_Click" Margin="2,0">
-                                    <TextBlock Text="🔄" FontSize="12" Foreground="#38BDF8"/>
-                                </Button>
-                                <Button x:Name="PingAllBtn" Style="{StaticResource WidgetIconButton}" ToolTip="Test All Latencies (تست تاخیر)" Click="PingAll_Click" Margin="2,0">
-                                    <TextBlock Text="⚡" FontSize="13" Foreground="#F59E0B"/>
-                                </Button>
-                                <Button Style="{StaticResource WidgetIconButton}" ToolTip="Open VPN Manager" Click="OpenVpnManager_Click" Margin="2,0">
-                                    <TextBlock Text="🛡️" FontSize="12"/>
-                                </Button>
-                                <Button Style="{StaticResource WidgetIconButton}" ToolTip="Close Drawer" Click="CloseFlyout_Click" Margin="2,0">
-                                    <TextBlock Text="✕" FontSize="12"/>
-                                </Button>
-                            </StackPanel>
-                        </Grid>
-                    </Border>
+                        <!-- Server List Label -->
+                        <TextBlock Text="SELECT SERVER" Style="{StaticResource ModuleHeaderLabel}" Margin="2,4,0,3" HorizontalAlignment="Left"/>
 
-                    <!-- Real-time Traffic Bar -->
-                    <Border Grid.Row="1" Background="#0A0E17" Padding="12,6" BorderBrush="#20FFFFFF" BorderThickness="0,0,0,1">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-
-                            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                                <TextBlock Text="▲" FontSize="10" Foreground="#38BDF8" Margin="0,0,5,0"/>
-                                <TextBlock x:Name="FlyoutUpSpeedText" Text="0 B/s" FontSize="11" Foreground="#CBD5E1" FontWeight="Medium"/>
-                            </StackPanel>
-
-                            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                                <TextBlock Text="▼" FontSize="10" Foreground="#4ADE80" Margin="0,0,5,0"/>
-                                <TextBlock x:Name="FlyoutDownSpeedText" Text="0 B/s" FontSize="11" Foreground="#CBD5E1" FontWeight="Medium"/>
-                            </StackPanel>
-                        </Grid>
-                    </Border>
-
-                    <!-- Smooth Scroll Server List -->
-                    <local:SmoothScrollViewer Grid.Row="2" Style="{StaticResource WidgetScrollViewer}" VerticalScrollBarVisibility="Auto" CanContentScroll="False" PanningMode="VerticalOnly" Margin="0,4,8,4" MaxHeight="250">
+                        <!-- Vertical Server List -->
                         <ItemsControl x:Name="ServersItemsControl">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border x:Name="ServerRow"
-                                            Background="#151B28"
-                                            BorderBrush="#253348"
-                                            BorderThickness="1"
-                                            CornerRadius="10"
-                                            Margin="8,3,8,3"
-                                            Padding="10,8"
-                                            Cursor="Hand"
-                                            MouseLeftButtonUp="ServerRow_MouseLeftButtonUp"
-                                            Tag="{Binding}">
+                                    <Border Background="#70FFFFFF" BorderBrush="#35FFFFFF" BorderThickness="1" CornerRadius="10" Margin="0,2.5" Padding="8,6" Cursor="Hand" MouseLeftButtonUp="ServerRow_MouseLeftButtonUp" Tag="{Binding}">
                                         <Border.Style>
                                             <Style TargetType="Border">
                                                 <Style.Triggers>
                                                     <Trigger Property="IsMouseOver" Value="True">
-                                                        <Setter Property="Background" Value="#222E44"/>
-                                                        <Setter Property="BorderBrush" Value="#3B82F6"/>
+                                                        <Setter Property="Background" Value="#A8FFFFFF"/>
+                                                        <Setter Property="BorderBrush" Value="#700284C7"/>
                                                     </Trigger>
                                                 </Style.Triggers>
                                             </Style>
                                         </Border.Style>
                                         <Grid>
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto"/> <!-- Country Code Badge -->
-                                                <ColumnDefinition Width="*"/>    <!-- Name & Details -->
-                                                <ColumnDefinition Width="Auto"/> <!-- Ping Badge -->
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
 
-                                            <!-- 2-Letter Country Code Pill Badge -->
-                                            <Border Grid.Column="0"
-                                                    Width="28"
-                                                    Height="20"
-                                                    CornerRadius="5"
-                                                    Background="#1E2B42"
-                                                    BorderBrush="#4038BDF8"
-                                                    BorderThickness="1"
-                                                    Margin="0,0,10,0"
-                                                    VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding CountryCodeDisplay}"
-                                                           FontSize="11"
-                                                           FontWeight="Bold"
-                                                           Foreground="#38BDF8"
-                                                           HorizontalAlignment="Center"
-                                                           VerticalAlignment="Center"/>
+                                            <Border Grid.Column="0" Width="22" Height="15" CornerRadius="3" Background="#200284C7" Margin="0,0,6,0" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding CountryCodeDisplay}" FontSize="8.5" FontWeight="Bold" Foreground="#0284C7" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                             </Border>
 
-                                            <!-- Name & Protocol -->
-                                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding Name}"
-                                                           FontSize="12.5"
-                                                           FontWeight="SemiBold"
-                                                           Foreground="#FFFFFF"
-                                                           TextTrimming="CharacterEllipsis"/>
-                                                <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
-                                                    <Border Background="#25354E" CornerRadius="4" Padding="5,1.5" Margin="0,0,6,0">
-                                                        <TextBlock Text="{Binding ProtocolBadge}" FontSize="9.5" FontWeight="Bold" Foreground="#38BDF8"/>
-                                                    </Border>
-                                                    <TextBlock Text="{Binding AddressDisplay}" FontSize="10.5" Foreground="#94A3B8" TextTrimming="CharacterEllipsis"/>
-                                                </StackPanel>
-                                            </StackPanel>
+                                            <TextBlock Grid.Column="1" Text="{Binding Name}" FontSize="10.5" FontWeight="SemiBold" Foreground="#0F172A" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
 
-                                            <!-- Ping Badge -->
-                                            <Border Grid.Column="2"
-                                                    Background="{Binding PingBackgroundBrush}"
-                                                    CornerRadius="6"
-                                                    Padding="8,4"
-                                                    VerticalAlignment="Center"
-                                                    Margin="6,0,0,0">
-                                                <TextBlock Text="{Binding PingDisplay}"
-                                                           FontSize="11"
-                                                           FontWeight="Bold"
-                                                           Foreground="{Binding PingColorBrush}"/>
+                                            <Border Grid.Column="2" Background="#14000000" CornerRadius="4" Padding="5,1.5" VerticalAlignment="Center" Margin="4,0,0,0">
+                                                <TextBlock Text="{Binding PingDisplay}" FontSize="8.5" FontWeight="Bold" Foreground="{Binding PingColorBrush}"/>
                                             </Border>
                                         </Grid>
                                     </Border>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
-                    </local:SmoothScrollViewer>
 
-                    <!-- Footer Info -->
-                    <Border Grid.Row="3" Background="#0F1420" Padding="12,6" BorderBrush="#20FFFFFF" BorderThickness="0,1,0,0">
-                        <Grid>
-                            <TextBlock x:Name="FlyoutServerCountText" Text="0 Servers" FontSize="10" Foreground="#94A3B8" VerticalAlignment="Center"/>
-                            <TextBlock Text="Click server to connect" FontSize="10" Foreground="#64748B" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                        </Grid>
-                    </Border>
-                </Grid>
-            </Border>
-        </Popup>
+                    </StackPanel>
+                </local:SmoothScrollViewer>
+            </Grid>
+        </Border>
+
+        <!-- ================= SAMSUNG ONE UI LIQUID GLASS EDGE HANDLE ================= -->
+        <Border x:Name="EdgeHandle"
+                Width="8"
+                Height="130"
+                CornerRadius="4,0,0,4"
+                Background="#60FFFFFF"
+                BorderBrush="#45FFFFFF"
+                BorderThickness="1,1,0,1"
+                Cursor="Hand"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Center"
+                Opacity="0.45"
+                PreviewMouseLeftButtonDown="EdgeHandle_PreviewMouseLeftButtonDown"
+                PreviewMouseMove="EdgeHandle_PreviewMouseMove"
+                PreviewMouseLeftButtonUp="EdgeHandle_PreviewMouseLeftButtonUp"
+                MouseRightButtonUp="EdgeHandle_MouseRightButtonUp"
+                MouseEnter="EdgeHandle_MouseEnter"
+                MouseLeave="EdgeHandle_MouseLeave"
+                ToolTip="Click: Open Edge Panel • Drag: Reposition Handle">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="6" ShadowDepth="0" Color="#000000" Opacity="0.25"/>
+            </Border.Effect>
+        </Border>
+
     </Grid>
 </Window>

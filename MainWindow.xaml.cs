@@ -28,7 +28,7 @@ namespace KeyMapper
         private readonly MouseHook _mouseHook;
         private readonly OverlayWindow _overlayWindow;
         private readonly PetOverlayWindow _petOverlayWindow;
-        private readonly VpnOverlayWidgetWindow _vpnOverlayWidgetWindow;
+        private readonly EdgePanelWindow _edgePanelWindow;
         private readonly TrayIconManager _trayManager;
         private readonly AudioDeviceMonitor _audioDeviceMonitor;
         private AppSettings _settings;
@@ -165,11 +165,10 @@ namespace KeyMapper
             {
                 _petOverlayWindow.Show();
             }
-            _vpnOverlayWidgetWindow = new VpnOverlayWidgetWindow();
-            if (_settings.ShowVpnOverlay)
-            {
-                _vpnOverlayWidgetWindow.Show();
-            }
+            _edgePanelWindow = new EdgePanelWindow();
+            // The main dashboard now starts hidden, so the Edge Panel must remain
+            // independently available as the visible entry point to quick actions.
+            _edgePanelWindow.Show();
             _trayManager = new TrayIconManager(this, _hook);
 
             _mouseHook = new MouseHook();
@@ -2511,54 +2510,52 @@ namespace KeyMapper
             _petOverlayWindow?.Hide();
         }
 
-        public void ShowVpnOverlayWidget()
+        public void ShowEdgePanel()
         {
             Dispatcher.Invoke(() =>
             {
-                if (_vpnOverlayWidgetWindow != null)
+                if (_edgePanelWindow != null)
                 {
-                    _settings.ShowVpnOverlay = true;
+                    _settings.ShowEdgePanel = true;
                     ConfigManager.Save(_settings);
-                    _vpnOverlayWidgetWindow.Show();
-                    _vpnOverlayWidgetWindow.WindowState = WindowState.Normal;
-                    _vpnOverlayWidgetWindow.Topmost = true;
-                    _vpnOverlayWidgetWindow.Activate();
-                    _vpnOverlayWidgetWindow.RefreshUI();
-                    _vpnOverlayWidgetWindow.RefreshServers();
+                    _edgePanelWindow.Show();
+                    _edgePanelWindow.WindowState = WindowState.Normal;
+                    _edgePanelWindow.Topmost = true;
                 }
             });
         }
 
-        public void HideVpnOverlayWidget()
+        public void HideEdgePanel()
         {
             Dispatcher.Invoke(() =>
             {
-                if (_vpnOverlayWidgetWindow != null)
+                if (_edgePanelWindow != null)
                 {
-                    _settings.ShowVpnOverlay = false;
+                    _settings.ShowEdgePanel = false;
                     ConfigManager.Save(_settings);
-                    _vpnOverlayWidgetWindow.Hide();
+                    _edgePanelWindow.Hide();
                 }
             });
         }
 
-        public void ToggleVpnOverlayWidget()
+        public void ToggleEdgePanel()
         {
             Dispatcher.Invoke(() =>
             {
-                if (_vpnOverlayWidgetWindow != null)
+                if (_edgePanelWindow != null)
                 {
-                    if (_vpnOverlayWidgetWindow.IsVisible)
+                    if (!_edgePanelWindow.IsVisible)
                     {
-                        HideVpnOverlayWidget();
+                        ShowEdgePanel();
                     }
-                    else
-                    {
-                        ShowVpnOverlayWidget();
-                    }
+                    _edgePanelWindow.TogglePanel();
                 }
             });
         }
+
+        public void ShowVpnOverlayWidget() => ShowEdgePanel();
+        public void HideVpnOverlayWidget() => HideEdgePanel();
+        public void ToggleVpnOverlayWidget() => ToggleEdgePanel();
 
         public void OpenVpnTab(bool focusServerSelection = false)
         {

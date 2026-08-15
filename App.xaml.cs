@@ -50,9 +50,18 @@ namespace KeyMapper
 
             base.OnStartup(e);
 
+            ShutdownMode = ShutdownMode.OnExplicitShutdown;
             ThemeManager.Apply(ConfigManager.Load().ThemeName);
-            _mainWindow = new MainWindow();
-            this.MainWindow = _mainWindow;
+
+            try
+            {
+                _mainWindow = new MainWindow();
+                this.MainWindow = _mainWindow;
+            }
+            catch (Exception ex)
+            {
+                LogError("Startup-MainWindowException", ex);
+            }
 
             // Start translator asynchronously in background without blocking UI thread startup
             Task.Run(async () =>
@@ -70,9 +79,12 @@ namespace KeyMapper
             // Initialize Desktop Fences
             DesktopFenceManager.Instance.Initialize();
 
-            // The app starts silently in system tray and pet overlay.
-            // MainWindow (settings) can be opened from the system tray menu.
-            _mainWindow.ShowStartupNotification();
+            // Start quietly in the system tray. The dashboard remains available
+            // from the tray icon, notification click, or an explicit command.
+            if (_mainWindow != null)
+            {
+                _mainWindow.ShowStartupNotification();
+            }
         }
 
         private void ListenForShowSignal()
@@ -111,6 +123,7 @@ namespace KeyMapper
 
         protected override void OnExit(System.Windows.ExitEventArgs e)
         {
+            LogError("App-OnExit", new Exception($"App exiting with code {e.ApplicationExitCode}"));
             if (_hasMutex)
             {
                 _mainWindow?.Shutdown();

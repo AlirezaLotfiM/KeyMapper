@@ -44,6 +44,7 @@ namespace KeyMapper
 
             contextMenu.Items.Add(new ToolStripMenuItem("Show Desktop Pet", null, (s, e) => _mainWindow.ShowPetOverlayWindow()));
             contextMenu.Items.Add(new ToolStripMenuItem("Hide Desktop Pet", null, (s, e) => _mainWindow.HidePetOverlayWindow()));
+            contextMenu.Items.Add(new ToolStripMenuItem("Edge Panel (پنل کناری)", null, (s, e) => _mainWindow.ToggleEdgePanel()));
             contextMenu.Items.Add(new ToolStripMenuItem("Music Player (موزیک پلیر)", null, (s, e) => _mainWindow.ShowMusicPlayerWidget()));
 
             var stickyNotesMenu = new ToolStripMenuItem("Sticky Notes (یادداشت‌ها)");
@@ -58,10 +59,8 @@ namespace KeyMapper
             var vpnSelectServerItem = new ToolStripMenuItem("🌐 Select Server...", null, (s, e) => _mainWindow.OpenVpnTab(focusServerSelection: true));
             var vpnOpenSectionItem = new ToolStripMenuItem("🛡️ Open VPN", null, (s, e) => _mainWindow.OpenVpnTab(focusServerSelection: false));
 
-            var vpnFloatingWidgetItem = new ToolStripMenuItem("🔮 VPN Floating Widget (ویجت شناور)", null, (s, e) => _mainWindow.ToggleVpnOverlayWidget());
             vpnMenu.DropDownItems.Add(vpnStatusItem);
             vpnMenu.DropDownItems.Add(vpnActionItem);
-            vpnMenu.DropDownItems.Add(vpnFloatingWidgetItem);
             vpnMenu.DropDownItems.Add(new ToolStripSeparator());
             vpnMenu.DropDownItems.Add(vpnSelectServerItem);
             vpnMenu.DropDownItems.Add(vpnOpenSectionItem);

@@ -206,8 +206,10 @@ namespace KeyMapper
                 if (string.IsNullOrWhiteSpace(Name)) return "";
                 string n = Name.Trim();
 
-                // Remove leading unicode regional indicator symbols if present
-                n = System.Text.RegularExpressions.Regex.Replace(n, @"^[\uD83C\uDDE6-\uD83C\uDDFF]{2}\s*", "");
+                // Remove leading flag/emoji symbols if present. The previous
+                // surrogate-pair character range was invalid in .NET Regex and
+                // crashed the Edge Panel while resolving a server display name.
+                n = System.Text.RegularExpressions.Regex.Replace(n, @"^\p{So}+\s*", "");
 
                 // Strip redundant 2-letter uppercase country code prefix like "FR ", "FI ", "AE ", "NL-", "IT "
                 var cleaned = System.Text.RegularExpressions.Regex.Replace(n, @"^([A-Za-z]{2})\s*[-_|\/:]*\s*", "");

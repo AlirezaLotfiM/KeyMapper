@@ -100,11 +100,14 @@ namespace KeyMapper
 
             // Mode Pills (Happ Style)
             bool isTun = _vpn.Settings.ConnectionMode == "TUN";
-            ProxyModeChip.Background = !isTun ? (Brush)FindResource("AppAccentBrush") : Brushes.Transparent;
-            ProxyModeChip.Foreground = !isTun ? Brushes.White : (Brush)FindResource("AppMutedTextBrush");
+            var accentBrush = (TryFindResource("AppAccentBrush") as Brush) ?? new SolidColorBrush(Color.FromRgb(56, 189, 248));
+            var mutedBrush = (TryFindResource("AppMutedTextBrush") as Brush) ?? new SolidColorBrush(Color.FromRgb(148, 163, 184));
 
-            TunModeChip.Background = isTun ? (Brush)FindResource("AppAccentBrush") : Brushes.Transparent;
-            TunModeChip.Foreground = isTun ? Brushes.White : (Brush)FindResource("AppMutedTextBrush");
+            ProxyModeChip.Background = !isTun ? accentBrush : Brushes.Transparent;
+            ProxyModeChip.Foreground = !isTun ? Brushes.White : mutedBrush;
+
+            TunModeChip.Background = isTun ? accentBrush : Brushes.Transparent;
+            TunModeChip.Foreground = isTun ? Brushes.White : mutedBrush;
         }
 
         private void LoadSettingsToUI()
